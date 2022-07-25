@@ -27,7 +27,7 @@ public Plugin myinfo =
 {
 	name = "Ultra VIP",
 	author = "Mesharsky & sirdigbot",
-	description = "Advanced Vip System that supports multimple vip service setup",
+	description = "Advanced Vip System that supports multimple VIP services setup",
 	version = PLUGIN_VERSION,
 	url = "https://github.com/Mesharsky/Ultra-VIP"
 };
