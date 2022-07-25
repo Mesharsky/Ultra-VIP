@@ -1,5 +1,5 @@
 /**
- * Copyright (C) Mesharsky
+ * Copyright (C) Mesharsky & sirdigbot
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,16 +25,16 @@
 
 public Plugin myinfo =
 {
-	name = "Advanced Vip System",
-	author = "Mesharsky",
+	name = "Ultra VIP",
+	author = "Mesharsky & sirdigbot",
 	description = "Advanced Vip System that supports multimple vip service setup",
 	version = PLUGIN_VERSION,
-	url = "https://github.com/url_later_here/"
+	url = "https://github.com/Mesharsky/Ultra-VIP"
 };
 
 public void OnPluginStart()
 {
-    LoadTranslations("adv_vip_system.phrases.txt");
+    LoadTranslations("ultra_vip.phrases.txt");
 }
 
 public void OnConfigsExecuted()
