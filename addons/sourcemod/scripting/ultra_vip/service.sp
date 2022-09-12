@@ -15,6 +15,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+void Service_Delete(Service &svc)
+{
+    delete svc.WeaponMenu;
+    delete svc.Weapons;
+
+    delete svc;
+}
+
 methodmap Service < StringMap
 {
     public Service(const char[] name = "")
@@ -666,6 +674,17 @@ methodmap Service < StringMap
         public get() { return Service_GetCell(this, "weapon_menu", null); }
         public set(Menu value) { this.SetValue("weapon_menu", value); }
     }
+    property ArrayList Weapons
+    {
+        public get() { return Service_GetCell(this, "weapons_list", null); }
+        public set(ArrayList value) { this.SetValue("weapons_list", value); }
+    }
+
+    public bool IsWeaponAllowed(const char[] className)
+    {
+        return this.Weapons.FindString(className) == -1;
+    }
+
     property int RifleWeaponsRound
     {
         public get() { return Service_GetCell(this, "rifles_menu_round", 0); }
@@ -676,7 +695,6 @@ methodmap Service < StringMap
         public get() { return Service_GetCell(this, "pistols_menu_round", 0); }
         public set(int value) { this.SetValue("pistols_menu_round", value); }
     }
-
 }
 
 static any Service_GetCell(Service svc, const char[] field, any defaultValue)

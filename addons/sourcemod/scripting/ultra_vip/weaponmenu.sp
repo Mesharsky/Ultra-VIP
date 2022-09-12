@@ -46,6 +46,15 @@ enum struct WeaponLoadout
     }
 }
 
+static void GiveLoadoutIfAllowed(int client, WeaponLoadout weapons, Service svc)
+{
+    if (svc.IsWeaponAllowed(s_PreviousWeapon[client].primary))
+        GivePlayerItem(client, s_PreviousWeapon[client].primary);
+
+    if (svc.IsWeaponAllowed(s_PreviousWeapon[client].secondary))
+        GivePlayerItem(client, s_PreviousWeapon[client].secondary);
+}
+
 
 // Size of string output by EncodeMenuItem(). Fits:
 // - Weapon type (zero-padded hex)
@@ -146,13 +155,14 @@ public int WeaponMenu_Handler(Menu menu, MenuAction action, int param1, int para
             }
             else if (StrEqual(info, "PREVIOUS"))
             {
-                #error Not sure this s_PreviousWeapon approach works because we need to somehow verify each weapon is allowed by the clients service before applying.
-                // Obviously it should search s_WeaponListService somehow.
-                // However theres not currently any system to store allowed weapons in each service.
-                // And storing an array of strings per service seems like a kinda bad idea.
-                // But it seems like an even worse idea to make an enum of each "weapon_" entity and store an array of that (extra maintenance)
-                //
-                // Not sure how to approach this ¯\(°_o)/¯
+                if(!s_PreviousWeapon[param1].IsSet())
+                    return 0;
+
+                Service svc = GetClientService(param1);
+                if(svc == null)
+                    return 0;
+
+                GiveLoadoutIfAllowed(param1, s_PreviousWeapon[param1], svc);      
             }
         }
     }
@@ -160,8 +170,10 @@ public int WeaponMenu_Handler(Menu menu, MenuAction action, int param1, int para
     return 0;
 }
 
-Menu WeaponMenu_BuildSelectionsFromConfig(KeyValues kv, const char[] serviceName)
+void WeaponMenu_BuildSelectionsFromConfig(KeyValues kv, const char[] serviceName, Menu &outputMenu, ArrayList &outputWeapons)
 {
+    ArrayList weapons = new ArrayList(ByteCountToCells(MAX_WEAPON_CLASSNAME_SIZE));
+
     Menu menu = new Menu(WeaponSelection_Handler, MENU_ACTIONS_ALL);
 
     menu.Pagination = true;
@@ -193,7 +205,8 @@ Menu WeaponMenu_BuildSelectionsFromConfig(KeyValues kv, const char[] serviceName
         {
             LogError("Service \"%s\" is missing weapon menu section \"%s\".", serviceName, sections[i]);
             delete menu;
-            return null;
+            delete weapons;
+            return;
         }
 
         // If section is disabled, skip it
@@ -207,7 +220,8 @@ Menu WeaponMenu_BuildSelectionsFromConfig(KeyValues kv, const char[] serviceName
         {
             LogError("Service \"%s\" has no weapons for an enabled weapon menu section \"%s\".", serviceName, sections[i]);
             delete menu;
-            return null;
+            delete weapons;
+            return;
         }
 
         do
@@ -221,6 +235,8 @@ Menu WeaponMenu_BuildSelectionsFromConfig(KeyValues kv, const char[] serviceName
 
             menu.AddItem(encodedInfo, weaponName);
 
+            weapons.PushString(item.classname);
+
         } while (kv.GotoNextKey());
 
         kv.GoBack(); // To weapon type section ("Rifles")
@@ -229,7 +245,10 @@ Menu WeaponMenu_BuildSelectionsFromConfig(KeyValues kv, const char[] serviceName
 
     kv.GoBack(); // To Service
 
-    return menu;
+    outputMenu = menu;
+    outputWeapons = weapons;
+
+    return;
 }
 
 void GetWeaponMenuItem(KeyValues kv, WeaponMenuItem outputItem)
@@ -284,6 +303,11 @@ public int WeaponSelection_Handler(Menu menu, MenuAction action, int param1, int
                 return ITEMDRAW_IGNORE;
 
             return ITEMDRAW_DEFAULT;    
+        }
+
+        case MenuAction_DisplayItem:
+        {
+            #error add price
         }
 
         case MenuAction_Select:

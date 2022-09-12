@@ -17,6 +17,7 @@
 
 #include <sourcemod>
 #include <multicolors>
+#include <sdktools>
 
 #pragma newdecls required
 #pragma semicolon 1
@@ -37,6 +38,8 @@ ConVar g_Cvar_ArenaMode;
 #include "ultra_vip/weaponmenu.sp"
 #include "ultra_vip/menus.sp"
 
+Service g_ClientService[MAXPLAYERS +1];
+
 public Plugin myinfo =
 {
 	name = "Ultra VIP",
@@ -52,7 +55,7 @@ public void OnPluginStart()
 
 	RegConsoleCmd("sm_vips", Command_ShowServices);
 	RegAdminCmd("sm_reloadservices", Command_ReloadServices, ADMFLAG_ROOT, "Reloads configuration file");
-
+	
 	HookEvent("player_spawn", Event_PlayerSpawn);
 	HookEvent("player_death", Event_PlayerDeath);
 	HookEvent("bomb_planted", Event_BombPlanted);
@@ -101,10 +104,14 @@ public Action Command_ReloadServices(int client, int args)
 	return Plugin_Handled;	
 }
 
-
 bool IsServiceHandleValid(Handle hndl)
 {
     if (hndl == null)
         return false;
     return g_Services.FindValue(hndl) != -1;
+}
+
+Service GetClientService(int client)
+{
+	return g_ClientService[client];	
 }

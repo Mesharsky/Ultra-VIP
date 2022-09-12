@@ -60,7 +60,7 @@ static bool HandleError(Handle &hndl, bool isFatal, const char[] fmt, any ...)
     return false;
 }
 
-static bool HandleErrorAndGoBack(KeyValues kv, Handle &hndl, bool isFatal, const char[] fmt, any ...)
+static bool HandleErrorAndGoBack(KeyValues kv, Service &hndl, bool isFatal, const char[] fmt, any ...)
 {
     int len = strlen(fmt) + 512;
     char[] formatted = new char[len];
@@ -71,7 +71,7 @@ static bool HandleErrorAndGoBack(KeyValues kv, Handle &hndl, bool isFatal, const
     else
         LogError(formatted);
 
-    delete hndl;
+    Service_Delete(hndl);
 
     kv.GoBack();
     return false;
@@ -455,9 +455,19 @@ static bool ProcessWeapons(KeyValues kv, Service svc, bool fatalError, const cha
     if (!kv.JumpToKey("Advanced Weapons Menu"))
         return HandleError(svc, fatalError, "Service \"%s\" is missing section \"Advanced Weapons Menu\".", serviceName);
         
-    Menu menu = WeaponMenu_BuildSelectionsFromConfig(kv, serviceName);
+    Menu menu;
+    ArrayList weapons;
+    
+    WeaponMenu_BuildSelectionsFromConfig(kv, serviceName, menu, weapons);
+
+    // Make sure handles get deleted by HandleErrorAndGoBack.
+    svc.WeaponMenu = menu;
+    svc.Weapons = weapons;
+
     if (menu == null)
-        return HandleErrorAndGoBack(kv, svc, fatalError, "Failed to build menu for service \"%s\"", serviceName);
+        return HandleErrorAndGoBack(kv, svc, fatalError, "Failed to build menu for service \"%s\"", serviceName);   
+    if (weapons == null)
+        return HandleErrorAndGoBack(kv, svc, fatalError, "Failed to build weapons list for service \"%s\"", serviceName);
 
     svc.WeaponMenu = menu;
 
