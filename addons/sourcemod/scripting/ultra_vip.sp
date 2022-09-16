@@ -18,6 +18,7 @@
 #include <sourcemod>
 #include <multicolors>
 #include <sdktools>
+#include <cstrike>
 
 #pragma newdecls required
 #pragma semicolon 1
@@ -25,6 +26,7 @@
 #define PLUGIN_VERSION "0.1"
 
 #define MAX_WEAPON_CLASSNAME_SIZE 24 // https://wiki.alliedmods.net/Counter-Strike:_Global_Offensive_Weapons
+#define MAX_SERVICE_NAME_SIZE 64
 
 ArrayList g_Services;
 ArrayList g_SortedServiceFlags;

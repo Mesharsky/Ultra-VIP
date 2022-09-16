@@ -15,6 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#pragma newdecls required
+#pragma semicolon 1
+
 enum WeaponType
 {
     Weapon_Rifle = 0,
@@ -46,16 +49,6 @@ enum struct WeaponLoadout
     }
 }
 
-static void GiveLoadoutIfAllowed(int client, WeaponLoadout weapons, Service svc)
-{
-    if (svc.IsWeaponAllowed(s_PreviousWeapon[client].primary))
-        GivePlayerItem(client, s_PreviousWeapon[client].primary);
-
-    if (svc.IsWeaponAllowed(s_PreviousWeapon[client].secondary))
-        GivePlayerItem(client, s_PreviousWeapon[client].secondary);
-}
-
-
 // Size of string output by EncodeMenuItem(). Fits:
 // - Weapon type (zero-padded hex)
 // - Team (zero-padded hex)
@@ -70,6 +63,15 @@ static WeaponLoadout s_PreviousWeapon[MAXPLAYERS + 1];
 
 static WeaponType s_SelectionList[MAXPLAYERS + 1] = { Weapon_Rifle, ... };
 
+static void GiveLoadoutIfAllowed(int client, WeaponLoadout weapons, Service svc)
+{
+    if (svc.IsWeaponAllowed(s_PreviousWeapon[client].primary))
+        GivePlayerItem(client, s_PreviousWeapon[client].primary);
+
+    if (svc.IsWeaponAllowed(s_PreviousWeapon[client].secondary))
+        GivePlayerItem(client, s_PreviousWeapon[client].secondary);
+}
+
 void SetPreviousWeapons(int client, WeaponLoadout loadout)
 {
     s_PreviousWeapon[client] = loadout;
@@ -77,7 +79,7 @@ void SetPreviousWeapons(int client, WeaponLoadout loadout)
 
 void ResetPreviousWeapons(int client)
 {
-    s_PreviousWeapon[client].Reset();
+    s_PreviousWeapon[client].Reset(); 
 }
 
 void DisplayWeaponMenu(int client, Service weaponListService)
@@ -86,11 +88,11 @@ void DisplayWeaponMenu(int client, Service weaponListService)
     {
         s_WeaponMenu = new Menu(WeaponMenu_Handler, MENU_ACTIONS_ALL);
 
-        menu.Pagination = false;
-        menu.ExitButton = true;
+        s_WeaponMenu.Pagination = false;
+        s_WeaponMenu.ExitButton = true;
 
-        menu.AddItem("NEW", "Weapon Menu New"); // Translation phrase
-        menu.AddItem("PREVIOUS", "Weapon Menu Previous");
+        s_WeaponMenu.AddItem("NEW", "Weapon Menu New"); // Translation phrase
+        s_WeaponMenu.AddItem("PREVIOUS", "Weapon Menu Previous");
     }
 
     s_WeaponListService[client] = weaponListService;
@@ -149,20 +151,14 @@ public int WeaponMenu_Handler(Menu menu, MenuAction action, int param1, int para
                 if (!IsServiceHandleValid(s_WeaponListService[param1]))
                     return 0;
 
-                Menu listMenu = s_WeaponListService[param1].WeaponMenu;
-                if (listMenu != null)
-                    listMenu.Display(param1, MENU_TIME_FOREVER);
+                DisplayWeaponList(param1);    
             }
             else if (StrEqual(info, "PREVIOUS"))
             {
                 if(!s_PreviousWeapon[param1].IsSet())
                     return 0;
 
-                Service svc = GetClientService(param1);
-                if(svc == null)
-                    return 0;
-
-                GiveLoadoutIfAllowed(param1, s_PreviousWeapon[param1], svc);      
+                GiveLoadoutIfAllowed(param1, s_PreviousWeapon[param1], s_WeaponListService[param1]);      
             }
         }
     }
@@ -251,7 +247,7 @@ void WeaponMenu_BuildSelectionsFromConfig(KeyValues kv, const char[] serviceName
     return;
 }
 
-void GetWeaponMenuItem(KeyValues kv, WeaponMenuItem outputItem)
+static void GetWeaponMenuItem(KeyValues kv, WeaponMenuItem outputItem)
 {
     char buffer[MAX_WEAPON_CLASSNAME_SIZE];
 
@@ -302,23 +298,99 @@ public int WeaponSelection_Handler(Menu menu, MenuAction action, int param1, int
             if(item.weaponType != s_SelectionList[param1])
                 return ITEMDRAW_IGNORE;
 
+            if(!CanPurchaseWeapon(param1, item))
+                return ITEMDRAW_DISABLED;    
+
             return ITEMDRAW_DEFAULT;    
         }
 
         case MenuAction_DisplayItem:
         {
-            #error add price
+            char info[ENCODED_WEAPONITEM_SIZE];
+            char display[64];
+
+            menu.GetItem(param2, info, sizeof(info), _, display, sizeof(display));
+            
+            WeaponMenuItem item;
+            if(!DecodeMenuInfo(info, item))
+                SetFailState("Decoding weapon menu item failed");
+            
+            if(item.price > 0)
+            {
+                Format(display, sizeof(display), "%T", "Weapon Item Price", param1, display, item.price);
+                return RedrawMenuItem(display);
+            }  
+
+            return 0;
         }
 
         case MenuAction_Select:
         {
-            #error needs to be done
+            char info[ENCODED_WEAPONITEM_SIZE];
+            menu.GetItem(param2, info, sizeof(info));
+
+            WeaponMenuItem item;
+            if(!DecodeMenuInfo(info, item))
+                SetFailState("Decoding weapon menu item failed");
+
+            if(CanPurchaseWeapon(param1, item))
+            {
+                PurchaseWeapon(param1, item);
+                
+                if(GoToNextSelectionList(param1))
+                    DisplayWeaponList(param1);
+            }    
+            else
+                LogError("Selected weapon {%s} when CanPurchaseWeapon is false", item.classname);  
         }
     }
 
     return 0;
 }
 
+static void DisplayWeaponList(int client)
+{
+    Menu listMenu = s_WeaponListService[client].WeaponMenu;
+    if (listMenu != null)
+        listMenu.Display(client, MENU_TIME_FOREVER);
+}
+
+static bool GoToNextSelectionList(int client)
+{
+    if (s_SelectionList[client] == Weapon_Rifle)
+    {
+        s_SelectionList[client] = Weapon_Pistol;
+        return true;
+    }
+
+    return false;
+}
+
+static bool CanPurchaseWeapon(int client, WeaponMenuItem item)
+{
+    if(!IsClientInGame(client) || !IsPlayerAlive(client))
+        return false;
+
+    Service svc = s_WeaponListService[client];    
+    if(!svc.IsWeaponAllowed(item.classname))
+        return false;   
+
+    int team = GetClientTeam(client);
+    if((team != CS_TEAM_CT && team != CS_TEAM_T) || team != item.team)
+        return false;
+
+    int money = GetEntProp(client, Prop_Send, "m_iAccount");
+    if (money < item.price)
+        return false;
+
+    return true;
+}
+
+static void PurchaseWeapon(int client, WeaponMenuItem item)
+{
+    GivePlayerItem(client, item.classname);
+    RemovePlayerMoney(client, item.price);
+}
 
 static void EncodeMenuInfo(const WeaponMenuItem item, char[] output, int size)
 {
@@ -328,7 +400,7 @@ static void EncodeMenuInfo(const WeaponMenuItem item, char[] output, int size)
         item.weaponType,
         item.team,
         item.price,
-        classname);
+        item.classname);
 }
 
 static bool DecodeMenuInfo(const char[] info, WeaponMenuItem outputItem)
@@ -345,10 +417,6 @@ static bool DecodeMenuInfo(const char[] info, WeaponMenuItem outputItem)
     return true;
 }
 
-
-#error have i forgotten to delete any handles somewhere. maybe.
-
-#error README
 /*
     - The "round" variables will be stored per weapon
     - The build function will get them itself for each weapon type,

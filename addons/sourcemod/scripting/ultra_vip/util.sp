@@ -15,6 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#pragma newdecls required
+#pragma semicolon 1
+
 Service FindServiceByName(const char[] name)
 {
     char buffer[MAX_SERVICE_NAME_SIZE];
@@ -61,6 +64,14 @@ void SplitIntoStringMap(StringMap output, const char[] str, const char[] split, 
     }
 }
 
+void RemovePlayerMoney(int client, int amount)
+{
+    int money = GetEntProp(client, Prop_Send, "m_iAccount");
+
+    money -= amount;
+    SetEntProp(client, Prop_Send, "m_iAccount", money);
+}
+
 bool StrEndsWith(const char[] str, const char[] ending, bool caseSensitive = true)
 {
     int len = strlen(str);
@@ -80,4 +91,43 @@ int NStringToInt(const char[] str, int length, int base = 10)
     strcopy(buffer, length, str);
 
     return StringToInt(buffer, base);
+}
+
+int GetCSTeamFromString(const char[] team)
+{
+    // ugly but works!
+    int len = strlen(team) + 1;
+
+    char[] buffer = new char[len];
+
+    strcopy(buffer, len, team);
+    TrimString(buffer);
+
+    // TODO: REPLACE WITH REGEX
+    if(StrEqual(team, "CT", false))
+        return CS_TEAM_CT;
+
+    if(StrEqual(team, "Counter-Terrorist", false))
+        return CS_TEAM_CT;
+
+    if(StrEqual(team, "Counter-Terrorists", false))
+        return CS_TEAM_CT;    
+
+    if(StrEqual(team, "Counter Terrorist", false))
+        return CS_TEAM_CT;
+
+    if(StrEqual(team, "Counter Terrorists", false))
+        return CS_TEAM_CT;          
+
+    if(StrEqual(team, "TT", false))
+        return CS_TEAM_T;
+
+    if(StrEqual(team, "T", false))
+        return CS_TEAM_T;
+
+    if(StrEqual(team, "Terrorist", false))
+        return CS_TEAM_T;
+
+    if(StrEqual(team, "Terrorists", false))
+        return CS_TEAM_T;              
 }

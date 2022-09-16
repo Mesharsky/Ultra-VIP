@@ -1,1 +1,7 @@
 ﻿
+
+"Weapon Item Price"
+{
+    "format"    ""
+    "en"    ""
+}

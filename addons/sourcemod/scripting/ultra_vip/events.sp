@@ -15,20 +15,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/////////////////////////////////////////////////////////
-/*
-            -> NORMAL MODE
-*/
-////////////////////////////////////////////////////////
+#pragma newdecls required
+#pragma semicolon 1
+
 public void Event_PlayerSpawn(Event event, const char[] name, bool bDontBroadcast)
 {
     int client = GetClientOfUserId(event.GetInt("userid"));
 
     PlayerSpawnApplyBonuses(client);    
-    /*
-        Arena mode uses a special forward for Player_Spawn. So we won't be applying bonuses in this event.  
-    */
-
 }
 
 void PlayerSpawnApplyBonuses(int client)

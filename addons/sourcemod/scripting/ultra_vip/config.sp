@@ -15,6 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#pragma newdecls required
+#pragma semicolon 1
+
 char g_ChatTag[64];
 bool g_UseOnlineList;
 StringMap g_OnlineListCommands;
@@ -25,8 +28,6 @@ static int s_UsedServiceFlags;
 
 #define ONLINE_CMD_SEPARATOR ";"
 #define ONLINE_CMD_STRING_MAXLENGTH 512
-
-#define MAX_SERVICE_NAME_SIZE 64
 
 // Struct used purely for sorting purposes in BuildFlagsList()
 enum struct FlagPriority
@@ -164,7 +165,7 @@ static bool GetGlobalConfiguration(KeyValues kv, bool fatalError)
     char buffer[ONLINE_CMD_STRING_MAXLENGTH + 2];
     kv.GetString("online_list_commands", buffer, sizeof(buffer));
     if (strlen(buffer) >= ONLINE_CMD_STRING_MAXLENGTH)
-        return HandleError(kv, fatalError, "\"online_list_commands\" is too long (Max %i characters).", ONLINE_CMD_STRING_MAX);
+        return HandleError(kv, fatalError, "\"online_list_commands\" is too long (Max %i characters).", ONLINE_CMD_STRING_MAXLENGTH);
 
     SplitIntoStringMap(g_OnlineListCommands, buffer, ONLINE_CMD_SEPARATOR);
 
