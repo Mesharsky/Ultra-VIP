@@ -20,6 +20,7 @@
 
 enum WeaponType
 {
+    Weapon_Invalid = -1,
     Weapon_Rifle = 0,
     Weapon_Pistol
 }
@@ -61,7 +62,7 @@ static Menu s_WeaponMenu;
 static Service s_WeaponListService[MAXPLAYERS + 1];
 static WeaponLoadout s_PreviousWeapon[MAXPLAYERS + 1];
 
-static WeaponType s_SelectionList[MAXPLAYERS + 1] = { Weapon_Rifle, ... };
+static WeaponType s_SelectionList[MAXPLAYERS + 1] = { Weapon_Invalid, ... };
 
 static void GiveLoadoutIfAllowed(int client, WeaponLoadout weapons, Service svc)
 {
@@ -355,16 +356,28 @@ static void DisplayWeaponList(int client)
         listMenu.Display(client, MENU_TIME_FOREVER);
 }
 
-static bool GoToNextSelectionList(int client)
+static bool GoToNextSelectionList(int client, Service svc)
 {
-    if (s_SelectionList[client] == Weapon_Rifle)
+    // Go to the next selection list that is allowed, checking in the order
+    // we want each list/menu to appear in the cycle (assuming each is allowed)
+
+#assert Weapon_Invalid < Weapon_Rifle
+    if (s_SelectionList[client] < Weapon_Rifle && IsRoundAllowed(svc.RifleWeaponsRound))
+    {
+        s_SelectionList[client] = Weapon_Rifle;
+        return true;
+    }
+
+#assert Weapon_Rifle < Weapon_Pistol
+    if (s_SelectionList[client] < Weapon_Pistol && IsRoundAllowed(svc.PistolWeaponsRound))
     {
         s_SelectionList[client] = Weapon_Pistol;
         return true;
     }
 
+    s_SelectionList[client] = Weapon_Invalid;
     return false;
-}
+} 
 
 static bool CanPurchaseWeapon(int client, WeaponMenuItem item)
 {
