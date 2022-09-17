@@ -22,10 +22,35 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool bDontBroadcas
 {
     int client = GetClientOfUserId(event.GetInt("userid"));
 
-    PlayerSpawnApplyBonuses(client);    
+    Service svc = GetClientService(client);
+    if (svc == null)
+        return;
+
+    if (IsRoundAllowed(svc.BonusPlayerHealthRound))
+        SetPlayerHealth(client, svc.BonusPlayerHealth, svc);
+
+    if(svc.BonusArmorEnabled && IsRoundAllowed(svc.BonusArmorRound))
+        SetEntProp(client, Prop_Send, "m_ArmorValue", svc.BonusArmorValue);
+
+    if(svc.BonusHelmetEnabled && IsRoundAllowed(svc.BonusHelmetRound))
+        SetEntProp(client, Prop_Send, "m_bHasHelmet", 1);
+
+    if (svc.BonusDefuserEnabled && IsRoundAllowed(svc.BonusDefuserRound) && CanGiveDefuser(client))
+        GivePlayerItem(client, "item_defuser");
+
+    if(IsRoundAllowed(svc.BonusSpawnMoneyRound))
+    {
+        int value = svc.BonusSpawnMoney;
+        SetClientMoney(client, GetClientMoney(client) + value);
+        if(svc.BonusSpawnMoneyNotify)
+            CPrintToChat(client, "%s %t", g_ChatTag, "Bonus Spawn Money", value);
+    }    
+
+    DisplayWeaponMenu(client, svc);
+    GiveGrenades(client, svc);   
 }
 
-void PlayerSpawnApplyBonuses(int client)
+void GiveGrenades(int client, Service svc)
 {
 
 }

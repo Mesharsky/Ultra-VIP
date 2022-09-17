@@ -75,6 +75,11 @@ methodmap Service < StringMap
         public get() { return Service_GetCell(this, "player_hp", 105); }
         public set(int value) { this.SetValue("player_hp", value); }
     }
+    property int BonusPlayerHealthRound
+    {
+        public get() { return Service_GetCell(this, "player_hp_round", 1); }
+        public set(int value) { this.SetValue("player_hp_round", value); }
+    }
     property int BonusMaxPlayerHealth
     {
         public get() { return Service_GetCell(this, "player_max_hp", 110); }

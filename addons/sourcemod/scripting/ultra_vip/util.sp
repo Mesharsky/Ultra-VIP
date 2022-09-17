@@ -93,6 +93,37 @@ int NStringToInt(const char[] str, int length, int base = 10)
     return StringToInt(buffer, base);
 }
 
+bool CanGiveDefuser(int client)
+{
+    if (!IsClientInGame(client) || !IsPlayerAlive(client))
+        return false;
+    if (GetClientTeam(client) == CS_TEAM_CT)
+        return false;
+    if (GetEntProp(client, Prop_Send, "m_bHasDefuser"))   
+        return false;
+
+    return true;     
+}
+
+int SetPlayerHealth(int client, int value, Service svc)
+{
+    int max = svc.BonusMaxPlayerHealth;
+    if (value > max)
+        value = max;
+
+    SetEntityHealth(client, value);
+}
+
+int GetClientMoney(int client)
+{
+    return GetEntProp(client, Prop_Send, "m_iAccount");
+}
+
+int SetClientMoney(int client, int value)
+{
+    SetEntProp(client, Prop_Send, "m_iAccount", value);
+}
+
 int GetCSTeamFromString(const char[] team)
 {
     // ugly but works!
@@ -129,5 +160,7 @@ int GetCSTeamFromString(const char[] team)
         return CS_TEAM_T;
 
     if(StrEqual(team, "Terrorists", false))
-        return CS_TEAM_T;              
+        return CS_TEAM_T; 
+
+    return CS_TEAM_NONE;                 
 }

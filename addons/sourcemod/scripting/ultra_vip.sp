@@ -33,6 +33,8 @@ ArrayList g_SortedServiceFlags;
 
 ConVar g_Cvar_ArenaMode;
 
+int g_RoundCount;
+
 #include "ultra_vip/util.sp"
 #include "ultra_vip/config.sp"
 #include "ultra_vip/service.sp"
@@ -78,6 +80,11 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     return APLRes_Success;
 }
 
+public void OnMapStart()
+{
+	g_RoundCount = 0;
+}
+
 public void OnConfigsExecuted()
 {
     
@@ -104,6 +111,11 @@ public Action Command_ReloadServices(int client, int args)
 	}
 
 	return Plugin_Handled;	
+}
+
+int IsRoundAllowed(int round)
+{
+	return round => g_RoundCount;
 }
 
 bool IsServiceHandleValid(Handle hndl)
