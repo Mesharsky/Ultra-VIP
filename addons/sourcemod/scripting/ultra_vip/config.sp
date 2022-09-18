@@ -23,6 +23,7 @@ bool g_UseOnlineList;
 StringMap g_OnlineListCommands;
 bool g_DeathmatchMode;
 int g_RootServiceFlag;
+StringMap g_SteamIDServices;    // Maps SteamID2 to Service handle (g_Services)
 
 static int s_UsedServiceFlags;
 
@@ -40,6 +41,9 @@ static void ResetAllServices()
 {
     g_SortedServiceFlags.Clear();
     s_UsedServiceFlags = 0;
+
+    delete g_SteamIDServices;
+    g_SteamIDServices = new StringMap();
 
     int len = g_Services.Length;
     for(int i = 0; i < len; ++i)
@@ -214,9 +218,61 @@ static bool ProcessMainConfiguration(KeyValues kv, Service svc, bool fatalError,
     if (buffer[0])
         svc.SetScoreboardTag(buffer);   
 
-    Config_ProcessSteamIDAccess(kv);    
+    if (!Config_ProcessSteamIDAccess(kv, svc, serviceName))
+    {
+        Config_RemoveSteamIDsForService(svc);
+        return false;
+    }
 
     kv.GoBack(); // To service name
+    return true;
+}
+
+static bool Config_ProcessSteamIDAccess(KeyValues kv, Service svc, const char[] serviceName)
+{
+    if (!kv.JumpToKey("SteamID Access"))
+        return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is missing secttion \"SteamID Access\".", serviceName);
+
+    if (!kv.GotoFirstSubKey())
+    {
+        kv.GoBack(); // To "Main Configuration"
+        return true;
+    }
+
+    char auth[MAX_AUTHID_LENGTH];
+    do
+    {
+        kv.GetString("steamid2", auth, sizeof(auth));
+        if (auth[0])
+            g_SteamIDServices.SetValue(auth, svc);
+
+    } while (kv.GotoNextKey());
+
+    kv.GoBack(); // To SteamID Access
+    kv.GoBack(); // To "Main Configuration"
+    return true;
+}
+
+static void Config_RemoveSteamIDsForService(Service svc)
+{
+    StringMapSnapshot snap = g_SteamIDServices.SnapShot();
+
+    char auth[MAX_AUTHID_LENGTH];
+    int len = snap.Length;
+    Service value;
+
+    for (int i = 0; i < len; ++i)
+    {
+        snap.GetKey(i, auth, sizeof(auth));
+
+        if (!g_SteamIDServices.GetValue(auth, value))
+            continue;
+
+        if (svc == value)
+            g_SteamIDServices.Remove(auth);
+    }
+
+    delete snap;
 }
 
 static bool ProcessPlayerSpawnBonuses(KeyValues kv, Service svc, bool fatalError, const char[] serviceName)
@@ -253,6 +309,7 @@ static bool ProcessPlayerSpawnBonuses(KeyValues kv, Service svc, bool fatalError
     svc.BonusTacticalGrenadesRound = kv.GetNum("BonusTacticalGrenadesRound", 1);
 
     kv.GoBack(); // To service name
+    return true;
 }
 
 static bool ProcessSpecialBonuses(KeyValues kv, Service svc, bool fatalError, const char[] serviceName)
@@ -291,6 +348,7 @@ static bool ProcessSpecialBonuses(KeyValues kv, Service svc, bool fatalError, co
     svc.BonusUnlimitedAmmoRound = kv.GetNum("player_unlimited_ammo_round", 1);
 
     kv.GoBack(); // Service name
+    return true;
 }
 
 static bool ProcessEventMoneyBonuses(KeyValues kv, Service svc, bool fatalError, const char[] serviceName)
@@ -351,6 +409,7 @@ static bool ProcessEventMoneyBonuses(KeyValues kv, Service svc, bool fatalError,
 
     kv.GoBack(); // Events Bonuses
     kv.GoBack(); // Service Name
+    return true;
 }
 
 static bool ProcessEventHPBonuses(KeyValues kv, Service svc, bool fatalError, const char[] serviceName)
@@ -390,7 +449,8 @@ static bool ProcessEventHPBonuses(KeyValues kv, Service svc, bool fatalError, co
     svc.BonusNoscopeHPNotify = view_as<bool>(kv.GetNum("noscope_hp_bonus_chat", 0));
 
     kv.GoBack(); // Events Bonuses
-    kv.GoBack(); // Service name    
+    kv.GoBack(); // Service name
+    return true;
 }
 
 static bool ProcessChatWelcomeLeaveMessages(KeyValues kv, Service svc, bool fatalError, const char[] serviceName)
@@ -417,6 +477,7 @@ static bool ProcessChatWelcomeLeaveMessages(KeyValues kv, Service svc, bool fata
 
     kv.GoBack(); // Welcome and Leave Messages 
     kv.GoBack(); // Service Name
+    return true;
 }
 
 static bool ProcessHudWelcomeLeaveMessages(KeyValues kv, Service svc, bool fatalError, const char[] serviceName)
@@ -449,6 +510,7 @@ static bool ProcessHudWelcomeLeaveMessages(KeyValues kv, Service svc, bool fatal
 
     kv.GoBack(); // Welcome and Leave Messages
     kv.GoBack(); // Service Name
+    return true;
 }
 
 static bool ProcessWeapons(KeyValues kv, Service svc, bool fatalError, const char[] serviceName)
@@ -484,7 +546,8 @@ static bool ProcessWeapons(KeyValues kv, Service svc, bool fatalError, const cha
 
     svc.PistolWeaponsRound = kv.GetNum("pistols_menu_round", 1);
 
-    kv.GoBack();   
+    kv.GoBack();
+    return true;
 }
 
 /**
@@ -539,6 +602,5 @@ int SortHighestFlagPriority(int index1, int index2, ArrayList array, Handle hndl
         return -1;
     else if (data1.priority == data2.priority)
         return 0;
-    else
-        return 1;
+    return 1;
 }
