@@ -80,7 +80,9 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool bDontBroadcas
 
     if(svc.BonusPlayerShield && IsRoundAllowed(svc.BonusPlayerShieldRound))
     {
-        if(!PlayerHasItem(client, "weapon_shield"))
+        int weapon = GetPlayerWeapon(client, CSWeapon_SHIELD);
+
+        if (weapon == -1)
             GivePlayerItem(client, "weapon_shield");
     }
 
@@ -97,24 +99,114 @@ public void Event_PlayerDeath(Event event, const char[] name, bool bDontBroadcas
 {
     int victim = GetClientOfUserId(event.GetInt("userid"));
     int attacker = GetClientOfUserId(event.GetInt("attacker"));
+    int assister = GetClientOfUserId(event.GetInt("assister"));
 
     bool headshot = event.GetBool("headshot", false);
+    bool noscope = event.GetBool("noscope", false);
+
+    char weapon[MAX_WEAPON_CLASSNAME_SIZE];
+    event.GetString("weapon", weapon, sizeof(weapon));
 
     ExtraJump_OnPlayerDeath(victim);
 
-    Service svc = GetClientService(attacker);
+    // Probably i should (MAKE A FUNCTION) but fuck it....
+    Service svcAttacker = GetClientService(attacker);
+    Service svcAssister = GetClientService(assister);
 
-    if (svc == null)
+    if (svcAttacker == null || svcAssister == null)
         return;
 
     if (attacker == 0 || attacker == victim)
         return;
 
     if (!g_BotsGrantBonuses && (victim == 0 || IsFakeClient(victim)))
-        return;    
+        return;
 
     if(ClientsAreTeammates(attacker, victim))
-        return;        
+        return;
+
+    AwardMoneyBonuses(attacker, assister, headshot, noscope, weapon, svcAttacker, svcAssister);
+    AwardHPBonuses(attacker, assister, headshot, noscope, weapon, svcAttacker, svcAssister);
+}
+
+void AwardMoneyBonuses(int attacker, int assister, bool headshot, bool noscope, char[] weapon, Service svcAttacker, Service svcAssister)
+{
+    if (IsRoundAllowed(svcAttacker.BonusKillMoneyRound))
+    {
+        int value = svcAttacker.BonusKillMoney;
+        if (value > 0)
+        {
+            SetClientMoney(attacker, GetClientMoney(attacker) + value);
+            if (svcAttacker.BonusKillMoneyNotify)
+                CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus Kill Money", value);
+        }       
+    }
+    if (IsRoundAllowed(svcAssister.BonusAssistMoneyRound))
+    {
+        int value = svcAssister.BonusAssistMoney;
+        if (value > 0)
+        {
+            SetClientMoney(assister, GetClientMoney(assister) + value);
+            if (svcAssister.BonusAssistMoneyNotify)
+                CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus Assists Money", value);
+        }
+    }
+    if (headshot && IsRoundAllowed(svcAttacker.BonusHeadshotMoneyRound))
+    {
+        int value = svcAttacker.BonusHeadshotMoney;
+        if (value > 0)
+        {
+            SetClientMoney(attacker, GetClientMoney(attacker) + value);
+            if (svcAttacker.BonusHeadshotMoneyNotify)
+                CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus Headshot Money", value);
+        }
+    }
+    if (IsWeaponKnife(weapon) && IsRoundAllowed(svcAttacker.BonusKnifeMoneyRound))
+    {
+        int value = svcAttacker.BonusKnifeMoney;
+        if (value > 0)
+        {
+            SetClientMoney(attacker, GetClientMoney(attacker) + value);
+            if (svcAttacker.BonusKnifeMoneyNotify)
+                CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus Knife Money", value);
+        }
+    }
+    // maybe some function for that? idk
+    if (StrContains(weapon, "taser") != -1 && IsRoundAllowed(svcAttacker.BonusZeusMoneyRound))
+    {
+        int value = svcAttacker.BonusZeusMoney;
+        if (value > 0)
+        {
+            SetClientMoney(attacker, GetClientMoney(attacker) + value);
+            if (svcAttacker.BonusZeusMoneyNotify)
+                CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus Zeus Money", value);
+        }
+    }
+    if (noscope && IsRoundAllowed(svcAttacker.BonusNoscopeMoneyRound))
+    {
+        int value = svcAttacker.BonusNoscopeMoney;
+        if (value > 0)
+        {
+            SetClientMoney(attacker, GetClientMoney(attacker) + value);
+            if (svcAttacker.BonusNoscopeMoneyNotify)
+                CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus NoScope Money", value);
+        }
+    }
+    // how to proceed with grenade stuff?
+}
+
+void AwardHPBonuses(int attacker, int assister, bool headshot, bool noscope, char[] weapon, Service svcAttacker, Service svcAssister)
+{
+    if (IsRoundAllowed(svcAttacker.BonusKillHPRound))
+    {
+        int value = svcAttacker.BonusKillHP;
+        if (value > 0)
+        {
+            SetPlayerHealth(attacker, GetClientHealth(attacker) + value, svcAttacker);
+            if (svcAttacker.BonusKillHPNotify)
+                CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus Kill HP", value);
+        }
+    }
 }
 
 public void Event_BombPlanted(Event event, const char[] name, bool bDontBroadcast)
@@ -143,3 +235,4 @@ public Action Hook_OnTakeDamage(int client, int &attacker, int &inflictor, float
 
     return Plugin_Continue;    
 }
+

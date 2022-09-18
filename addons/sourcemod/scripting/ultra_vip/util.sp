@@ -208,9 +208,30 @@ void SetPlayerScoreBoardTag(int client, Service svc)
         CS_SetClientClanTag(client, buffer);
 }
 
-bool PlayerHasItem(int client, const char[] classname)
+// Credits bAddie for this lovely snippet.
+int GetPlayerWeapon(int client, CSWeaponID wepid) 
 {
-    return false;
+    int maxWeapons = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
+    for (int i; i < maxWeapons; i++)
+    {
+        int weapon = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i);
+        if (weapon != -1) 
+        {
+            int def = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
+            if (CS_ItemDefIndexToID(def) == wepid)
+                return weapon;
+        }
+    }
+
+    return -1;
+}
+
+bool IsWeaponKnife(const char[] class)
+{
+    if (StrContains(class, "knife", false) != -1 || StrContains(class, "bayonet", false) != -1)
+        return true;
+
+    return false;    
 }
 
 int GetCSTeamFromString(const char[] team)
