@@ -21,7 +21,8 @@
 char g_ChatTag[64];
 bool g_UseOnlineList;
 StringMap g_OnlineListCommands;
-bool g_DeathmatchMode;
+bool g_IsDeathmatchMode;
+bool g_BotsGrantBonuses;
 int g_RootServiceFlag;
 
 static int s_UsedServiceFlags;
@@ -156,7 +157,8 @@ static bool GetGlobalConfiguration(KeyValues kv, bool fatalError)
         return HandleError(kv, fatalError, "Missing \"chat_tag\" setting in config file.");
 
     g_UseOnlineList = view_as<bool>(kv.GetNum("online_list", 0));
-    g_DeathmatchMode = view_as<bool>(kv.GetNum("deathmatch_mode", 0));
+    g_IsDeathmatchMode = view_as<bool>(kv.GetNum("deathmatch_mode", 0));
+    g_BotsGrantBonuses = view_as<bool>(kv.GetNum("bots_grant_bonuses", 0));
 
     delete g_OnlineListCommands;
     g_OnlineListCommands = new StringMap();
@@ -260,8 +262,8 @@ static bool ProcessSpecialBonuses(KeyValues kv, Service svc, bool fatalError, co
     if (!kv.JumpToKey("Special Bonuses"))
         return HandleError(svc, fatalError, "Service \"%s\" is missing section \"Special Bonuses\".", serviceName);
 
-    svc.BonusDoubleJump = view_as<bool>(kv.GetNum("player_double_jump", 0)); 
-    svc.BonusDoubleJumpRound = kv.GetNum("player_double_jump_round", 1);   
+    svc.BonusExtraJumps = kv.GetNum("player_extra_jumps", 1); 
+    svc.BonusExtraJumpsRound = kv.GetNum("player_extra_jumps_round", 1);   
 
     svc.BonusPlayerShield = view_as<bool>(kv.GetNum("player_shield", 0));
     svc.BonusPlayerShieldRound = kv.GetNum("player_shield_round", 1);

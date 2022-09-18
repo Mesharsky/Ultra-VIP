@@ -201,15 +201,15 @@ methodmap Service < StringMap
         public set(int value) { this.SetValue("tag_grenade_round", value); }
     }
 
-    property bool BonusDoubleJump
+    property int BonusExtraJumps
     {
-        public get() { return Service_GetCell(this, "player_double_jump", false); }
-        public set(bool value) { this.SetValue("player_double_jump", value); }
+        public get() { return Service_GetCell(this, "player_extra_jumps", 1); }
+        public set(int value) { this.SetValue("player_extra_jumps", value); }
     }
-    property int BonusDoubleJumpRound
+    property int BonusExtraJumpsRound
     {
-        public get() { return Service_GetCell(this, "player_double_jump_round", 1); }
-        public set(int value) { this.SetValue("player_double_jump_round", value); }
+        public get() { return Service_GetCell(this, "player_extra_jumps_round", 1); }
+        public set(int value) { this.SetValue("player_extra_jumps_round", value); }
     }
 
     property bool BonusPlayerShield

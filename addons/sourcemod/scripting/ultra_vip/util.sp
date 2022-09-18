@@ -64,14 +64,6 @@ void SplitIntoStringMap(StringMap output, const char[] str, const char[] split, 
     }
 }
 
-void RemovePlayerMoney(int client, int amount)
-{
-    int money = GetEntProp(client, Prop_Send, "m_iAccount");
-
-    money -= amount;
-    SetEntProp(client, Prop_Send, "m_iAccount", money);
-}
-
 bool StrEndsWith(const char[] str, const char[] ending, bool caseSensitive = true)
 {
     int len = strlen(str);
@@ -93,6 +85,35 @@ int NStringToInt(const char[] str, int length, int base = 10)
     return StringToInt(buffer, base);
 }
 
+bool FloatEqual(float a, float b)
+{
+    float sum = a + b;
+    float product = a * b;
+    return (sum - product) < 0.00001; // Minimum value of FLT_EPSILON in C Standard
+}
+
+stock bool ClientsAreTeammates(int clientA, int clientB)
+{
+    if (clientA < 1 || clientA > MaxClients)
+        return false;
+    if (clientB < 1 || clientB > MaxClients)
+        return false;
+    if (!IsClientInGame(clientA) || !IsClientInGame(clientB))
+        return false;
+
+    if (g_IsDeathmatchMode)
+        return false;
+    return GetClientTeam(clientA) == GetClientTeam(clientB);
+}
+
+void RemovePlayerMoney(int client, int amount)
+{
+    int money = GetEntProp(client, Prop_Send, "m_iAccount");
+
+    money -= amount;
+    SetEntProp(client, Prop_Send, "m_iAccount", money);
+}
+
 bool CanGiveDefuser(int client)
 {
     if (!IsClientInGame(client) || !IsPlayerAlive(client))
@@ -103,6 +124,60 @@ bool CanGiveDefuser(int client)
         return false;
 
     return true;     
+}
+
+void SetPlayerVisibility(int client, int alpha)
+{
+    if (alpha >= 255)
+    {
+        alpha = 255;
+        SetEntityRenderMode(client, RENDER_NORMAL);
+    }    
+    else if (alpha <= 0)
+    {
+        alpha = 0;
+        SetEntityRenderMode(client, RENDER_NONE);
+    }
+    else
+        SetEntityRenderMode(client, RENDER_TRANSCOLOR);       
+
+    SetEntityRenderColorEx(client, -1, -1, -1, alpha); 
+}
+
+/**
+ * Modified SetEntityRenderColor that allows optional colour channels, preserving
+ * the existing values.
+ */
+stock void SetEntityRenderColorEx(int entity, int r=-1, int g=-1, int b=-1, int a=-1)
+{
+    static bool gotconfig = false;
+    static char prop[32];
+
+    if (!gotconfig)
+    {
+        GameData gc = new GameData("core.games");
+        bool exists = gc.GetKeyValue("m_clrRender", prop, sizeof(prop));
+        delete gc;
+
+        if (!exists)
+            strcopy(prop, sizeof(prop), "m_clrRender");
+
+        gotconfig = true;
+    }
+
+    int offset = GetEntSendPropOffs(entity, prop);
+
+    if (offset <= 0)
+        ThrowError("SetEntityRenderColor not supported by this mod");
+
+    if (r > -1)
+        SetEntData(entity, offset, r, 1, true);
+    if (g > -1)
+        SetEntData(entity, offset + 1, g, 1, true);
+    if (b > -1)
+        SetEntData(entity, offset + 2, b, 1, true);
+    if (a > -1)
+        SetEntData(entity, offset + 3, a, 1, true);
 }
 
 int SetPlayerHealth(int client, int value, Service svc)

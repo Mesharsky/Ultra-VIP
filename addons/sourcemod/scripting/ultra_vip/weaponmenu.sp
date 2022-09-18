@@ -356,19 +356,21 @@ static void DisplayWeaponList(int client)
         listMenu.Display(client, MENU_TIME_FOREVER);
 }
 
+#if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 11
+static_assert(Weapon_Invalid < Weapon_Rifle);
+static_assert(Weapon_Rifle < Weapon_Pistol);
+#endif
 static bool GoToNextSelectionList(int client, Service svc)
 {
     // Go to the next selection list that is allowed, checking in the order
     // we want each list/menu to appear in the cycle (assuming each is allowed)
 
-#assert Weapon_Invalid < Weapon_Rifle
     if (s_SelectionList[client] < Weapon_Rifle && IsRoundAllowed(svc.RifleWeaponsRound))
     {
         s_SelectionList[client] = Weapon_Rifle;
         return true;
     }
 
-#assert Weapon_Rifle < Weapon_Pistol
     if (s_SelectionList[client] < Weapon_Pistol && IsRoundAllowed(svc.PistolWeaponsRound))
     {
         s_SelectionList[client] = Weapon_Pistol;
@@ -377,7 +379,7 @@ static bool GoToNextSelectionList(int client, Service svc)
 
     s_SelectionList[client] = Weapon_Invalid;
     return false;
-} 
+}
 
 static bool CanPurchaseWeapon(int client, WeaponMenuItem item)
 {

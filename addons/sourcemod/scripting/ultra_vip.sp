@@ -35,12 +35,13 @@ ConVar g_Cvar_ArenaMode;
 
 int g_RoundCount;
 
-#include "ultra_vip/util.sp"
 #include "ultra_vip/config.sp"
 #include "ultra_vip/service.sp"
 #include "ultra_vip/events.sp"
 #include "ultra_vip/weaponmenu.sp"
 #include "ultra_vip/menus.sp"
+#include "ultra_vip/extrajump.sp"
+#include "ultra_vip/util.sp"
 
 Service g_ClientService[MAXPLAYERS +1];
 
@@ -71,6 +72,7 @@ public void OnPluginStart()
 	LoadConfig();
 }
 
+/*
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
     CreateNative("UltraVIP_GetService", Native_GetService);
@@ -79,6 +81,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     RegPluginLibrary("ultra_vip");
     return APLRes_Success;
 }
+*/
 
 public void OnMapStart()
 {
@@ -90,9 +93,21 @@ public void OnConfigsExecuted()
     
 }
 
+public void OnClientPostAdminCheck(int client)
+{
+	Service svc = GetClientService(client);
+
+	ExtraJump_OnClientPostAdminCheck(client, svc);
+}
+
 public void OnClientPutInServer(int client)
 {
 
+}
+
+public void OnClientDisconnect(int client)
+{
+	ExtraJump_OnClientDisconect(client);
 }
 
 public Action Command_ShowServices(int client, int args)
@@ -113,9 +128,15 @@ public Action Command_ReloadServices(int client, int args)
 	return Plugin_Handled;	
 }
 
+public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon)
+{
+    ExtraJump_OnPlayerRunCmd(client, buttons, impulse, vel, angles, weapon);
+    return Plugin_Continue;
+}
+
 int IsRoundAllowed(int round)
 {
-	return round => g_RoundCount;
+	return round >= g_RoundCount;
 }
 
 bool IsServiceHandleValid(Handle hndl)
