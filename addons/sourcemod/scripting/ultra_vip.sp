@@ -32,7 +32,7 @@
 ArrayList g_Services;
 ArrayList g_SortedServiceFlags;
 
-ConVar g_Cvar_ArenaMode;
+//ConVar g_Cvar_ArenaMode;
 
 int g_RoundCount;
 
@@ -60,6 +60,7 @@ public void OnPluginStart()
 	LoadTranslations("ultra_vip.phrases.txt");
 
 	RegConsoleCmd("sm_vips", Command_ShowServices);
+	RegConsoleCmd("sm_jumps", Command_ToggleJumps); //idk what to call that command or maybe commands through config?
 	RegAdminCmd("sm_reloadservices", Command_ReloadServices, ADMFLAG_ROOT, "Reloads configuration file");
 	
 	HookEvent("player_spawn", Event_PlayerSpawn);
@@ -68,7 +69,7 @@ public void OnPluginStart()
 	HookEvent("bomb_defused", Event_BombDefused);
 	HookEvent("round_start", Event_RoundStart);
 
-	g_Cvar_ArenaMode = CreateConVar("arena_mode", "0", "Should arena mode (splewis) be enabled?\nRemeber that plugin will use arena configuration file instead if enabled");
+	//g_Cvar_ArenaMode = CreateConVar("arena_mode", "0", "Should arena mode (splewis) be enabled?\nRemeber that plugin will use arena configuration file instead if enabled");
 
 	LoadConfig();
 }
@@ -121,10 +122,10 @@ public Action Command_ShowServices(int client, int args)
 public Action Command_ReloadServices(int client, int args)
 {
 	if(LoadConfig(false))
-		CReplyToCommand(client, "Config has been reloaded");
+		CReplyToCommand(client, "%t", "Config Reloaded");
 	else
 	{
-		CReplyToCommand(client, "There is some problem with reloading config file. Check for error logs");
+		CReplyToCommand(client, "%t", "Config Reload Error");
 		SetFailState("Failed to reload configuration file");
 	}
 
