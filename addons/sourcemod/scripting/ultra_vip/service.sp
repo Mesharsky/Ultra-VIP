@@ -679,12 +679,12 @@ methodmap Service < StringMap
 
     property Menu WeaponMenu
     {
-        public get() { return Service_GetCell(this, "weapon_menu", null); }
+        public get() { return Service_GetCell(this, "weapon_menu", 0); }
         public set(Menu value) { this.SetValue("weapon_menu", value); }
     }
     property ArrayList Weapons
     {
-        public get() { return Service_GetCell(this, "weapons_list", null); }
+        public get() { return Service_GetCell(this, "weapons_list", 0); }
         public set(ArrayList value) { this.SetValue("weapons_list", value); }
     }
 

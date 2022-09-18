@@ -48,7 +48,10 @@ static void ResetAllServices()
 
     int len = g_Services.Length;
     for(int i = 0; i < len; ++i)
-        delete g_Services.Get(i);
+    {
+        Service svc = g_Services.Get(i);
+        delete svc;
+    }
 }
 
 static bool HandleError(Handle &hndl, bool isFatal, const char[] fmt, any ...)
@@ -184,7 +187,7 @@ static bool GetGlobalConfiguration(KeyValues kv, bool fatalError)
             return HandleError(kv, fatalError, "\"root_service\" is set to an unknown service \"%s\"", buffer);
     }
     else
-        g_RootServiceFlag = rootSvc.ServiceFlag;
+        g_RootServiceFlag = rootSvc.Flag;
     return true;
 }
 
@@ -192,7 +195,7 @@ static bool GetGlobalConfiguration(KeyValues kv, bool fatalError)
 static bool ProcessMainConfiguration(KeyValues kv, Service svc, bool fatalError, const char[] serviceName)
 {
     if (!kv.JumpToKey("Main Configuration"))
-        return HandleError(kv, svc, fatalError, "Service \"%s\" is missing section \"Main Configuration\".", serviceName);    
+        return HandleError(svc, fatalError, "Service \"%s\" is missing section \"Main Configuration\".", serviceName);    
 
     char buffer[128];
 
@@ -210,7 +213,7 @@ static bool ProcessMainConfiguration(KeyValues kv, Service svc, bool fatalError,
 
     kv.GetString("override", buffer, sizeof(buffer));
     if (buffer[0])
-        svc.SetServiceOverride(buffer);
+        svc.SetOverride(buffer);
 
     kv.GetString("chat_tag", buffer, sizeof(buffer));
     if (buffer[0])
@@ -220,7 +223,7 @@ static bool ProcessMainConfiguration(KeyValues kv, Service svc, bool fatalError,
     if (buffer[0])
         svc.SetScoreboardTag(buffer);   
 
-    if (!Config_ProcessSteamIDAccess(kv, svc, serviceName))
+    if (!Config_ProcessSteamIDAccess(kv, svc, fatalError, serviceName))
     {
         Config_RemoveSteamIDsForService(svc);
         return false;
@@ -230,7 +233,7 @@ static bool ProcessMainConfiguration(KeyValues kv, Service svc, bool fatalError,
     return true;
 }
 
-static bool Config_ProcessSteamIDAccess(KeyValues kv, Service svc, const char[] serviceName)
+static bool Config_ProcessSteamIDAccess(KeyValues kv, Service svc, bool fatalError, const char[] serviceName)
 {
     if (!kv.JumpToKey("SteamID Access"))
         return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is missing secttion \"SteamID Access\".", serviceName);
@@ -257,7 +260,7 @@ static bool Config_ProcessSteamIDAccess(KeyValues kv, Service svc, const char[] 
 
 static void Config_RemoveSteamIDsForService(Service svc)
 {
-    StringMapSnapshot snap = g_SteamIDServices.SnapShot();
+    StringMapSnapshot snap = g_SteamIDServices.Snapshot();
 
     char auth[MAX_AUTHID_LENGTH];
     int len = snap.Length;

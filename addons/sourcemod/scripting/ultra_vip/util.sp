@@ -180,7 +180,7 @@ stock void SetEntityRenderColorEx(int entity, int r=-1, int g=-1, int b=-1, int 
         SetEntData(entity, offset + 3, a, 1, true);
 }
 
-int SetPlayerHealth(int client, int value, Service svc)
+void SetPlayerHealth(int client, int value, Service svc)
 {
     int max = svc.BonusMaxPlayerHealth;
     if (value > max)
@@ -194,7 +194,7 @@ int GetClientMoney(int client)
     return GetEntProp(client, Prop_Send, "m_iAccount");
 }
 
-int SetClientMoney(int client, int value)
+void SetClientMoney(int client, int value)
 {
     SetEntProp(client, Prop_Send, "m_iAccount", value);
 }

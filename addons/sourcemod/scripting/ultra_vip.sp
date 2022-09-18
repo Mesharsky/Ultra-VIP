@@ -130,7 +130,7 @@ public Action Command_ReloadServices(int client, int args)
 
 public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon)
 {
-    ExtraJump_OnPlayerRunCmd(client, buttons, impulse, vel, angles, weapon);
+    ExtraJump_OnPlayerRunCmd(client, buttons, vel);
     return Plugin_Continue;
 }
 

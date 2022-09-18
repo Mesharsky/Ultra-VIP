@@ -21,7 +21,7 @@
 static bool s_CanMultiJump[MAXPLAYERS + 1]; // Must set to false if player dies or disconnects
 static int s_MaxMultiJumps[MAXPLAYERS + 1];
 
-void ExtraJump_OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon)
+void ExtraJump_OnPlayerRunCmd(int client, int &buttons, float vel[3])
 {
     if (s_CanMultiJump[client])
     {
@@ -40,14 +40,13 @@ void ExtraJump_OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[
             else if (CanMultiJump(client, jumpCount[client]))
             {
                 ++jumpCount[client];
-                FakeJump(client);
+                FakeJump(client, vel);
             }
         }
 
         previousButtons[client] = buttons;
         previousFlags[client] = flags;
     }
-    return Plugin_Continue;
 }
 
 void ExtraJump_OnClientPostAdminCheck(int client, Service svc)
@@ -83,11 +82,8 @@ void ExtraJump_OnClientDisconect(int client)
     s_CanMultiJump[client] = false;
 }
 
-static void FakeJump(int client, float jumpHeight = 250.0)
+static void FakeJump(int client, float velocity[3], float jumpHeight = 250.0)
 {
-    float velocity[3];
-    GetEntPropVector(client, Prop_Data, "m_vecVelocity", velocity);
-
     velocity[2] = jumpHeight;
 
     TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, velocity);

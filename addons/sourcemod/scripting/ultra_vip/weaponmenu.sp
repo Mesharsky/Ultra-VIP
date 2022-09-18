@@ -66,11 +66,11 @@ static WeaponType s_SelectionList[MAXPLAYERS + 1] = { Weapon_Invalid, ... };
 
 static void GiveLoadoutIfAllowed(int client, WeaponLoadout weapons, Service svc)
 {
-    if (svc.IsWeaponAllowed(s_PreviousWeapon[client].primary))
-        GivePlayerItem(client, s_PreviousWeapon[client].primary);
+    if (svc.IsWeaponAllowed(weapons.primary))
+        GivePlayerItem(client, weapons.primary);
 
-    if (svc.IsWeaponAllowed(s_PreviousWeapon[client].secondary))
-        GivePlayerItem(client, s_PreviousWeapon[client].secondary);
+    if (svc.IsWeaponAllowed(weapons.secondary))
+        GivePlayerItem(client, weapons.secondary);
 }
 
 void SetPreviousWeapons(int client, WeaponLoadout loadout)
@@ -185,7 +185,7 @@ void WeaponMenu_BuildSelectionsFromConfig(KeyValues kv, const char[] serviceName
         "Rifles",
         "Pistols"
     };
-    char sectionStateKeys =
+    char sectionStateKeys[][] =
     {
         "rifles_menu_enabled",
         "pistols_menu_enabled"
@@ -338,7 +338,7 @@ public int WeaponSelection_Handler(Menu menu, MenuAction action, int param1, int
             {
                 PurchaseWeapon(param1, item);
                 
-                if(GoToNextSelectionList(param1))
+                if(GoToNextSelectionList(param1, s_WeaponListService[param1]))
                     DisplayWeaponList(param1);
             }    
             else
@@ -409,8 +409,6 @@ static void PurchaseWeapon(int client, WeaponMenuItem item)
 
 static void EncodeMenuInfo(const WeaponMenuItem item, char[] output, int size)
 {
-    int len = strlen(item.classname);
-
     FormatEx(output, size, "%08X%08X%08X%s",
         item.weaponType,
         item.team,
@@ -427,7 +425,7 @@ static bool DecodeMenuInfo(const char[] info, WeaponMenuItem outputItem)
     outputItem.weaponType = view_as<WeaponType>(NStringToInt(info, 8, 16));
     outputItem.team = NStringToInt(info[8], 8, 16);
     outputItem.price = NStringToInt(info[16], 8, 16);
-    strcopy(outputItem.className, sizeof(WeaponMenuItem::classname), info[24]);
+    strcopy(outputItem.classname, sizeof(WeaponMenuItem::classname), info[24]);
 
     return true;
 }
