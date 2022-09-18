@@ -21,6 +21,31 @@
 static bool s_CanMultiJump[MAXPLAYERS + 1]; // Must set to false if player dies or disconnects
 static int s_MaxMultiJumps[MAXPLAYERS + 1];
 
+// Players with service can toggle multijumps on/off.
+public Action Command_ToggleJumps(int client, int args)
+{
+    // i think it's janky code but will see.
+    Service svc = GetClientService(client);
+    if (svc == null)
+    {
+        CReplyToCommand(client, "%t", "Service Required Command");
+        return Plugin_Continue;
+    }
+
+    if (s_CanMultiJump[client])
+    {
+        s_CanMultiJump[client] = false;
+        CPrintToChat(client, "%t", "Multi Jump Off");
+    }    
+    else
+    {
+        s_CanMultiJump[client] = true;
+        CPrintToChat(client, "%t", "Multi Jump On");
+    }    
+
+    return Plugin_Handled;
+}
+
 void ExtraJump_OnPlayerRunCmd(int client, int &buttons, float vel[3])
 {
     if (s_CanMultiJump[client])
