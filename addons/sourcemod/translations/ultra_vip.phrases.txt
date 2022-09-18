@@ -1,7 +1,57 @@
-﻿
-
-"Weapon Item Price"
+﻿"Phrases"
 {
-    "format"    ""
-    "en"    ""
+    "Config Reloaded"
+    {
+        "en"    "Configuration file has been {green}Successfuly Reloaded"
+    }
+    "Config Reload Error"
+    {
+        "en"    "There is some problem with reloading configuration file. {darkred}Check for error logs""
+    }
+
+    "Weapon Menu Title"
+    {
+        "#format"   "{1:s}"
+        "en"    "Weapons Menu{1}Select one of the options below:"
+    }
+    "Weapon Menu New"
+    {
+        "en"    "Select New Weapons"
+    }
+    "Weapon Menu Previous"
+    {
+        "en"    "Get Previously Selected Weapons"
+    }
+    "Rifle Menu Title"
+    {
+        "en"    "Select your rifle:"
+    }
+    "Pistol Menu Title"
+    {
+        "en"    "Select your pistol:"
+    }
+    "Weapon Item Price"
+    {
+        "#format"    "{1:s},{2:i}"
+        "en"    "{1} ({2})"
+    }
+
+    "Service Required Command"
+    {
+        "en"    "You have {darkred}no permissions {default}to use this command."
+    }
+    "Multi Jump Off"
+    {
+        "en"    "You turned {darkred}OFF {default}MultiJumps. Use command again to {green}Enable"
+    }
+    "Multi Jump On"
+    {
+        "en"    "You turned {green}ON {default}MultiJumps. Use command again to {lightred}Disable"
+    }
+
+    "Bonus Spawn Money"
+    {
+        "#format"    "{1:i}"
+        "en"    "You got extra {green}{1}$.{default} Spend it wisely!"
+    }
 }

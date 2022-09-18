@@ -114,7 +114,7 @@ public int WeaponMenu_Handler(Menu menu, MenuAction action, int param1, int para
         {
             char buffer[255];
 
-            FormatEx(buffer, sizeof(buffer), "%T", "Weapon Menu Title", param1); 
+            FormatEx(buffer, sizeof(buffer), "%T", "Weapon Menu Title", param1, "\n"); 
 
             Panel panel = view_as<Panel>(param2);
             panel.SetTitle(buffer);
