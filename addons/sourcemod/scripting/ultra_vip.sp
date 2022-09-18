@@ -18,6 +18,7 @@
 #include <sourcemod>
 #include <multicolors>
 #include <sdktools>
+#include <sdkhooks>
 #include <cstrike>
 
 #pragma newdecls required
@@ -95,8 +96,9 @@ public void OnConfigsExecuted()
 
 public void OnClientPostAdminCheck(int client)
 {
-	Service svc = GetClientService(client);
+	SDKHook(client, SDKHook_OnTakeDamage, Hook_OnTakeDamage);
 
+	Service svc = GetClientService(client);
 	ExtraJump_OnClientPostAdminCheck(client, svc);
 }
 
@@ -107,6 +109,7 @@ public void OnClientPutInServer(int client)
 
 public void OnClientDisconnect(int client)
 {
+	SDKUnhook(client, SDKHook_OnTakeDamage, Hook_OnTakeDamage);
 	ExtraJump_OnClientDisconect(client);
 }
 

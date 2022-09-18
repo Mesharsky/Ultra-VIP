@@ -35,6 +35,8 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool bDontBroadcas
     if (svc == null)
         return;    
 
+    SetPlayerScoreBoardTag(client, svc);
+
     if (IsRoundAllowed(svc.BonusPlayerHealthRound))
         SetPlayerHealth(client, svc.BonusPlayerHealth, svc);
 
@@ -74,6 +76,12 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool bDontBroadcas
         SetClientMoney(client, GetClientMoney(client) + value);
         if(svc.BonusSpawnMoneyNotify)
             CPrintToChat(client, "%s %t", g_ChatTag, "Bonus Spawn Money", value);
+    }
+
+    if(svc.BonusPlayerShield && IsRoundAllowed(svc.BonusPlayerShieldRound))
+    {
+        if(!PlayerHasItem(client, "weapon_shield"))
+            GivePlayerItem(client, "weapon_shield");
     }
 
     DisplayWeaponMenu(client, svc);
@@ -117,4 +125,21 @@ public void Event_BombPlanted(Event event, const char[] name, bool bDontBroadcas
 public void Event_BombDefused(Event event, const char[] name, bool bDontBroadcast)
 {
 
+}
+
+public Action Hook_OnTakeDamage(int client, int &attacker, int &inflictor, float &damage, int &damagetype)
+{
+    Service svc = GetClientService(attacker|client);
+    if (svc == null)
+        return Plugin_Continue;
+
+    if(IsRoundAllowed(svc.BonusPlayerFallDamagePercentRound))
+    {
+        if(damagetype == DMG_FALL)
+        {
+
+        }
+    }
+
+    return Plugin_Continue;    
 }

@@ -199,6 +199,20 @@ void SetClientMoney(int client, int value)
     SetEntProp(client, Prop_Send, "m_iAccount", value);
 }
 
+void SetPlayerScoreBoardTag(int client, Service svc)
+{
+    char buffer[32];
+    svc.GetScoreboardTag(buffer, sizeof(buffer));
+    
+    if(buffer[0])
+        CS_SetClientClanTag(client, buffer);
+}
+
+bool PlayerHasItem(int client, const char[] classname)
+{
+    return false;
+}
+
 int GetCSTeamFromString(const char[] team)
 {
     // ugly but works!
