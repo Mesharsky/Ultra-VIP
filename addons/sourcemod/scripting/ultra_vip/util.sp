@@ -239,6 +239,24 @@ bool IsWeaponTaser(const char[] classname)
     return StrContains(classname, "taser") != -1;
 }
 
+bool IsWeaponGrenade(const char[] classname)
+{
+    if (StrContains(classname, "hegrenade", false) != -1 
+        || StrContains(classname, "smokegrenade", false) != -1 
+        || StrContains(classname, "flashbang", false) != -1
+        || StrContains(classname, "decoy", false) != -1 
+        || StrContains(classname, "molotov", false) != -1 
+        || StrContains(classname, "incgrenade", false) != -1 
+        || StrContains(classname, "breachcharge", false) != -1 
+        || StrContains(classname, "bumpmine", false) != -1 
+        || StrContains(classname, "snowball", false) != -1 
+        || StrContains(classname, "tagrenade", false) != -1)
+    {
+        return true;
+    }
+    return false;
+}
+
 int GetCSTeamFromString(const char[] team)
 {
     // ugly but works!

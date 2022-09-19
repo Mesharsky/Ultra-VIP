@@ -18,6 +18,8 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+#include "bonuses.sp"
+
 public void Event_RoundStart(Event event, const char[] name, bool bDontBroadcast)
 {
 
@@ -35,62 +37,22 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool bDontBroadcas
     if (svc == null)
         return;
 
-    SetPlayerScoreBoardTag(client, svc);
+    Bonus_SetPlayerScoreBoardTag(client, svc);
+    Bonus_SetPlayerHealth(client, svc);
 
-    if (IsRoundAllowed(svc.BonusPlayerHealthRound))
-        SetPlayerHealth(client, svc.BonusPlayerHealth, svc);
+    Bonus_GivePlayerArmor(client, svc);
+    Bonus_GivePlayerHelmet(client, svc);
+    Bonus_GivePlayerDefuser(client, svc);
 
-    if(svc.BonusArmorEnabled && IsRoundAllowed(svc.BonusArmorRound))
-        SetEntProp(client, Prop_Send, "m_ArmorValue", svc.BonusArmorValue);
-
-    if(svc.BonusHelmetEnabled && IsRoundAllowed(svc.BonusHelmetRound))
-        SetEntProp(client, Prop_Send, "m_bHasHelmet", 1);
-
-    if (svc.BonusDefuserEnabled && IsRoundAllowed(svc.BonusDefuserRound) && CanGiveDefuser(client))
-        GivePlayerItem(client, "item_defuser");
-
-    if (IsRoundAllowed(svc.BonusPlayerGravityRound))
-    {
-        float value = svc.BonusPlayerGravity;
-        if (!FloatEqual(value, 1.0))
-            SetEntityGravity(client, value);
-    }
-
-    if (IsRoundAllowed(svc.BonusPlayerSpeedRound))
-    {
-        float value = svc.BonusPlayerSpeed;
-        if(!FloatEqual(value, 1.0))
-            SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", value);
-    }
-
-    if (IsRoundAllowed(svc.BonusPlayerVisibilityRound))
-    {
-        int value = svc.BonusPlayerVisibility;
-        if(value != 255)
-            SetPlayerVisibility(client, value);
-    }
-
-    if(IsRoundAllowed(svc.BonusSpawnMoneyRound))
-    {
-        int value = svc.BonusSpawnMoney;
-        SetClientMoney(client, GetClientMoney(client) + value);
-        if(svc.BonusSpawnMoneyNotify)
-            CPrintToChat(client, "%s %t", g_ChatTag, "Bonus Spawn Money", value);
-    }
-
-    if(svc.BonusPlayerShield && IsRoundAllowed(svc.BonusPlayerShieldRound))
-    {
-        if (GetPlayerWeapon(client, CSWeapon_SHIELD) != -1)
-            GivePlayerItem(client, "weapon_shield");
-    }
+    Bonus_SetPlayerGravity(client, svc);
+    Bonus_SetPlayerSpeed(client, svc);
+    Bonus_SetPlayerVisibility(client, svc);
+    
+    Bonus_GivePlayerSpawnMoney(client, svc);
+    Bonus_GivePlayerShield(client, svc);
 
     DisplayWeaponMenu(client, svc);
     GiveGrenades(client, svc);
-}
-
-void GiveGrenades(int client, Service svc)
-{
-    // xd
 }
 
 public void Event_PlayerDeath(Event event, const char[] name, bool bDontBroadcast)
@@ -122,87 +84,23 @@ public void Event_PlayerDeath(Event event, const char[] name, bool bDontBroadcas
     if(ClientsAreTeammates(attacker, victim))
         return;
 
-    AwardMoneyBonuses(attacker, assister, headshot, noscope, weapon, svcAttacker, svcAssister);
-    AwardHPBonuses(attacker, assister, headshot, noscope, weapon, svcAttacker, svcAssister);
-}
+    // Award Money Bonuses
+    Bonus_KillMoney(attacker, svcAttacker);
+    Bonus_AssisterMoney(assister, svcAssister);
+    Bonus_HeadShotMoney(attacker, headshot, svcAttacker);
+    Bonus_KnifeMoney(attacker, weapon, svcAttacker);
+    Bonus_ZeusMoney(attacker, weapon, svcAttacker);
+    Bonus_GrenadeKillMoney(attacker, weapon, svcAttacker);
+    Bonus_NoScopeMoney(attacker, noscope, svcAttacker);
 
-void AwardMoneyBonuses(int attacker, int assister, bool headshot, bool noscope, const char[] weapon, Service svcAttacker, Service svcAssister)
-{
-    if (IsRoundAllowed(svcAttacker.BonusKillMoneyRound))
-    {
-        int value = svcAttacker.BonusKillMoney;
-        if (value > 0)
-        {
-            SetClientMoney(attacker, GetClientMoney(attacker) + value);
-            if (svcAttacker.BonusKillMoneyNotify)
-                CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus Kill Money", value);
-        }
-    }
-    if (assister && svcAssister != null && IsRoundAllowed(svcAssister.BonusAssistMoneyRound))
-    {
-        int value = svcAssister.BonusAssistMoney;
-        if (value > 0)
-        {
-            SetClientMoney(assister, GetClientMoney(assister) + value);
-            if (svcAssister.BonusAssistMoneyNotify)
-                CPrintToChat(assister, "%s %t", g_ChatTag, "Bonus Assists Money", value);
-        }
-    }
-    if (headshot && IsRoundAllowed(svcAttacker.BonusHeadshotMoneyRound))
-    {
-        int value = svcAttacker.BonusHeadshotMoney;
-        if (value > 0)
-        {
-            SetClientMoney(attacker, GetClientMoney(attacker) + value);
-            if (svcAttacker.BonusHeadshotMoneyNotify)
-                CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus Headshot Money", value);
-        }
-    }
-    if (IsWeaponKnife(weapon) && IsRoundAllowed(svcAttacker.BonusKnifeMoneyRound))
-    {
-        int value = svcAttacker.BonusKnifeMoney;
-        if (value > 0)
-        {
-            SetClientMoney(attacker, GetClientMoney(attacker) + value);
-            if (svcAttacker.BonusKnifeMoneyNotify)
-                CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus Knife Money", value);
-        }
-    }
-    if (IsWeaponTaser(weapon) && IsRoundAllowed(svcAttacker.BonusZeusMoneyRound))
-    {
-        int value = svcAttacker.BonusZeusMoney;
-        if (value > 0)
-        {
-            SetClientMoney(attacker, GetClientMoney(attacker) + value);
-            if (svcAttacker.BonusZeusMoneyNotify)
-                CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus Zeus Money", value);
-        }
-    }
-    if (noscope && IsRoundAllowed(svcAttacker.BonusNoscopeMoneyRound))
-    {
-        int value = svcAttacker.BonusNoscopeMoney;
-        if (value > 0)
-        {
-            SetClientMoney(attacker, GetClientMoney(attacker) + value);
-            if (svcAttacker.BonusNoscopeMoneyNotify)
-                CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus NoScope Money", value);
-        }
-    }
-    // how to proceed with grenade stuff?
-}
-
-void AwardHPBonuses(int attacker, int assister, bool headshot, bool noscope, const char[] weapon, Service svcAttacker, Service svcAssister)
-{
-    if (IsRoundAllowed(svcAttacker.BonusKillHPRound))
-    {
-        int value = svcAttacker.BonusKillHP;
-        if (value > 0)
-        {
-            SetPlayerHealth(attacker, GetClientHealth(attacker) + value, svcAttacker);
-            if (svcAttacker.BonusKillHPNotify)
-                CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus Kill HP", value);
-        }
-    }
+    // Award HP Bonuses
+    Bonus_KillHP(attacker, svcAttacker);
+    Bonus_AssisterHP(assister, svcAssister);
+    Bonus_HeadShotHP(attacker, headshot, svcAttacker);
+    Bonus_KnifeHP(attacker, weapon, svcAttacker);
+    Bonus_ZeusHP(attacker, weapon, svcAttacker);
+    Bonus_GrenadeKillHP(attacker, weapon, svcAttacker);
+    Bonus_NoScopeHP(attacker, noscope, svcAttacker);
 }
 
 public void Event_BombPlanted(Event event, const char[] name, bool bDontBroadcast)
