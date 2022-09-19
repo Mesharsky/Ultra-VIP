@@ -35,7 +35,7 @@ enum struct WeaponMenuItem
 
 enum struct WeaponLoadout
 {
-    char primary[MAX_WEAPON_CLASSNAME_SIZE]; 
+    char primary[MAX_WEAPON_CLASSNAME_SIZE];
     char secondary[MAX_WEAPON_CLASSNAME_SIZE];
 
     bool IsSet()
@@ -80,7 +80,7 @@ void SetPreviousWeapons(int client, WeaponLoadout loadout)
 
 void ResetPreviousWeapons(int client)
 {
-    s_PreviousWeapon[client].Reset(); 
+    s_PreviousWeapon[client].Reset();
 }
 
 void DisplayWeaponMenu(int client, Service weaponListService)
@@ -114,7 +114,7 @@ public int WeaponMenu_Handler(Menu menu, MenuAction action, int param1, int para
         {
             char buffer[255];
 
-            FormatEx(buffer, sizeof(buffer), "%T", "Weapon Menu Title", param1, "\n"); 
+            FormatEx(buffer, sizeof(buffer), "%T", "Weapon Menu Title", param1, "\n");
 
             Panel panel = view_as<Panel>(param2);
             panel.SetTitle(buffer);
@@ -152,14 +152,14 @@ public int WeaponMenu_Handler(Menu menu, MenuAction action, int param1, int para
                 if (!IsServiceHandleValid(s_WeaponListService[param1]))
                     return 0;
 
-                DisplayWeaponList(param1);    
+                DisplayWeaponList(param1);
             }
             else if (StrEqual(info, "PREVIOUS"))
             {
                 if(!s_PreviousWeapon[param1].IsSet())
                     return 0;
 
-                GiveLoadoutIfAllowed(param1, s_PreviousWeapon[param1], s_WeaponListService[param1]);      
+                GiveLoadoutIfAllowed(param1, s_PreviousWeapon[param1], s_WeaponListService[param1]);
             }
         }
     }
@@ -181,7 +181,7 @@ void WeaponMenu_BuildSelectionsFromConfig(KeyValues kv, const char[] serviceName
     WeaponMenuItem item;
 
     char sections[][] =
-    { 
+    {
         "Rifles",
         "Pistols"
     };
@@ -281,7 +281,7 @@ public int WeaponSelection_Handler(Menu menu, MenuAction action, int param1, int
             if(s_SelectionList[param1] == Weapon_Rifle)
                 FormatEx(buffer, sizeof(buffer), "%T", "Rifle Menu Title", param1);
             else
-                FormatEx(buffer, sizeof(buffer), "%T", "Pistol Menu Title", param1);   
+                FormatEx(buffer, sizeof(buffer), "%T", "Pistol Menu Title", param1);
 
             Panel panel = view_as<Panel>(param2);
             panel.SetTitle(buffer);
@@ -300,9 +300,9 @@ public int WeaponSelection_Handler(Menu menu, MenuAction action, int param1, int
                 return ITEMDRAW_IGNORE;
 
             if(!CanPurchaseWeapon(param1, item))
-                return ITEMDRAW_DISABLED;    
+                return ITEMDRAW_DISABLED;
 
-            return ITEMDRAW_DEFAULT;    
+            return ITEMDRAW_DEFAULT;
         }
 
         case MenuAction_DisplayItem:
@@ -311,16 +311,16 @@ public int WeaponSelection_Handler(Menu menu, MenuAction action, int param1, int
             char display[64];
 
             menu.GetItem(param2, info, sizeof(info), _, display, sizeof(display));
-            
+
             WeaponMenuItem item;
             if(!DecodeMenuInfo(info, item))
                 SetFailState("Decoding weapon menu item failed");
-            
+
             if(item.price > 0)
             {
                 Format(display, sizeof(display), "%T", "Weapon Item Price", param1, display, item.price);
                 return RedrawMenuItem(display);
-            }  
+            }
 
             return 0;
         }
@@ -337,12 +337,12 @@ public int WeaponSelection_Handler(Menu menu, MenuAction action, int param1, int
             if(CanPurchaseWeapon(param1, item))
             {
                 PurchaseWeapon(param1, item);
-                
+
                 if(GoToNextSelectionList(param1, s_WeaponListService[param1]))
                     DisplayWeaponList(param1);
-            }    
+            }
             else
-                LogError("Selected weapon {%s} when CanPurchaseWeapon is false", item.classname);  
+                LogError("Selected weapon {%s} when CanPurchaseWeapon is false", item.classname);
         }
     }
 
@@ -386,9 +386,9 @@ static bool CanPurchaseWeapon(int client, WeaponMenuItem item)
     if(!IsClientInGame(client) || !IsPlayerAlive(client))
         return false;
 
-    Service svc = s_WeaponListService[client];    
+    Service svc = s_WeaponListService[client];
     if(!svc.IsWeaponAllowed(item.classname))
-        return false;   
+        return false;
 
     int team = GetClientTeam(client);
     if((team != CS_TEAM_CT && team != CS_TEAM_T) || team != item.team)

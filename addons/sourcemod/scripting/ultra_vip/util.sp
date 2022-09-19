@@ -42,7 +42,7 @@ bool HasOnlySingleBit(int value)
 }
 
 void SplitIntoStringMap(StringMap output, const char[] str, const char[] split, any value = 0)
-{ 
+{
     int len = strlen(str) + 1;
     char[] buffer = new char[len];
 
@@ -120,10 +120,10 @@ bool CanGiveDefuser(int client)
         return false;
     if (GetClientTeam(client) == CS_TEAM_CT)
         return false;
-    if (GetEntProp(client, Prop_Send, "m_bHasDefuser"))   
+    if (GetEntProp(client, Prop_Send, "m_bHasDefuser"))
         return false;
 
-    return true;     
+    return true;
 }
 
 void SetPlayerVisibility(int client, int alpha)
@@ -132,16 +132,16 @@ void SetPlayerVisibility(int client, int alpha)
     {
         alpha = 255;
         SetEntityRenderMode(client, RENDER_NORMAL);
-    }    
+    }
     else if (alpha <= 0)
     {
         alpha = 0;
         SetEntityRenderMode(client, RENDER_NONE);
     }
     else
-        SetEntityRenderMode(client, RENDER_TRANSCOLOR);       
+        SetEntityRenderMode(client, RENDER_TRANSCOLOR);
 
-    SetEntityRenderColorEx(client, -1, -1, -1, alpha); 
+    SetEntityRenderColorEx(client, -1, -1, -1, alpha);
 }
 
 /**
@@ -203,19 +203,19 @@ void SetPlayerScoreBoardTag(int client, Service svc)
 {
     char buffer[32];
     svc.GetScoreboardTag(buffer, sizeof(buffer));
-    
+
     if(buffer[0])
         CS_SetClientClanTag(client, buffer);
 }
 
-// Credits bAddie for this lovely snippet.
-int GetPlayerWeapon(int client, CSWeaponID wepid) 
+
+int GetPlayerWeapon(int client, CSWeaponID wepid)
 {
     int maxWeapons = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
-    for (int i; i < maxWeapons; i++)
+    for (int i = 0; i < maxWeapons; i++)
     {
         int weapon = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i);
-        if (weapon != -1) 
+        if (weapon != -1)
         {
             int def = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
             if (CS_ItemDefIndexToID(def) == wepid)
@@ -226,12 +226,17 @@ int GetPlayerWeapon(int client, CSWeaponID wepid)
     return -1;
 }
 
-bool IsWeaponKnife(const char[] class)
+bool IsWeaponKnife(const char[] classname)
 {
-    if (StrContains(class, "knife", false) != -1 || StrContains(class, "bayonet", false) != -1)
+    if (StrContains(classname, "knife", false) != -1 || StrContains(classname, "bayonet", false) != -1)
         return true;
 
-    return false;    
+    return false;
+}
+
+bool IsWeaponTaser(const char[] classname)
+{
+    return StrContains(classname, "taser") != -1;
 }
 
 int GetCSTeamFromString(const char[] team)
@@ -252,13 +257,13 @@ int GetCSTeamFromString(const char[] team)
         return CS_TEAM_CT;
 
     if(StrEqual(team, "Counter-Terrorists", false))
-        return CS_TEAM_CT;    
+        return CS_TEAM_CT;
 
     if(StrEqual(team, "Counter Terrorist", false))
         return CS_TEAM_CT;
 
     if(StrEqual(team, "Counter Terrorists", false))
-        return CS_TEAM_CT;          
+        return CS_TEAM_CT;
 
     if(StrEqual(team, "TT", false))
         return CS_TEAM_T;
@@ -270,7 +275,7 @@ int GetCSTeamFromString(const char[] team)
         return CS_TEAM_T;
 
     if(StrEqual(team, "Terrorists", false))
-        return CS_TEAM_T; 
+        return CS_TEAM_T;
 
-    return CS_TEAM_NONE;                 
+    return CS_TEAM_NONE;
 }

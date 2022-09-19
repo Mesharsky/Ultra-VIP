@@ -18,7 +18,9 @@
 #pragma newdecls required
 #pragma semicolon 1
 
-static bool s_CanMultiJump[MAXPLAYERS + 1]; // Must set to false if player dies or disconnects
+static bool s_IsEnabled[MAXPLAYERS + 1] = { true, ... };
+
+static bool s_AllowedToMultiJump[MAXPLAYERS + 1];
 static int s_MaxMultiJumps[MAXPLAYERS + 1];
 
 // Players with service can toggle multijumps on/off.
@@ -32,28 +34,28 @@ public Action Command_ToggleJumps(int client, int args)
         return Plugin_Continue;
     }
 
-    if (s_CanMultiJump[client])
+    if (s_IsEnabled[client])
     {
-        s_CanMultiJump[client] = false;
+        s_IsEnabled[client] = false;
         CPrintToChat(client, "%t", "Multi Jump Off");
-    }    
+    }
     else
     {
-        s_CanMultiJump[client] = true;
+        s_IsEnabled[client] = true;
         CPrintToChat(client, "%t", "Multi Jump On");
-    }    
+    }
 
     return Plugin_Handled;
 }
 
 void ExtraJump_OnPlayerRunCmd(int client, int &buttons, float vel[3])
 {
-    if (s_CanMultiJump[client])
+    if (s_AllowedToMultiJump[client])
     {
         static int previousButtons[MAXPLAYERS + 1];
         static int previousFlags[MAXPLAYERS + 1];
         static int jumpCount[MAXPLAYERS + 1];
-    
+
         int flags = GetEntityFlags(client);
 
         if (flags & FL_ONGROUND)
@@ -78,9 +80,9 @@ void ExtraJump_OnClientPostAdminCheck(int client, Service svc)
 {
     if (svc == null)
     {
-        s_CanMultiJump[client] = false;
+        s_AllowedToMultiJump[client] = false;
         return;
-    }    
+    }
 
     s_MaxMultiJumps[client] = svc.BonusExtraJumps;
 }
@@ -89,22 +91,22 @@ void ExtraJump_OnPlayerSpawn(int client, Service svc)
 {
     if (svc == null)
     {
-        s_CanMultiJump[client] = false;
+        s_AllowedToMultiJump[client] = false;
         return;
-    }    
+    }
 
-    if(IsRoundAllowed(svc.BonusExtraJumpsRound))
-        s_CanMultiJump[client] = true;
+    if(s_IsEnabled[client] && IsRoundAllowed(svc.BonusExtraJumpsRound))
+        s_AllowedToMultiJump[client] = true;
 }
 
 void ExtraJump_OnPlayerDeath(int client)
 {
-    s_CanMultiJump[client] = false;
+    s_AllowedToMultiJump[client] = false;
 }
 
 void ExtraJump_OnClientDisconect(int client)
 {
-    s_CanMultiJump[client] = false;
+    s_AllowedToMultiJump[client] = false;
 }
 
 static void FakeJump(int client, float velocity[3], float jumpHeight = 250.0)

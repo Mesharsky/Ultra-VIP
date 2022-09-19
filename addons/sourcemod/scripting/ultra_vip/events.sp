@@ -33,7 +33,7 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool bDontBroadcas
     ExtraJump_OnPlayerSpawn(client, svc);
 
     if (svc == null)
-        return;    
+        return;
 
     SetPlayerScoreBoardTag(client, svc);
 
@@ -68,7 +68,7 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool bDontBroadcas
         int value = svc.BonusPlayerVisibility;
         if(value != 255)
             SetPlayerVisibility(client, value);
-    }    
+    }
 
     if(IsRoundAllowed(svc.BonusSpawnMoneyRound))
     {
@@ -80,19 +80,17 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool bDontBroadcas
 
     if(svc.BonusPlayerShield && IsRoundAllowed(svc.BonusPlayerShieldRound))
     {
-        int weapon = GetPlayerWeapon(client, CSWeapon_SHIELD);
-
-        if (weapon == -1)
+        if (GetPlayerWeapon(client, CSWeapon_SHIELD) != -1)
             GivePlayerItem(client, "weapon_shield");
     }
 
     DisplayWeaponMenu(client, svc);
-    GiveGrenades(client, svc);   
+    GiveGrenades(client, svc);
 }
 
 void GiveGrenades(int client, Service svc)
 {
-
+    // xd
 }
 
 public void Event_PlayerDeath(Event event, const char[] name, bool bDontBroadcast)
@@ -109,11 +107,10 @@ public void Event_PlayerDeath(Event event, const char[] name, bool bDontBroadcas
 
     ExtraJump_OnPlayerDeath(victim);
 
-    // Probably i should (MAKE A FUNCTION) but fuck it....
     Service svcAttacker = GetClientService(attacker);
-    Service svcAssister = GetClientService(assister);
+    Service svcAssister = GetClientService(assister); // Assister allowed to be invalid
 
-    if (svcAttacker == null || svcAssister == null)
+    if (svcAttacker == null)
         return;
 
     if (attacker == 0 || attacker == victim)
@@ -129,7 +126,7 @@ public void Event_PlayerDeath(Event event, const char[] name, bool bDontBroadcas
     AwardHPBonuses(attacker, assister, headshot, noscope, weapon, svcAttacker, svcAssister);
 }
 
-void AwardMoneyBonuses(int attacker, int assister, bool headshot, bool noscope, char[] weapon, Service svcAttacker, Service svcAssister)
+void AwardMoneyBonuses(int attacker, int assister, bool headshot, bool noscope, const char[] weapon, Service svcAttacker, Service svcAssister)
 {
     if (IsRoundAllowed(svcAttacker.BonusKillMoneyRound))
     {
@@ -139,16 +136,16 @@ void AwardMoneyBonuses(int attacker, int assister, bool headshot, bool noscope, 
             SetClientMoney(attacker, GetClientMoney(attacker) + value);
             if (svcAttacker.BonusKillMoneyNotify)
                 CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus Kill Money", value);
-        }       
+        }
     }
-    if (IsRoundAllowed(svcAssister.BonusAssistMoneyRound))
+    if (assister && svcAssister != null && IsRoundAllowed(svcAssister.BonusAssistMoneyRound))
     {
         int value = svcAssister.BonusAssistMoney;
         if (value > 0)
         {
             SetClientMoney(assister, GetClientMoney(assister) + value);
             if (svcAssister.BonusAssistMoneyNotify)
-                CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus Assists Money", value);
+                CPrintToChat(assister, "%s %t", g_ChatTag, "Bonus Assists Money", value);
         }
     }
     if (headshot && IsRoundAllowed(svcAttacker.BonusHeadshotMoneyRound))
@@ -171,8 +168,7 @@ void AwardMoneyBonuses(int attacker, int assister, bool headshot, bool noscope, 
                 CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus Knife Money", value);
         }
     }
-    // maybe some function for that? idk
-    if (StrContains(weapon, "taser") != -1 && IsRoundAllowed(svcAttacker.BonusZeusMoneyRound))
+    if (IsWeaponTaser(weapon) && IsRoundAllowed(svcAttacker.BonusZeusMoneyRound))
     {
         int value = svcAttacker.BonusZeusMoney;
         if (value > 0)
@@ -195,7 +191,7 @@ void AwardMoneyBonuses(int attacker, int assister, bool headshot, bool noscope, 
     // how to proceed with grenade stuff?
 }
 
-void AwardHPBonuses(int attacker, int assister, bool headshot, bool noscope, char[] weapon, Service svcAttacker, Service svcAssister)
+void AwardHPBonuses(int attacker, int assister, bool headshot, bool noscope, const char[] weapon, Service svcAttacker, Service svcAssister)
 {
     if (IsRoundAllowed(svcAttacker.BonusKillHPRound))
     {
@@ -225,14 +221,10 @@ public Action Hook_OnTakeDamage(int client, int &attacker, int &inflictor, float
     if (svc == null)
         return Plugin_Continue;
 
-    if(IsRoundAllowed(svc.BonusPlayerFallDamagePercentRound))
+    if(damagetype == DMG_FALL && IsRoundAllowed(svc.BonusPlayerFallDamagePercentRound))
     {
-        if(damagetype == DMG_FALL)
-        {
-
-        }
     }
 
-    return Plugin_Continue;    
+    return Plugin_Continue;
 }
 

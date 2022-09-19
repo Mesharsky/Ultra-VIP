@@ -62,7 +62,7 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_vips", Command_ShowServices);
 	RegConsoleCmd("sm_jumps", Command_ToggleJumps); //idk what to call that command or maybe commands through config?
 	RegAdminCmd("sm_reloadservices", Command_ReloadServices, ADMFLAG_ROOT, "Reloads configuration file");
-	
+
 	HookEvent("player_spawn", Event_PlayerSpawn);
 	HookEvent("player_death", Event_PlayerDeath);
 	HookEvent("bomb_planted", Event_BombPlanted);
@@ -92,7 +92,7 @@ public void OnMapStart()
 
 public void OnConfigsExecuted()
 {
-    
+
 }
 
 public void OnClientPostAdminCheck(int client)
@@ -129,7 +129,7 @@ public Action Command_ReloadServices(int client, int args)
 		SetFailState("Failed to reload configuration file");
 	}
 
-	return Plugin_Handled;	
+	return Plugin_Handled;
 }
 
 public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon)
@@ -152,5 +152,5 @@ bool IsServiceHandleValid(Handle hndl)
 
 Service GetClientService(int client)
 {
-	return g_ClientService[client];	
+	return g_ClientService[client];
 }

@@ -54,7 +54,7 @@ methodmap Service < StringMap
     {
         public get() { return Service_GetCell(this, "flag", 0); }
         public set(int flag)
-        { 
+        {
             if (flag && !HasOnlySingleBit(flag))
                 ThrowError("Cannot set multiple admin flags for a Service.");
             this.SetValue("flag", flag);
@@ -326,7 +326,7 @@ methodmap Service < StringMap
         public get() { return Service_GetCell(this, "spawn_bonus_chat", false); }
         public set(bool value) { this.SetValue("spawn_bonus_chat", value); }
     }
-    
+
     property int BonusKillMoney
     {
         public get() { return Service_GetCell(this, "kill_bonus", 0); }
@@ -342,7 +342,7 @@ methodmap Service < StringMap
         public get() { return Service_GetCell(this, "kill_bonus_chat", false); }
         public set(bool value) { this.SetValue("kill_bonus_chat", value); }
     }
-    
+
     property int BonusAssistMoney
     {
         public get() { return Service_GetCell(this, "assist_bonus", 0); }
@@ -358,7 +358,7 @@ methodmap Service < StringMap
         public get() { return Service_GetCell(this, "assist_bonus_chat", false); }
         public set(bool value) { this.SetValue("assist_bonus_chat", value); }
     }
-    
+
     property int BonusHeadshotMoney
     {
         public get() { return Service_GetCell(this, "headshot_bonus", 0); }
@@ -374,7 +374,7 @@ methodmap Service < StringMap
         public get() { return Service_GetCell(this, "headshot_bonus_chat", false); }
         public set(bool value) { this.SetValue("headshot_bonus_chat", value); }
     }
-    
+
     property int BonusKnifeMoney
     {
         public get() { return Service_GetCell(this, "knife_bonus", 0); }
@@ -390,7 +390,7 @@ methodmap Service < StringMap
         public get() { return Service_GetCell(this, "knife_bonus_chat", false); }
         public set(bool value) { this.SetValue("knife_bonus_chat", value); }
     }
-    
+
     property int BonusZeusMoney
     {
         public get() { return Service_GetCell(this, "zeus_bonus", 0); }
@@ -406,7 +406,7 @@ methodmap Service < StringMap
         public get() { return Service_GetCell(this, "zeus_bonus_chat", false); }
         public set(bool value) { this.SetValue("zeus_bonus_chat", value); }
     }
-    
+
     property int BonusGrenadeMoney
     {
         public get() { return Service_GetCell(this, "grenade_bonus", 0); }
@@ -422,7 +422,7 @@ methodmap Service < StringMap
         public get() { return Service_GetCell(this, "grenade_bonus_chat", false); }
         public set(bool value) { this.SetValue("grenade_bonus_chat", value); }
     }
-    
+
     property int BonusMvpMoney
     {
         public get() { return Service_GetCell(this, "mvp_bonus", 0); }
@@ -438,7 +438,7 @@ methodmap Service < StringMap
         public get() { return Service_GetCell(this, "mvp_bonus_chat", false); }
         public set(bool value) { this.SetValue("mvp_bonus_chat", value); }
     }
-    
+
     property int BonusNoscopeMoney
     {
         public get() { return Service_GetCell(this, "noscope_bonus", 0); }
@@ -454,7 +454,7 @@ methodmap Service < StringMap
         public get() { return Service_GetCell(this, "noscope_bonus_chat", false); }
         public set(bool value) { this.SetValue("noscope_bonus_chat", value); }
     }
-    
+
     property int BonusHostageMoney
     {
         public get() { return Service_GetCell(this, "hostage_bonus", 0); }
@@ -470,7 +470,7 @@ methodmap Service < StringMap
         public get() { return Service_GetCell(this, "hostage_bonus_chat", false); }
         public set(bool value) { this.SetValue("hostage_bonus_chat", value); }
     }
-    
+
     property int BonusBombPlantedMoney
     {
         public get() { return Service_GetCell(this, "bomb_planted_bonus", 0); }
@@ -486,7 +486,7 @@ methodmap Service < StringMap
         public get() { return Service_GetCell(this, "bomb_planted_bonus_chat", false); }
         public set(bool value) { this.SetValue("bomb_planted_bonus_chat", value); }
     }
-    
+
     property int BonusBombDefusedMoney
     {
         public get() { return Service_GetCell(this, "bomb_defused_bonus", 0); }

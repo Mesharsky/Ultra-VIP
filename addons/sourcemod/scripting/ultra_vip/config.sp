@@ -195,7 +195,7 @@ static bool GetGlobalConfiguration(KeyValues kv, bool fatalError)
 static bool ProcessMainConfiguration(KeyValues kv, Service svc, bool fatalError, const char[] serviceName)
 {
     if (!kv.JumpToKey("Main Configuration"))
-        return HandleError(svc, fatalError, "Service \"%s\" is missing section \"Main Configuration\".", serviceName);    
+        return HandleError(svc, fatalError, "Service \"%s\" is missing section \"Main Configuration\".", serviceName);
 
     char buffer[128];
 
@@ -219,9 +219,9 @@ static bool ProcessMainConfiguration(KeyValues kv, Service svc, bool fatalError,
     if (buffer[0])
         svc.SetChatTag(buffer);
 
-    kv.GetString("scoreboard_tag", buffer, sizeof(buffer));  
+    kv.GetString("scoreboard_tag", buffer, sizeof(buffer));
     if (buffer[0])
-        svc.SetScoreboardTag(buffer);   
+        svc.SetScoreboardTag(buffer);
 
     if (!Config_ProcessSteamIDAccess(kv, svc, fatalError, serviceName))
     {
@@ -286,7 +286,7 @@ static bool ProcessPlayerSpawnBonuses(KeyValues kv, Service svc, bool fatalError
         return HandleError(svc, fatalError, "Service \"%s\" is missing section \"Player Spawn Bonuses\".", serviceName);
 
     svc.BonusPlayerHealth = kv.GetNum("player_hp", 105);
-    svc.BonusMaxPlayerHealth = kv.GetNum("player_max_hp", 110);  
+    svc.BonusMaxPlayerHealth = kv.GetNum("player_max_hp", 110);
 
     svc.BonusArmorEnabled = view_as<bool>(kv.GetNum("player_vest", 1));
     svc.BonusArmorValue = kv.GetNum("player_vest_value", 100);
@@ -322,8 +322,8 @@ static bool ProcessSpecialBonuses(KeyValues kv, Service svc, bool fatalError, co
     if (!kv.JumpToKey("Special Bonuses"))
         return HandleError(svc, fatalError, "Service \"%s\" is missing section \"Special Bonuses\".", serviceName);
 
-    svc.BonusExtraJumps = kv.GetNum("player_extra_jumps", 1); 
-    svc.BonusExtraJumpsRound = kv.GetNum("player_extra_jumps_round", 1);   
+    svc.BonusExtraJumps = kv.GetNum("player_extra_jumps", 1);
+    svc.BonusExtraJumpsRound = kv.GetNum("player_extra_jumps_round", 1);
 
     svc.BonusPlayerShield = view_as<bool>(kv.GetNum("player_shield", 0));
     svc.BonusPlayerShieldRound = kv.GetNum("player_shield_round", 1);
@@ -480,7 +480,7 @@ static bool ProcessChatWelcomeLeaveMessages(KeyValues kv, Service svc, bool fata
     if (buffer[0])
         svc.SetChatLeaveMessage(buffer);
 
-    kv.GoBack(); // Welcome and Leave Messages 
+    kv.GoBack(); // Welcome and Leave Messages
     kv.GoBack(); // Service Name
     return true;
 }
@@ -522,10 +522,10 @@ static bool ProcessWeapons(KeyValues kv, Service svc, bool fatalError, const cha
 {
     if (!kv.JumpToKey("Advanced Weapons Menu"))
         return HandleError(svc, fatalError, "Service \"%s\" is missing section \"Advanced Weapons Menu\".", serviceName);
-        
+
     Menu menu;
     ArrayList weapons;
-    
+
     WeaponMenu_BuildSelectionsFromConfig(kv, serviceName, menu, weapons);
 
     // Make sure handles get deleted by HandleErrorAndGoBack.
@@ -533,7 +533,7 @@ static bool ProcessWeapons(KeyValues kv, Service svc, bool fatalError, const cha
     svc.Weapons = weapons;
 
     if (menu == null)
-        return HandleErrorAndGoBack(kv, svc, fatalError, "Failed to build menu for service \"%s\"", serviceName);   
+        return HandleErrorAndGoBack(kv, svc, fatalError, "Failed to build menu for service \"%s\"", serviceName);
     if (weapons == null)
         return HandleErrorAndGoBack(kv, svc, fatalError, "Failed to build weapons list for service \"%s\"", serviceName);
 
@@ -542,7 +542,7 @@ static bool ProcessWeapons(KeyValues kv, Service svc, bool fatalError, const cha
     if (!kv.JumpToKey("Rifles"))
         return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is missing section \"Rifles\".", serviceName);
 
-    svc.RifleWeaponsRound = kv.GetNum("rifles_menu_round", 3);  
+    svc.RifleWeaponsRound = kv.GetNum("rifles_menu_round", 3);
 
     kv.GoBack();
 
@@ -584,7 +584,7 @@ static bool BuildSortedFlagList()
 
     delete g_SortedServiceFlags;
     g_SortedServiceFlags = new ArrayList(1, len);
-    
+
     for (int i = 0; i < len; ++i)
     {
         list.GetArray(i, data, sizeof(data));
