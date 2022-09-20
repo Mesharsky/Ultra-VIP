@@ -22,7 +22,13 @@
 
 public void Event_RoundStart(Event event, const char[] name, bool bDontBroadcast)
 {
+    #warning DO SOMETHING ABOUT IT
+    g_RoundCount++;
+}
 
+public void Event_TeamChange(Event event, const char[] name, bool bDontBroadcast)
+{
+    g_RoundCount = 0;
 }
 
 public void Event_PlayerSpawn(Event event, const char[] name, bool bDontBroadcast)
@@ -101,6 +107,8 @@ public void Event_PlayerDeath(Event event, const char[] name, bool bDontBroadcas
     Bonus_ZeusHP(attacker, weapon, svcAttacker);
     Bonus_GrenadeKillHP(attacker, weapon, svcAttacker);
     Bonus_NoScopeHP(attacker, noscope, svcAttacker);
+    
+    Bonus_RespawnPlayer(victim);
 }
 
 public void Event_BombPlanted(Event event, const char[] name, bool bDontBroadcast)
@@ -140,7 +148,7 @@ public Action Hook_OnTakeDamage(int client, int &attacker, int &inflictor, float
     Service attackerSvc = null;
 
     if (attacker >= 1 && attacker <= MaxClients)
-        attacker = GetClientService(attacker);
+        attackerSvc = GetClientService(attacker);
 
     Action state = Plugin_Continue;
 
