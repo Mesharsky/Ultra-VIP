@@ -70,6 +70,9 @@ public void OnPluginStart()
 	HookEvent("hostage_rescued", Event_HostageRescued);
 	HookEvent("round_start", Event_RoundStart);
 
+	HookEvent("announce_phase_end", Event_TeamChange);
+	HookEvent("cs_intermission", Event_TeamChange);
+
 	//g_Cvar_ArenaMode = CreateConVar("arena_mode", "0", "Should arena mode (splewis) be enabled?\nRemeber that plugin will use arena configuration file instead if enabled");
 
 	LoadConfig();
