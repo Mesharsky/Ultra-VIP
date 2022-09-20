@@ -67,6 +67,7 @@ public void OnPluginStart()
 	HookEvent("player_death", Event_PlayerDeath);
 	HookEvent("bomb_planted", Event_BombPlanted);
 	HookEvent("bomb_defused", Event_BombDefused);
+	HookEvent("hostage_rescued", Event_HostageRescued);
 	HookEvent("round_start", Event_RoundStart);
 
 	//g_Cvar_ArenaMode = CreateConVar("arena_mode", "0", "Should arena mode (splewis) be enabled?\nRemeber that plugin will use arena configuration file instead if enabled");

@@ -123,18 +123,22 @@ void GiveGrenades(int client, Service svc)
 //////////////////////////////////
 /*        MONEY BONUSES         */
 //////////////////////////////////
+static void _SetMoney(int client, int additionalMoney, bool notify, const char[] translation)
+{
+    if (additionalMoney <= 0)
+        return;
+
+    SetClientMoney(client, GetClientMoney(client) + additionalMoney);
+    if(notify)
+        CPrintToChat(client, "%s %t", g_ChatTag, translation, additionalMoney);    
+}
+
 void Bonus_KillMoney(int attacker, Service svc)
 {
     if (!IsRoundAllowed(svc.BonusKillMoneyRound))
         return;
 
-    int value = svc.BonusKillMoney;
-    if (value <= 0)
-        return;
-
-    SetClientMoney(attacker, GetClientMoney(attacker) + value);
-    if (svc.BonusKillMoneyNotify)
-        CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus Kill Money", value);
+    _SetMoney(attacker, svc.BonusKillMoney, svc.BonusKillMoneyNotify, "Bonus Kill Money");
 }
 
 void Bonus_AssisterMoney(int assister, Service svc)
@@ -142,13 +146,7 @@ void Bonus_AssisterMoney(int assister, Service svc)
     if (assister && svc == null || !IsRoundAllowed(svc.BonusAssistMoneyRound))
         return;
 
-    int value = svc.BonusAssistMoney;
-    if (value <= 0)
-        return;
-    
-    SetClientMoney(assister, GetClientMoney(assister) + value);
-    if (svc.BonusAssistMoneyNotify)
-        CPrintToChat(assister, "%s %t", g_ChatTag, "Bonus Assists Money", value);
+    _SetMoney(assister, svc.BonusAssistMoney, svc.BonusAssistMoneyNotify, "Bonus Assists Money");
 }
 
 void Bonus_HeadShotMoney(int attacker, bool headshot, Service svc)
@@ -156,13 +154,7 @@ void Bonus_HeadShotMoney(int attacker, bool headshot, Service svc)
     if (!headshot || !IsRoundAllowed(svc.BonusHeadshotMoneyRound))
         return;
 
-    int value = svc.BonusHeadshotMoney;
-    if (value <= 0)
-        return;
-
-    SetClientMoney(attacker, GetClientMoney(attacker) + value);
-    if (svc.BonusHeadshotMoneyNotify)
-        CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus Headshot Money", value);
+    _SetMoney(attacker, svc.BonusHeadshotMoney, svc.BonusHeadshotMoneyNotify, "Bonus Headshot Money");
 }
 
 void Bonus_KnifeMoney(int attacker, const char[] weapon, Service svc)
@@ -170,13 +162,7 @@ void Bonus_KnifeMoney(int attacker, const char[] weapon, Service svc)
     if (!IsWeaponKnife(weapon) || !IsRoundAllowed(svc.BonusKnifeMoneyRound))
         return;
 
-    int value = svc.BonusKnifeMoney;
-    if (value <= 0)
-        return;
-
-    SetClientMoney(attacker, GetClientMoney(attacker) + value);
-    if (svc.BonusKnifeMoneyNotify)
-        CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus Knife Money", value);
+    _SetMoney(attacker, svc.BonusKnifeMoney, svc.BonusKnifeMoneyNotify, "Bonus Knife Money");
 }
 
 void Bonus_ZeusMoney(int attacker, const char[] weapon, Service svc)
@@ -184,13 +170,7 @@ void Bonus_ZeusMoney(int attacker, const char[] weapon, Service svc)
     if (!IsWeaponTaser(weapon) || !IsRoundAllowed(svc.BonusZeusMoneyRound))
         return;
 
-    int value = svc.BonusZeusMoney;
-    if (value <= 0)
-        return;
-
-    SetClientMoney(attacker, GetClientMoney(attacker) + value);
-    if (svc.BonusZeusMoneyNotify)
-        CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus Zeus Money", value);
+    _SetMoney(attacker, svc.BonusZeusMoney, svc.BonusZeusMoneyNotify, "Bonus Zeus Money");
 }
 
 void Bonus_GrenadeKillMoney(int attacker, const char[] weapon, Service svc)
@@ -198,45 +178,52 @@ void Bonus_GrenadeKillMoney(int attacker, const char[] weapon, Service svc)
     if (!IsWeaponGrenade(weapon) || !IsRoundAllowed(svc.BonusGrenadeMoneyRound))
         return;
 
-    int value = svc.BonusGrenadeMoney;
-    if (value <= 0)
-        return;
-
-    SetClientMoney(attacker, GetClientMoney(attacker) + value);
-    if (svc.BonusGrenadeMoneyNotify)
-        CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus Grenade Money", value);
+    _SetMoney(attacker, svc.BonusGrenadeMoney, svc.BonusGrenadeMoneyNotify, "Bonus Grenade Money");
 }
 
 void Bonus_NoScopeMoney(int attacker, bool noscope, Service svc)
 {
     if (!noscope || !IsRoundAllowed(svc.BonusNoscopeMoneyRound))
         return;
+    
+    _SetMoney(attacker, svc.BonusNoscopeMoney, svc.BonusNoscopeMoneyNotify, "Bonus NoScope Money");
+}
 
-    int value = svc.BonusNoscopeMoney;
-    if (value <= 0)
+void Bonus_BombPlantedMoney(int client, Service svc)
+{
+    if (!IsRoundAllowed(svc.BonusBombPlantedMoneyRound))
         return;
 
-    SetClientMoney(attacker, GetClientMoney(attacker) + value);
-    if (svc.BonusNoscopeMoneyNotify)
-        CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus NoScope Money", value);
+    _SetMoney(client, svc.BonusBombPlantedMoney, svc.BonusBombPlantedMoneyNotify, "Bonus Bomb Planted Money");
+}
+
+void Bonus_BombDefusedMoney(int client, Service svc)
+{
+    if (!IsRoundAllowed(svc.BonusBombDefusedMoneyRound))
+        return;
+
+    _SetMoney(client, svc.BonusBombDefusedMoney, svc.BonusBombDefusedMoneyNotify, "Bonus Bomb Defused Money");  
 }
 
 //////////////////////////////////
 /*          HP BONUSES          */
 //////////////////////////////////
+static void _SetHP(int client, int additionalHP, Service svc, bool notify, const char[] translation)
+{
+    if (additionalHP <= 0)
+        return;
+
+    SetPlayerHealth(client, GetClientHealth(client) + additionalHP, svc);
+    if(notify)
+        CPrintToChat(client, "%s %t", g_ChatTag, translation, additionalHP);    
+}
+
 void Bonus_KillHP(int attacker, Service svc)
 {
     if (!IsRoundAllowed(svc.BonusKillHPRound))
         return;
 
-    int value = svc.BonusKillHP;
-    if (value <= 0)
-        return;
-
-    SetPlayerHealth(attacker, GetClientHealth(attacker) + value, svc);
-    if (svc.BonusKillHPNotify)
-        CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus Kill HP", value);
-
+    _SetHP(attacker, svc.BonusKillHP, svc, svc.BonusKillHPNotify, "Bonus Kill HP");    
 }
 
 void Bonus_AssisterHP(int assister, Service svc)
@@ -244,13 +231,7 @@ void Bonus_AssisterHP(int assister, Service svc)
     if (assister && svc == null || !IsRoundAllowed(svc.BonusAssistHPRound))
         return;
 
-    int value = svc.BonusAssistHP;
-    if (value <= 0)
-        return;
-    
-    SetPlayerHealth(assister, GetClientHealth(assister) + value, svc);
-    if (svc.BonusAssistHPNotify)
-        CPrintToChat(assister, "%s %t", g_ChatTag, "Bonus Assists HP", value);
+    _SetHP(assister, svc.BonusAssistHP, svc, svc.BonusAssistHPNotify, "Bonus Assists HP");    
 }
 
 void Bonus_HeadShotHP(int attacker, bool headshot, Service svc)
@@ -258,13 +239,7 @@ void Bonus_HeadShotHP(int attacker, bool headshot, Service svc)
     if (!headshot || !IsRoundAllowed(svc.BonusHeadshotHPRound))
         return;
 
-    int value = svc.BonusHeadshotHP;
-    if (value <= 0)
-        return;
-
-    SetPlayerHealth(attacker, GetClientHealth(attacker) + value, svc);
-    if (svc.BonusHeadshotHPNotify)
-        CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus Headshot HP", value);
+    _SetHP(attacker, svc.BonusHeadshotHP, svc, svc.BonusHeadshotHPNotify, "Bonus Headshot HP");      
 }
 
 void Bonus_KnifeHP(int attacker, const char[] weapon, Service svc)
@@ -272,13 +247,7 @@ void Bonus_KnifeHP(int attacker, const char[] weapon, Service svc)
     if (!IsWeaponKnife(weapon) || !IsRoundAllowed(svc.BonusKnifeHPRound))
         return;
 
-    int value = svc.BonusKnifeHP;
-    if (value <= 0)
-        return;
-
-    SetPlayerHealth(attacker, GetClientHealth(attacker) + value, svc);
-    if (svc.BonusKnifeHPNotify)
-        CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus Knife HP", value);
+    _SetHP(attacker, svc.BonusKnifeHP, svc, svc.BonusKnifeHPNotify, "Bonus Knife HP");
 }
 
 void Bonus_ZeusHP(int attacker, const char[] weapon, Service svc)
@@ -286,13 +255,7 @@ void Bonus_ZeusHP(int attacker, const char[] weapon, Service svc)
     if (!IsWeaponTaser(weapon) || !IsRoundAllowed(svc.BonusZeusHPRound))
         return;
 
-    int value = svc.BonusZeusHP;
-    if (value <= 0)
-        return;
-
-    SetPlayerHealth(attacker, GetClientHealth(attacker) + value, svc);
-    if (svc.BonusZeusHPNotify)
-        CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus Zeus HP", value);
+    _SetHP(attacker, svc.BonusZeusHP, svc, svc.BonusZeusHPNotify, "Bonus Zeus HP");
 }
 
 void Bonus_GrenadeKillHP(int attacker, const char[] weapon, Service svc)
@@ -300,13 +263,7 @@ void Bonus_GrenadeKillHP(int attacker, const char[] weapon, Service svc)
     if (!IsWeaponGrenade(weapon) || !IsRoundAllowed(svc.BonusGrenadeHPRound))
         return;
 
-    int value = svc.BonusGrenadeHP;
-    if (value <= 0)
-        return;
-
-    SetPlayerHealth(attacker, GetClientHealth(attacker) + value, svc);
-    if (svc.BonusGrenadeHPNotify)
-        CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus Grenade HP", value);
+    _SetHP(attacker, svc.BonusGrenadeHP, svc, svc.BonusGrenadeHPNotify, "Bonus Grenade HP"); 
 }
 
 void Bonus_NoScopeHP(int attacker, bool noscope, Service svc)
@@ -314,11 +271,5 @@ void Bonus_NoScopeHP(int attacker, bool noscope, Service svc)
     if (!noscope || !IsRoundAllowed(svc.BonusNoscopeHPRound))
         return;
 
-    int value = svc.BonusNoscopeHP;
-    if (value <= 0)
-        return;
-
-    SetPlayerHealth(attacker, GetClientHealth(attacker) + value, svc);
-    if (svc.BonusNoscopeHPNotify)
-        CPrintToChat(attacker, "%s %t", g_ChatTag, "Bonus NoScope HP", value);
+    _SetHP(attacker, svc.BonusNoscopeHP, svc, svc.BonusNoscopeHPNotify, "Bonus NoScope HP");
 }

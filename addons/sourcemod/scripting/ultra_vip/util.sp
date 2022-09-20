@@ -267,7 +267,6 @@ int GetCSTeamFromString(const char[] team)
     strcopy(buffer, len, team);
     TrimString(buffer);
 
-    // TODO: REPLACE WITH REGEX
     if(StrEqual(team, "CT", false))
         return CS_TEAM_CT;
 

@@ -105,12 +105,33 @@ public void Event_PlayerDeath(Event event, const char[] name, bool bDontBroadcas
 
 public void Event_BombPlanted(Event event, const char[] name, bool bDontBroadcast)
 {
+    int client = GetClientOfUserId(event.GetInt("userid"));
 
+    Service svc = GetClientService(client);
+    if (svc == null)
+        return;
+
+    Bonus_BombPlantedMoney(client, svc);    
 }
 
 public void Event_BombDefused(Event event, const char[] name, bool bDontBroadcast)
 {
+    int client = GetClientOfUserId(event.GetInt("userid"));
 
+    Service svc = GetClientService(client);
+    if (svc == null)
+        return;
+
+    Bonus_BombDefusedMoney(client, svc);
+}
+
+public void Event_HostageRescued(Event event, const char[] name, bool bDontBroadcast)
+{
+    int client = GetClientOfUserId(event.GetInt("userid"));
+
+    Service svc = GetClientService(client);
+    if (svc == null)
+        return;
 }
 
 public Action Hook_OnTakeDamage(int client, int &attacker, int &inflictor, float &damage, int &damagetype)
@@ -121,6 +142,7 @@ public Action Hook_OnTakeDamage(int client, int &attacker, int &inflictor, float
 
     if(damagetype == DMG_FALL && IsRoundAllowed(svc.BonusPlayerFallDamagePercentRound))
     {
+        
     }
 
     return Plugin_Continue;
