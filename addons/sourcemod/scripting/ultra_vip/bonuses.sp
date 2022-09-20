@@ -273,3 +273,46 @@ void Bonus_NoScopeHP(int attacker, bool noscope, Service svc)
 
     _SetHP(attacker, svc.BonusNoscopeHP, svc, svc.BonusNoscopeHPNotify, "Bonus NoScope HP");
 }
+
+//////////////////////////////////
+/*             MISC             */
+//////////////////////////////////
+void Bonus_RespawnPlayer(int client)
+{
+    Service svc = GetClientService(client);
+    if (svc == null)
+        return;
+
+    if (IsPlayerAlive(client))
+        return;
+
+    if (!IsRoundAllowed(svc.BonusPlayerRespawnPercentRound))
+        return;
+
+    if (svc.BonusPlayerRespawnPercent >= GetRandomInt(1, 100))
+    {
+        DataPack pack;
+        CreateDataTimer(0.5, Timer_RespawnPlayer, pack, TIMER_FLAG_NO_MAPCHANGE);
+        pack.WriteCell(GetClientUserId(client));
+        pack.WriteCell(svc);
+    }
+}
+
+public Action Timer_RespawnPlayer(Handle tmr, DataPack pack)
+{
+    pack.Reset();
+    int client = GetClientOfUserId(pack.ReadCell());
+    Service svc = pack.ReadCell();
+
+    if (client == 0)
+        return Plugin_Handled;
+
+    if (IsPlayerAlive(client))
+        return Plugin_Handled;
+
+    CS_RespawnPlayer(client);
+    if (svc.BonusPlayerRespawnPercentNotify) //shit
+        CPrintToChat(client, "%s %t", g_ChatTag, "Bonus Player Respawn");
+
+    return Plugin_Handled;    
+}

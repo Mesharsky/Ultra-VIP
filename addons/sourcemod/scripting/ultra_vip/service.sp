@@ -266,6 +266,11 @@ methodmap Service < StringMap
         public get() { return Service_GetCell(this, "player_respawn_round", 3); }
         public set(int value) { this.SetValue("player_respawn_round", value); }
     }
+    property bool BonusPlayerRespawnPercentNotify
+    {
+        public get() { return Service_GetCell(this, "player_respawn_notify", false); }
+        public set(bool value) { this.SetValue("player_respawn_notify", value); }
+    }
 
     property int BonusPlayerFallDamagePercent
     {

@@ -339,6 +339,7 @@ static bool ProcessSpecialBonuses(KeyValues kv, Service svc, bool fatalError, co
 
     svc.BonusPlayerRespawnPercent = kv.GetNum("player_respawn_percent", 0);
     svc.BonusPlayerRespawnPercentRound = kv.GetNum("player_respawn_round", 3);
+    svc.BonusPlayerRespawnPercentNotify = view_as<bool>(kv.GetNum("player_respawn_notify", 0));
 
     svc.BonusPlayerFallDamagePercent = kv.GetNum("player_fall_damage_percent", 100);
     svc.BonusPlayerFallDamagePercentRound = kv.GetNum("player_fall_damage_round", 1);
