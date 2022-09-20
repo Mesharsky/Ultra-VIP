@@ -23,7 +23,8 @@
 public void Event_RoundStart(Event event, const char[] name, bool bDontBroadcast)
 {
     #warning DO SOMETHING ABOUT IT
-    g_RoundCount++;
+    g_RoundCount = g_RoundCount + 1;
+    PrintToChatAll("%i", g_RoundCount);
 }
 
 public void Event_TeamChange(Event event, const char[] name, bool bDontBroadcast)

@@ -6,7 +6,7 @@
     }
     "Config Reload Error"
     {
-        "en"    "There is some problem with reloading configuration file. {darkred}Check for error logs""
+        "en"    "There is some problem with reloading configuration file. {darkred}Check for error logs"
     }
 
     "Weapon Menu Title"

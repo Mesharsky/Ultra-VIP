@@ -73,7 +73,7 @@ static bool HandleErrorAndGoBack(KeyValues kv, Service &hndl, bool isFatal, cons
 {
     int len = strlen(fmt) + 512;
     char[] formatted = new char[len];
-    VFormat(formatted, len, fmt, 4);
+    VFormat(formatted, len, fmt, 5);
 
     if (isFatal)
         SetFailState(formatted);

@@ -60,6 +60,9 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    g_Services = new ArrayList();
+    g_SortedServiceFlags = new ArrayList();
+
     LoadTranslations("ultra_vip.phrases.txt");
 
     RegConsoleCmd("sm_vips", Command_ShowServices);
@@ -184,6 +187,7 @@ Service FindClientService(int client)
 
     // Search using overrides
     svc = FindServiceByOverrideAccess(client);
+
     return svc;
 }
 
@@ -238,7 +242,7 @@ Service FindServiceByOverrideAccess(int client)
         if (!buffer[0])
             continue;
 
-        if (CheckCommandAccess(client, buffer, 0, false))
+        if (CheckCommandAccess(client, buffer, ADMFLAG_ROOT, false))
             return svc;
     }
 

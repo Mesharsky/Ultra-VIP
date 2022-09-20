@@ -258,8 +258,6 @@ void WeaponMenu_BuildSelectionsFromConfig(KeyValues kv, const char[] serviceName
         kv.GoBack(); // To Advanced Weapons Menu
     }
 
-    kv.GoBack(); // To Service
-
     outputMenu = menu;
     outputWeapons = weapons;
 

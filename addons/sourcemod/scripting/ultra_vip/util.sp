@@ -37,8 +37,11 @@ Service FindServiceByName(const char[] name)
 
 bool HasOnlySingleBit(int value)
 {
+    if (!value)
+        return false;
+    
     // is value a power of 2
-    return (value & (value - 1)) != 0;
+    return (value & (value - 1)) == 0;
 }
 
 void SplitIntoStringMap(StringMap output, const char[] str, const char[] split, any value = 0)
