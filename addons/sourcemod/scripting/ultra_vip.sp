@@ -20,6 +20,7 @@
 #include <sdktools>
 #include <sdkhooks>
 #include <cstrike>
+#include <clientprefs>
 
 #pragma newdecls required
 #pragma semicolon 1
@@ -31,6 +32,8 @@
 
 ArrayList g_Services;
 ArrayList g_SortedServiceFlags;
+
+Cookie g_Cookie_PrevWeapons;
 
 //ConVar g_Cvar_ArenaMode;
 
@@ -70,33 +73,26 @@ public void OnPluginStart()
     HookEvent("hostage_rescued", Event_HostageRescued);
     HookEvent("round_start", Event_RoundStart);
 
-	HookEvent("announce_phase_end", Event_TeamChange);
-	HookEvent("cs_intermission", Event_TeamChange);
+    HookEvent("announce_phase_end", Event_TeamChange);
+    HookEvent("cs_intermission", Event_TeamChange);
 
 	//g_Cvar_ArenaMode = CreateConVar("arena_mode", "0", "Should arena mode (splewis) be enabled?\nRemeber that plugin will use arena configuration file instead if enabled");
 
+    g_Cookie_PrevWeapons = new Cookie("ultra_vip_weapons", "Previously Selected Weapons", CookieAccess_Private);
     LoadConfig();
 }
-
-/*
-public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
-{
-    CreateNative("UltraVIP_GetService", Native_GetService);
-    CreateNative("UltraVIP_SetService", Native_SetService);
-
-    RegPluginLibrary("ultra_vip");
-    return APLRes_Success;
-}
-*/
 
 public void OnMapStart()
 {
     g_RoundCount = 0;
 }
 
-public void OnConfigsExecuted()
+public void OnClientCookiesCached(int client)
 {
+    if (IsFakeClient(client))
+        return;
 
+    GetPreviousWeapons(client);    
 }
 
 public void OnClientPostAdminCheck(int client)
@@ -109,17 +105,14 @@ public void OnClientPostAdminCheck(int client)
     ExtraJump_OnClientPostAdminCheck(client, g_ClientService[client]);
 }
 
-public void OnClientPutInServer(int client)
-{
-
-}
-
 public void OnClientDisconnect(int client)
 {
     SDKUnhook(client, SDKHook_OnTakeDamage, Hook_OnTakeDamage);
     ExtraJump_OnClientDisconect(client);
 
     g_ClientService[client] = null;
+
+    ResetPreviousWeapons(client);
 }
 
 public Action Command_ShowServices(int client, int args)
@@ -240,7 +233,7 @@ Service FindServiceByOverrideAccess(int client)
     for (int i = 0; i < len; ++i)
     {
         svc = g_Services.Get(i);
-        svc.GetOverride(buffer, size);
+        svc.GetOverride(buffer, sizeof(buffer));
 
         if (!buffer[0])
             continue;

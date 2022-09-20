@@ -50,6 +50,9 @@ enum struct WeaponLoadout
     }
 }
 
+// "weapon_primary;weapon_secondary"
+#define LOADOUT_COOKIE_SIZE (sizeof(WeaponLoadout::primary) + sizeof(WeaponLoadout::secondary) + 1)
+
 // Size of string output by EncodeMenuItem(). Fits:
 // - Weapon type (zero-padded hex)
 // - Team (zero-padded hex)
@@ -73,9 +76,23 @@ static void GiveLoadoutIfAllowed(int client, WeaponLoadout weapons, Service svc)
         GivePlayerItem(client, weapons.secondary);
 }
 
-void SetPreviousWeapons(int client, WeaponLoadout loadout)
+void GetPreviousWeapons(int client)
 {
-    s_PreviousWeapon[client] = loadout;
+    char value[LOADOUT_COOKIE_SIZE];
+    g_Cookie_PrevWeapons.Get(client, value, sizeof(value));
+
+    if (!value[0])
+        return;
+
+    int index = SplitString(value, ";", s_PreviousWeapon[client].primary, sizeof(WeaponLoadout::primary));
+    strcopy(s_PreviousWeapon[client].secondary, sizeof(WeaponLoadout::secondary), value[index]);
+}
+
+void SavePreviousWeapons(int client)
+{
+    char value[LOADOUT_COOKIE_SIZE];
+    FormatEx(value, sizeof(value), "%s;%s", s_PreviousWeapon[client].primary, s_PreviousWeapon[client].secondary);
+    g_Cookie_PrevWeapons.Set(client, value);
 }
 
 void ResetPreviousWeapons(int client)
@@ -151,7 +168,8 @@ public int WeaponMenu_Handler(Menu menu, MenuAction action, int param1, int para
             {
                 if (!IsServiceHandleValid(s_WeaponListService[param1]))
                     return 0;
-
+                
+                ResetPreviousWeapons(param1);
                 DisplayWeaponList(param1);
             }
             else if (StrEqual(info, "PREVIOUS"))
@@ -338,8 +356,15 @@ public int WeaponSelection_Handler(Menu menu, MenuAction action, int param1, int
             {
                 PurchaseWeapon(param1, item);
 
+                if (s_SelectionList[param1] == Weapon_Rifle)
+                    s_PreviousWeapon[param1].primary = item.classname;
+                else if (s_SelectionList[param1] == Weapon_Pistol)
+                    s_PreviousWeapon[param1].secondary = item.classname;    
+
                 if(GoToNextSelectionList(param1, s_WeaponListService[param1]))
                     DisplayWeaponList(param1);
+                else
+                    SavePreviousWeapons(param1);    
             }
             else
                 LogError("Selected weapon {%s} when CanPurchaseWeapon is false", item.classname);
