@@ -22,14 +22,17 @@
 
 public void Event_RoundStart(Event event, const char[] name, bool bDontBroadcast)
 {
-    #warning DO SOMETHING ABOUT IT
-    g_RoundCount = g_RoundCount + 1;
+    #warning REWRITE THIS FUNCTION DEBUG
+    if (GameRules_GetProp("m_bWarmupPeriod"))
+		return;
+
+    g_RoundCount++;
     PrintToChatAll("%i", g_RoundCount);
 }
 
 public void Event_TeamChange(Event event, const char[] name, bool bDontBroadcast)
 {
-    g_RoundCount = 0;
+    g_RoundCount = -1;
 }
 
 public void Event_PlayerSpawn(Event event, const char[] name, bool bDontBroadcast)
@@ -43,6 +46,21 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool bDontBroadcas
 
     if (svc == null)
         return;
+
+    //DEBUG
+    PrintToChatAll("DEBUG: -- PlayerSpawn ---");
+    DataPack data;
+    CreateDataTimer(0.5, Timer_SpawnBonuses, data, TIMER_FLAG_NO_MAPCHANGE);   
+    data.WriteCell(GetClientUserId(client));
+    data.WriteCell(svc); 
+}
+
+public Action Timer_SpawnBonuses(Handle tmr, DataPack data)
+{
+    data.Reset();
+
+    int client = GetClientOfUserId(data.ReadCell());
+    Service svc = data.ReadCell();
 
     Bonus_SetPlayerScoreBoardTag(client, svc);
     Bonus_SetPlayerHealth(client, svc);
@@ -60,6 +78,8 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool bDontBroadcas
 
     DisplayWeaponMenu(client, svc);
     GiveGrenades(client, svc);
+
+    return Plugin_Handled;
 }
 
 public void Event_PlayerDeath(Event event, const char[] name, bool bDontBroadcast)
