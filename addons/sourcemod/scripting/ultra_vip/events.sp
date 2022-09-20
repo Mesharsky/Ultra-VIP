@@ -136,15 +136,43 @@ public void Event_HostageRescued(Event event, const char[] name, bool bDontBroad
 
 public Action Hook_OnTakeDamage(int client, int &attacker, int &inflictor, float &damage, int &damagetype)
 {
-    Service svc = GetClientService(attacker|client);
-    if (svc == null)
-        return Plugin_Continue;
+    Service clientSvc = GetClientService(client);
+    Service attackerSvc = null;
 
-    if(damagetype == DMG_FALL && IsRoundAllowed(svc.BonusPlayerFallDamagePercentRound))
+    if (attacker >= 1 && attacker <= MaxClients)
+        attacker = GetClientService(attacker);
+
+    Action state = Plugin_Continue;
+
+    // Increase damage first before implementing resistance
+    if (attackerSvc != null && IsRoundAllowed(attackerSvc.BonusPlayerAttackDamageRound))
     {
-        
+        damage *= attackerSvc.BonusPlayerAttackDamage * 0.01;
+        state = Plugin_Changed;
     }
 
-    return Plugin_Continue;
-}
+    if (clientSvc == null)
+        return state;
 
+    if (damagetype == DMG_FALL)
+    {
+        if (IsRoundAllowed(clientSvc.BonusPlayerFallDamagePercentRound))
+        {
+            damage *= clientSvc.BonusPlayerFallDamagePercent * 0.01;
+            state = Plugin_Changed;
+        }
+    }
+    else
+    {
+        // Fall damage should never be included in this resistance
+        if (IsRoundAllowed(clientSvc.BonusPlayerDamageResistRound))
+        {
+            damage -= damage * clientSvc.BonusPlayerDamageResist * 0.01;
+            if (damage < 0.0)
+                damage = 0.0;
+            state = Plugin_Changed;
+        }
+    }
+
+    return state;
+}
