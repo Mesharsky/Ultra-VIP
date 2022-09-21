@@ -75,6 +75,7 @@ public void OnPluginStart()
     HookEvent("bomb_defused", Event_BombDefused);
     HookEvent("hostage_rescued", Event_HostageRescued);
     HookEvent("round_start", Event_RoundStart);
+    HookEvent("weapon_fire", Event_WeaponFire);
 
     HookEvent("announce_phase_end", Event_TeamChange);
     HookEvent("cs_intermission", Event_TeamChange);
@@ -168,7 +169,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 
 int IsRoundAllowed(int round)
 {
-    return round >= g_RoundCount;
+    return g_RoundCount >= round;
 }
 
 bool IsServiceHandleValid(Handle hndl)
