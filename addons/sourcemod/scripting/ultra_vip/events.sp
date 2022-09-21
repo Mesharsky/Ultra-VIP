@@ -163,6 +163,22 @@ public void Event_HostageRescued(Event event, const char[] name, bool bDontBroad
         return;
 }
 
+public void Event_WeaponFire(Event event, const char[] name, bool bDontBroadcast)
+{
+    #warning REWRITE
+    int client = GetClientOfUserId(event.GetInt("userid"));
+    int weapon = GetEntPropEnt(client, Prop_Data, "m_hActiveWeapon");
+
+    Service svc = GetClientService(client);
+    if (svc == null)
+        return;
+
+    if(!svc.BonusUnlimitedAmmo || !IsRoundAllowed(svc.BonusUnlimitedAmmoRound))
+        return;
+
+    GivePlayerUnlimitedAmmo(client, weapon);
+}
+
 public Action Hook_OnTakeDamage(int client, int &attacker, int &inflictor, float &damage, int &damagetype)
 {
     Service clientSvc = GetClientService(client);

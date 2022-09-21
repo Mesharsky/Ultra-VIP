@@ -229,6 +229,24 @@ int GetPlayerWeapon(int client, CSWeaponID wepid)
     return -1;
 }
 
+void GivePlayerUnlimitedAmmo(int client, int weapon)
+{
+    char classname[32];
+    GetEdictClassname(weapon, classname, sizeof(classname));
+
+    if (!IsPlayerAlive(client))
+        return;
+
+    if (weapon > 0 && (weapon == GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY) || weapon == GetPlayerWeaponSlot(client, CS_SLOT_SECONDARY)))
+    {
+        if (StrContains(classname, "weapon_", false) != -1)
+        {
+            SetEntProp(weapon, Prop_Send, "m_iClip1", 32);
+            SetEntProp(weapon, Prop_Send, "m_iClip2", 32);
+        }
+    }    
+}
+
 bool IsWeaponKnife(const char[] classname)
 {
     if (StrContains(classname, "knife", false) != -1 || StrContains(classname, "bayonet", false) != -1)
