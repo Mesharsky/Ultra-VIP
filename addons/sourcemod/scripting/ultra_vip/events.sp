@@ -183,8 +183,10 @@ public Action Hook_OnTakeDamage(int client, int &attacker, int &inflictor, float
     if (clientSvc == null)
         return state;
 
-    if (damagetype == DMG_FALL)
+    if (damagetype & DMG_FALL)
     {
+        // TODO: I think technically if multiple damage types exist the scaling
+	// should be different, but eh.
         if (IsRoundAllowed(clientSvc.BonusPlayerFallDamagePercentRound))
         {
             damage *= clientSvc.BonusPlayerFallDamagePercent * 0.01;
