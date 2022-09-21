@@ -18,7 +18,9 @@
 #pragma newdecls required
 #pragma semicolon 1
 
-static bool s_IsEnabled[MAXPLAYERS + 1] = { true, ... };
+#define EXTRAJUMP_DEFAULT_STATE (true)
+
+static bool s_IsEnabled[MAXPLAYERS + 1] = { EXTRAJUMP_DEFAULT_STATE, ... };
 
 static bool s_AllowedToMultiJump[MAXPLAYERS + 1];
 static int s_MaxMultiJumps[MAXPLAYERS + 1];
@@ -48,32 +50,42 @@ public Action Command_ToggleJumps(int client, int args)
     return Plugin_Handled;
 }
 
-void ExtraJump_OnPlayerRunCmd(int client, int &buttons, float vel[3])
+void ExtraJump_OnPlayerRunCmd(int client)
 {
-    if (s_AllowedToMultiJump[client])
+    if (!s_AllowedToMultiJump[client])
+        return;
+
+    static int previousButtons[MAXPLAYERS + 1];
+    static int previousFlags[MAXPLAYERS + 1];
+    static int jumpCount[MAXPLAYERS + 1];
+
+    int flags = GetEntityFlags(client);
+    int buttons = GetClientButtons(client);
+
+    if (HasJustLanded(previousFlags[client], flags))
+        jumpCount[client] = 0;
+    else if (HasJustStartedJump(previousButtons[client], buttons))
     {
-        static int previousButtons[MAXPLAYERS + 1];
-        static int previousFlags[MAXPLAYERS + 1];
-        static int jumpCount[MAXPLAYERS + 1];
-
-        int flags = GetEntityFlags(client);
-
-        if (flags & FL_ONGROUND)
-            jumpCount[client] = 0;
-        else if (HasStartedJump(previousButtons[client], buttons))
+        if (HasJustLeftGround(previousFlags[client], flags))
+            ++jumpCount[client];
+        else
         {
-            if (HasLeftGround(previousFlags[client], flags))
+            // If we are trying to jump mid-air after falling, skip the first
+            // normal jump so we can attempt to extra-jump mid-air
+            if (IsJumpingAfterFalling(jumpCount[client], flags))
                 ++jumpCount[client];
-            else if (CanMultiJump(client, jumpCount[client]))
+
+            if (CanJumpAgain(client, jumpCount[client]))
             {
                 ++jumpCount[client];
-                FakeJump(client, vel);
+                FakeJump(client);
             }
         }
-
-        previousButtons[client] = buttons;
-        previousFlags[client] = flags;
     }
+
+    previousButtons[client] = buttons;
+    previousFlags[client] = flags;
+    return;
 }
 
 void ExtraJump_OnClientPostAdminCheck(int client, Service svc)
@@ -89,14 +101,21 @@ void ExtraJump_OnClientPostAdminCheck(int client, Service svc)
 
 void ExtraJump_OnPlayerSpawn(int client, Service svc)
 {
-    if (svc == null)
-    {
-        s_AllowedToMultiJump[client] = false;
-        return;
-    }
+    s_AllowedToMultiJump[client] = false;
 
-    if(s_IsEnabled[client] && IsRoundAllowed(svc.BonusExtraJumpsRound))
-        s_AllowedToMultiJump[client] = true;
+    if (svc == null)
+        return;
+
+    if (!s_IsEnabled[client])
+        return;
+
+    if (!IsPlayerAlive(client))
+        return;
+
+    if (!IsRoundAllowed(svc.BonusExtraJumpsRound))
+        return;
+
+    s_AllowedToMultiJump[client] = true;
 }
 
 void ExtraJump_OnPlayerDeath(int client)
@@ -106,27 +125,49 @@ void ExtraJump_OnPlayerDeath(int client)
 
 void ExtraJump_OnClientDisconect(int client)
 {
+    s_IsEnabled[client] = EXTRAJUMP_DEFAULT_STATE;
+    s_MaxMultiJumps[client] = 0;
     s_AllowedToMultiJump[client] = false;
 }
 
-static void FakeJump(int client, float velocity[3], float jumpHeight = 250.0)
+static void FakeJump(int client, float jumpHeight = 250.0)
 {
+    float velocity[3];
+    GetEntPropVector(client, Prop_Data, "m_vecVelocity", velocity);
+
     velocity[2] = jumpHeight;
 
     TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, velocity);
 }
 
-static bool HasLeftGround(int previousEntFlags, int currentEntFlags)
+static bool IsOnGround(int entFlags)
 {
-    return previousEntFlags & FL_ONGROUND && !(currentEntFlags & FL_ONGROUND);
+    return view_as<bool>(entFlags & FL_ONGROUND);
 }
 
-static bool HasStartedJump(int previousButtons, int currentButtons)
+static bool HasJustLeftGround(int previousEntFlags, int currentEntFlags)
+{
+    return IsOnGround(previousEntFlags) && !IsOnGround(currentEntFlags);
+}
+
+static bool HasJustLanded(int previousEntFlags, int currentEntFlags)
+{
+    return  !IsOnGround(previousEntFlags) && IsOnGround(currentEntFlags);
+}
+
+static bool HasJustStartedJump(int previousButtons, int currentButtons)
 {
     return !(previousButtons & IN_JUMP) && currentButtons & IN_JUMP;
 }
 
-static bool CanMultiJump(int client, int jump)
+static bool IsJumpingAfterFalling(int jumpCount, int entityFlags)
 {
-    return jump > 0 && jump < s_MaxMultiJumps[client];
+    return jumpCount == 0 && !IsOnGround(entityFlags);
+}
+
+static bool CanJumpAgain(int client, int &jumpCount)
+{
+    // 0 is the first jump from the ground, so it shouldn't be counted.
+    // That makes s_MaxMultiJumps 1-indexed (so use <=)
+    return jumpCount > 0 && jumpCount <= s_MaxMultiJumps[client];
 }

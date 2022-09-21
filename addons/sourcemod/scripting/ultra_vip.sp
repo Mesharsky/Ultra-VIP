@@ -83,6 +83,29 @@ public void OnPluginStart()
 
     g_Cookie_PrevWeapons = new Cookie("ultra_vip_weapons", "Previously Selected Weapons", CookieAccess_Private);
     LoadConfig();
+
+    HandleLateLoad();
+}
+
+static void HandleLateLoad()
+{
+#warning FIXME I dont know if we can, but we should also trigger any of the "OnSpawn" effect in HandleLateLoad
+
+    // HOWEVER, we might risk breaking things if we just triggered the Event_PlayerSpawn
+    // stuff manually, so it might be better to actually disable the whole plugin until
+    // the next round, or not bother with that and just let it be not-fully-working
+
+    for (int i = 1; i <= MaxClients; ++i)
+    {
+        if (IsClientAuthorized(i))
+        {
+            OnClientPostAdminCheck(i);
+
+            // TODO: Technically this should retry if it fails but eh
+            if (AreClientCookiesCached(i))
+                OnClientCookiesCached(i);
+        }
+    }
 }
 
 public void OnMapStart()
@@ -125,6 +148,7 @@ public Action Command_ShowServices(int client, int args)
 
 public Action Command_ReloadServices(int client, int args)
 {
+#warning FIXME LoadConfig will leave some globals in an invalid state if it doesn't fail fatally.
     if(LoadConfig(false))
         CReplyToCommand(client, "%t", "Config Reloaded");
     else
@@ -138,7 +162,7 @@ public Action Command_ReloadServices(int client, int args)
 
 public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon)
 {
-    ExtraJump_OnPlayerRunCmd(client, buttons, vel);
+    ExtraJump_OnPlayerRunCmd(client);
     return Plugin_Continue;
 }
 
