@@ -170,7 +170,10 @@ public int WeaponMenu_Handler(Menu menu, MenuAction action, int param1, int para
                     return 0;
                 
                 ResetPreviousWeapons(param1);
-                DisplayWeaponList(param1);
+
+#warning BUG: Need to disable this whole menu if both pistol and rifle are disabled this round.
+                if (GoToNextSelectionList(param1, s_WeaponListService[param1]))
+                    DisplayWeaponList(param1);
             }
             else if (StrEqual(info, "PREVIOUS"))
             {
@@ -286,6 +289,7 @@ public int WeaponSelection_Handler(Menu menu, MenuAction action, int param1, int
 
         case MenuAction_Cancel:
         {
+#warning BUG: Going back needs to reset s_WeaponListService cycle
             if (param2 == MenuCancel_ExitBack)
                 DisplayWeaponMenu(param1, s_WeaponListService[param1]);
         }
@@ -359,7 +363,7 @@ public int WeaponSelection_Handler(Menu menu, MenuAction action, int param1, int
                 else if (s_SelectionList[param1] == Weapon_Pistol)
                     s_PreviousWeapon[param1].secondary = item.classname;    
 
-                if(GoToNextSelectionList(param1, s_WeaponListService[param1]))
+                if (GoToNextSelectionList(param1, s_WeaponListService[param1]))
                     DisplayWeaponList(param1);
                 else
                     SavePreviousWeapons(param1);    
@@ -406,19 +410,18 @@ static bool GoToNextSelectionList(int client, Service svc)
 
 static bool CanPurchaseWeapon(int client, WeaponMenuItem item)
 {
-    if(!IsClientInGame(client) || !IsPlayerAlive(client))
+    if (!IsClientInGame(client) || !IsPlayerAlive(client))
         return false;
 
     Service svc = s_WeaponListService[client];
-    if(!svc.IsWeaponAllowed(item.classname))
+    if (!svc.IsWeaponAllowed(item.classname))
         return false;
 
     int team = GetClientTeam(client);
-    if((team != CS_TEAM_CT && team != CS_TEAM_T) || team != item.team)
+    if (item.team != 0 && ((team != CS_TEAM_CT && team != CS_TEAM_T) || team != item.team))
         return false;
 
-    int money = GetEntProp(client, Prop_Send, "m_iAccount");
-    if (money < item.price)
+    if (GetClientMoney(client) < item.price)
         return false;
 
     return true;

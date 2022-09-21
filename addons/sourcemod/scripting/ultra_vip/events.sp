@@ -20,6 +20,8 @@
 
 #include "bonuses.sp"
 
+static Handle s_SpawnTimers[MAXPLAYERS + 1];
+
 public void Event_RoundStart(Event event, const char[] name, bool bDontBroadcast)
 {
     #warning REWRITE THIS FUNCTION DEBUG
@@ -39,28 +41,39 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool bDontBroadcas
 {
     int client = GetClientOfUserId(event.GetInt("userid"));
 
+    PrintToChatAll("DEBUG: -- PlayerSpawn ---");
+
+    // TODO / NOTE: Delay spawn events to force them to occur after round_start
+    // stupid janky bastard engine
+    DataPack pack;
+    delete s_SpawnTimers[client];
+    s_SpawnTimers[client] = CreateDataTimer(0.5, Timer_SpawnBonuses, pack, TIMER_FLAG_NO_MAPCHANGE);
+    pack.WriteCell(GetClientUserId(client));
+    pack.WriteCell(client); // >:I
+}
+
+public Action Timer_SpawnBonuses(Handle tmr, DataPack pack)
+{
+    pack.Reset();
+
+    int client = GetClientOfUserId(pack.ReadCell());
+    if (!client)
+    {
+        client = pack.ReadCell(); // Get original index
+        s_SpawnTimers[client] = null;
+        return Plugin_Handled;
+    }
+
     Service svc = GetClientService(client);
 
-    // It must run every single spawn.
+    // This must run for every spawn, even without a service
     ExtraJump_OnPlayerSpawn(client, svc);
 
     if (svc == null)
-        return;
-
-    //DEBUG
-    PrintToChatAll("DEBUG: -- PlayerSpawn ---");
-    DataPack data;
-    CreateDataTimer(0.5, Timer_SpawnBonuses, data, TIMER_FLAG_NO_MAPCHANGE);   
-    data.WriteCell(GetClientUserId(client));
-    data.WriteCell(svc); 
-}
-
-public Action Timer_SpawnBonuses(Handle tmr, DataPack data)
-{
-    data.Reset();
-
-    int client = GetClientOfUserId(data.ReadCell());
-    Service svc = data.ReadCell();
+    {
+        s_SpawnTimers[client] = null;
+        return Plugin_Handled;
+    }
 
     Bonus_SetPlayerScoreBoardTag(client, svc);
     Bonus_SetPlayerHealth(client, svc);
@@ -79,6 +92,7 @@ public Action Timer_SpawnBonuses(Handle tmr, DataPack data)
     DisplayWeaponMenu(client, svc);
     GiveGrenades(client, svc);
 
+    s_SpawnTimers[client] = null;
     return Plugin_Handled;
 }
 
@@ -202,7 +216,7 @@ public Action Hook_OnTakeDamage(int client, int &attacker, int &inflictor, float
     if (damagetype & DMG_FALL)
     {
         // TODO: I think technically if multiple damage types exist the scaling
-	// should be different, but eh.
+        // should be different, but eh.
         if (IsRoundAllowed(clientSvc.BonusPlayerFallDamagePercentRound))
         {
             damage *= clientSvc.BonusPlayerFallDamagePercent * 0.01;

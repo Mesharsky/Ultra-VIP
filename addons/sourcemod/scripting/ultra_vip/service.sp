@@ -695,7 +695,7 @@ methodmap Service < StringMap
 
     public bool IsWeaponAllowed(const char[] className)
     {
-        return this.Weapons.FindString(className) == -1;
+        return this.Weapons.FindString(className) != -1;
     }
 
     property int RifleWeaponsRound

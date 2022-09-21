@@ -181,6 +181,8 @@ bool IsServiceHandleValid(Handle hndl)
 
 Service GetClientService(int client)
 {
+    if (!client)
+        return null;
     return g_ClientService[client];
 }
 
