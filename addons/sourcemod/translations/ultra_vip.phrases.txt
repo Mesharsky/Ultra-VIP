@@ -52,6 +52,92 @@
     "Bonus Spawn Money"
     {
         "#format"    "{1:i}"
-        "en"    "You got extra {green}{1}$.{default} Spend it wisely!"
+        "en"    "You got extra {green}{1}${default} Spend it wisely!"
+    }
+
+    "Bonus Kill Money"
+    {
+        "#format"   "{1:i}"
+        "en"    "You got extra {green}{1}$.{default} For getting a kill"
+    }
+    "Bonus Assists Money"
+    {
+        "#format"   "{1:i}"
+        "en"    "You {lightred}assisted{default} a kill. You got extra {green}{1}$"
+    }
+    "Bonus Headshot Money"
+    {
+        "#format"   "{1:i}"
+        "en"    "Nice {darkred}HS{default}. You got extra {green}{1}$"
+    }
+    "Bonus Knife Money"
+    {
+        "#format"   "{1:i}"
+        "en"    "You got extra {green}{1}${default} For getting a Knife Kill"
+    }
+    "Bonus Zeus Money"
+    {
+        "#format"   "{1:i}"
+        "en"    "You got extra {green}{1}${default} For Zeus Kill"
+    }
+    "Bonus Grenade Money"
+    {
+        "#format"   "{1:i}"
+        "en"    "You got extra {green}{1}${default} For killing with a grenade"
+    }
+    "Bonus NoScope Money"
+    {
+        "#format"   "{1:i}"
+        "en"    "NoScope kill! You got extra {green}{1}$"
+    }
+    "Bonus Bomb Planted Money"
+    {
+        "#format"   "{1:i}"
+        "en"    "You got extra {green}{1}${default} For Planting a Bomb"
+    }
+    "Bonus Bomb Defused Money"
+    {
+        "#format"   "{1:i}"
+        "en"    "You got extra {green}{1}${default} For Defusing a Bomb"
+    }
+
+    "Bonus Kill HP"
+    {
+        "#format"   "{1:i}"
+        "en"    "You got extra {green}{1} HP{default} For getting a kill"
+    }
+    "Bonus Assists HP"
+    {
+        "#format"   "{1:i}"
+        "en"    "You got extra {green}{1} HP{default} For assisting in a kill"
+    }
+    "Bonus Headshot HP"
+    {
+        "#format"   "{1:i}"
+        "en"    "Nice {darkred}HS{default}. You got extra {green}{1} HP{default}"
+    }
+    "Bonus Knife HP"
+    {
+        "#format"   "{1:i}"
+        "en"    "You got extra {green}{1} HP{default} For getting a Knife Kill"
+    }
+    "Bonus Zeus HP"
+    {
+        "#format"   "{1:i}"
+        "en"    "You got extra {green}{1} HP{default} For getting a Zeus Kill"
+    }
+    "Bonus Grenade HP"
+    {
+        "#format"   "{1:i}"
+        "en"    "You got extra {green}{1} HP{default} For getting a grenade kill"
+    }
+    "Bonus NoScope HP"
+    {
+        "#format"   "{1:i}"
+        "en"    "NoScope kill! You got extra {green}{1} HP"
+    }
+    "Bonus Player Respawn"
+    {
+        "en"    "{green}Congratulations! {default}You Respawned!"
     }
 }
