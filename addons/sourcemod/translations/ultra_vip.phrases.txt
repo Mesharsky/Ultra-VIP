@@ -11,8 +11,8 @@
 
     "Weapon Menu Title"
     {
-        "#format"   "{1:s}"
-        "en"    "Weapons Menu{1}Select one of the options below:"
+        "#format"   "{1:s},{2:s}"
+        "en"    "{1} - Weapons Menu{2}Select one of the options below:"
     }
     "Weapon Menu New"
     {
@@ -33,7 +33,7 @@
     "Weapon Item Price"
     {
         "#format"    "{1:s},{2:i}"
-        "en"    "{1} ({2})"
+        "en"    "{1} ({2$})"
     }
 
     "Service Required Command"

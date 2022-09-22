@@ -70,10 +70,16 @@ static WeaponType s_SelectionList[MAXPLAYERS + 1] = { Weapon_Invalid, ... };
 static void GiveLoadoutIfAllowed(int client, WeaponLoadout weapons, Service svc)
 {
     if (svc.IsWeaponAllowed(weapons.primary))
+    {
+        StripPlayerWeapon(client, CS_SLOT_PRIMARY);
         GivePlayerItem(client, weapons.primary);
+    }    
 
     if (svc.IsWeaponAllowed(weapons.secondary))
+    {
+        StripPlayerWeapon(client, CS_SLOT_SECONDARY);
         GivePlayerItem(client, weapons.secondary);
+    }    
 }
 
 void GetPreviousWeapons(int client)
@@ -131,7 +137,12 @@ public int WeaponMenu_Handler(Menu menu, MenuAction action, int param1, int para
         {
             char buffer[255];
 
-            FormatEx(buffer, sizeof(buffer), "%T", "Weapon Menu Title", param1, "\n");
+            char serviceName[MAX_SERVICE_NAME_SIZE];
+            Service svc = GetClientService(param1);
+            
+            svc.GetName(serviceName, sizeof(serviceName));
+
+            FormatEx(buffer, sizeof(buffer), "%T", "Weapon Menu Title", param1, serviceName, "\n");
 
             Panel panel = view_as<Panel>(param2);
             panel.SetTitle(buffer);
@@ -319,8 +330,9 @@ public int WeaponSelection_Handler(Menu menu, MenuAction action, int param1, int
             if(item.weaponType != s_SelectionList[param1])
                 return ITEMDRAW_IGNORE;
 
+            #warning BUG IS PRICE IS SET AND YOU DONT HAVE ENOGH IT SHOULD BE DISABLED. IF WEAPON IS SET TO DIFFERENT TEAM IT SHOULD BE IGNORE
             if(!CanPurchaseWeapon(param1, item))
-                return ITEMDRAW_DISABLED;
+                return ITEMDRAW_IGNORE;
 
             return ITEMDRAW_DEFAULT;
         }
@@ -356,6 +368,11 @@ public int WeaponSelection_Handler(Menu menu, MenuAction action, int param1, int
 
             if(CanPurchaseWeapon(param1, item))
             {
+                if (s_SelectionList[param1] == Weapon_Rifle)
+                    StripPlayerWeapon(param1, CS_SLOT_PRIMARY);
+                else if (s_SelectionList[param1] == Weapon_Pistol)
+                    StripPlayerWeapon(param1, CS_SLOT_SECONDARY);
+
                 PurchaseWeapon(param1, item);
 
                 if (s_SelectionList[param1] == Weapon_Rifle)
@@ -374,6 +391,24 @@ public int WeaponSelection_Handler(Menu menu, MenuAction action, int param1, int
     }
 
     return 0;
+}
+
+void StripPlayerWeapon(int client, int slot = -1)
+{
+    int weapon;
+
+    if (slot == -1)
+        return;
+
+    for(int i = 0; i < 2; i++)
+    {
+        while ((weapon = GetPlayerWeaponSlot(client, slot)) != -1)
+        {
+            RemovePlayerItem(client, weapon);
+            AcceptEntityInput(weapon, "Kill");
+        }
+    }
+
 }
 
 static void DisplayWeaponList(int client)
