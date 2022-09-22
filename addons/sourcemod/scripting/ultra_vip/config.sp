@@ -529,6 +529,7 @@ static bool ProcessHudWelcomeLeaveMessages(KeyValues kv, Service svc, bool fatal
 
     kv.GoBack(); // Welcome and Leave Messages
     kv.GoBack(); // Service Name
+    
     return true;
 }
 

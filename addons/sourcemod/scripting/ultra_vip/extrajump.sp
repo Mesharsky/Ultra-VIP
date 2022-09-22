@@ -28,7 +28,6 @@ static int s_MaxMultiJumps[MAXPLAYERS + 1];
 // Players with service can toggle multijumps on/off.
 public Action Command_ToggleJumps(int client, int args)
 {
-    // i think it's janky code but will see.
     Service svc = GetClientService(client);
     if (svc == null)
     {

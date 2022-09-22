@@ -22,6 +22,13 @@
 #include <cstrike>
 #include <clientprefs>
 
+#undef REQUIRE_PLUGIN
+#tryinclude <chat-processor>    // Prefer chat-processor over scp
+#if !defined _chat_processor_included
+    #tryinclude <scp>
+#endif
+#define REQUIRE_PLUGIN
+
 #pragma newdecls required
 #pragma semicolon 1
 
@@ -30,10 +37,27 @@
 #define MAX_WEAPON_CLASSNAME_SIZE 24 // https://wiki.alliedmods.net/Counter-Strike:_Global_Offensive_Weapons
 #define MAX_SERVICE_NAME_SIZE 64
 
+Handle g_HudMessages;
+
 ArrayList g_Services;
 ArrayList g_SortedServiceFlags;
 
 Cookie g_Cookie_PrevWeapons;
+
+enum ChatProcessor
+{
+    Processor_Default = 0,
+    Processor_SCP,
+    Processor_ChatProcessor
+};
+
+enum struct Detect_ChatTag
+{
+    ChatProcessor processor;
+    char name[32];
+}
+
+Detect_ChatTag g_ChatTagPlugin;
 
 //ConVar g_Cvar_ArenaMode;
 
@@ -46,6 +70,7 @@ int g_RoundCount;
 #include "ultra_vip/menus.sp"
 #include "ultra_vip/extrajump.sp"
 #include "ultra_vip/util.sp"
+#include "ultra_vip/chat.sp"
 
 Service g_ClientService[MAXPLAYERS +1];
 
@@ -66,26 +91,30 @@ public void OnPluginStart()
     LoadTranslations("ultra_vip.phrases.txt");
 
     RegConsoleCmd("sm_vips", Command_ShowServices);
-    RegConsoleCmd("sm_jumps", Command_ToggleJumps); //idk what to call that command or maybe commands through config?
+    RegConsoleCmd("sm_jumps", Command_ToggleJumps);
+
     RegAdminCmd("sm_reloadservices", Command_ReloadServices, ADMFLAG_ROOT, "Reloads configuration file");
 
     HookEvent("player_spawn", Event_PlayerSpawn);
     HookEvent("player_death", Event_PlayerDeath);
     HookEvent("bomb_planted", Event_BombPlanted);
     HookEvent("bomb_defused", Event_BombDefused);
+    HookEvent("round_mvp", Event_RoundMvp);
     HookEvent("hostage_rescued", Event_HostageRescued);
     HookEvent("round_start", Event_RoundStart);
     HookEvent("weapon_fire", Event_WeaponFire);
 
     HookEvent("announce_phase_end", Event_TeamChange);
     HookEvent("cs_intermission", Event_TeamChange);
+    HookEvent("player_connect_full", Event_PlayerConnectFull);
 
 	//g_Cvar_ArenaMode = CreateConVar("arena_mode", "0", "Should arena mode (splewis) be enabled?\nRemeber that plugin will use arena configuration file instead if enabled");
 
     g_Cookie_PrevWeapons = new Cookie("ultra_vip_weapons", "Previously Selected Weapons", CookieAccess_Private);
     LoadConfig();
-
     HandleLateLoad();
+
+    g_HudMessages = CreateHudSynchronizer();
 }
 
 static void HandleLateLoad()
@@ -277,4 +306,31 @@ Service FindServiceByOverrideAccess(int client)
     }
 
     return null;
+}
+
+public void OnLibraryAdded(const char[] name)
+{
+    if (StrEqual(name, "scp"))
+    {
+        g_ChatTagPlugin.processor = Processor_SCP;
+        g_ChatTagPlugin.name = "Simple Chat Processor";
+
+        PrintToServer("[Ultra VIP] Detected: %s", g_ChatTagPlugin.name);
+
+        return;
+    }
+    else if (StrEqual(name, "chat-processor"))
+    {
+        g_ChatTagPlugin.processor = Processor_ChatProcessor;
+        g_ChatTagPlugin.name = "Chat Processor";
+
+        PrintToServer("[Ultra VIP] Detected: %s", g_ChatTagPlugin.name);
+
+        return;
+    }
+
+    g_ChatTagPlugin.processor = Processor_Default;
+    g_ChatTagPlugin.name = "Unknown - Color Tags won't work";
+
+    return;
 }
