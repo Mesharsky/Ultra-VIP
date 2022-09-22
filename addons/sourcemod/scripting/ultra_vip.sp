@@ -46,7 +46,7 @@ Cookie g_Cookie_PrevWeapons;
 
 enum ChatProcessor
 {
-    Processor_Default = 0,
+    Processor_Null = 0,
     Processor_SCP,
     Processor_ChatProcessor
 };
@@ -54,7 +54,7 @@ enum ChatProcessor
 enum struct Detect_ChatTag
 {
     ChatProcessor processor;
-    char name[32];
+    char name[64];
 }
 
 Detect_ChatTag g_ChatTagPlugin;
@@ -163,14 +163,14 @@ public void OnClientPostAdminCheck(int client)
 
 public void OnClientDisconnect(int client)
 {
+    Bonus_LeaveMessage(client);
+
     SDKUnhook(client, SDKHook_OnTakeDamage, Hook_OnTakeDamage);
     ExtraJump_OnClientDisconect(client);
 
     g_ClientService[client] = null;
 
     ResetPreviousWeapons(client);
-
-    Bonus_LeaveMessage(client);
 }
 
 public Action Command_ShowServices(int client, int args)
@@ -310,14 +310,29 @@ Service FindServiceByOverrideAccess(int client)
     return null;
 }
 
+public void OnAllPluginsLoaded()
+{
+    if (LibraryExists("scp"))
+    {
+        g_ChatTagPlugin.processor = Processor_SCP;
+        PrintToServer("[Ultra VIP] Successfuly loaded: %s", g_ChatTagPlugin.name);
+    }
+    else if (LibraryExists("chat-processor"))
+    {
+        g_ChatTagPlugin.processor = Processor_ChatProcessor;
+        PrintToServer("[Ultra VIP] Successfuly loaded: %s", g_ChatTagPlugin.name);
+    }
+
+    if (g_ChatTagPlugin.processor == Processor_Null)
+        PrintToServer("[Ultra VIP] Chat Processor not loaded");
+}
+
 public void OnLibraryAdded(const char[] name)
 {
     if (StrEqual(name, "scp"))
     {
         g_ChatTagPlugin.processor = Processor_SCP;
         g_ChatTagPlugin.name = "Simple Chat Processor";
-
-        PrintToServer("[Ultra VIP] Detected: %s", g_ChatTagPlugin.name);
 
         return;
     }
@@ -326,13 +341,12 @@ public void OnLibraryAdded(const char[] name)
         g_ChatTagPlugin.processor = Processor_ChatProcessor;
         g_ChatTagPlugin.name = "Chat Processor";
 
-        PrintToServer("[Ultra VIP] Detected: %s", g_ChatTagPlugin.name);
-
         return;
     }
+}
 
-    g_ChatTagPlugin.processor = Processor_Default;
-    g_ChatTagPlugin.name = "Unknown - Color Tags won't work";
-
-    return;
+public void OnLibraryRemoved(const char[] name)
+{
+    if (StrEqual(name, "scp") && StrEqual(name, "chat-processor"))
+        g_ChatTagPlugin.processor = Processor_Null;   
 }

@@ -18,8 +18,6 @@
 #pragma newdecls required
 #pragma semicolon 1
 
-#define MAX_WELCOME_LEAVE_MESSAGE_LENGTH 128
-
 //////////////////////////////////
 /*        SPAWN BONUSES         */
 //////////////////////////////////
@@ -327,6 +325,8 @@ public Action Timer_RespawnPlayer(Handle tmr, DataPack pack)
     return Plugin_Handled;    
 }
 
+#define MAX_WELCOME_LEAVE_MESSAGE_LENGTH 128
+
 char chat_msg[MAX_WELCOME_LEAVE_MESSAGE_LENGTH];
 char hud_msg[MAX_WELCOME_LEAVE_MESSAGE_LENGTH];
 
@@ -383,7 +383,7 @@ void Bonus_LeaveMessage(int client)
         ReplaceConfigString(buffer, clientName, serviceName);
 
         CPrintToChatAll(buffer);
-        PrintToServer(buffer);
+        PrintToServer("DEBUG: Chat Player Disconnect MSG: '%s'", buffer);
     }
 
     if (svc.HudLeaveMessage)
@@ -396,8 +396,12 @@ void Bonus_LeaveMessage(int client)
         SetHudTextParams(svc.HudPositionX, svc.HudPositionY, 5.0, svc.HudColorRed, svc.HudColorGreen, svc.HudColorBlue, 255, 0);
 
         for(int i = 1; i <= MaxClients; ++i)
-            ShowSyncHudText(i, g_HudMessages, buffer);
+        {
+            if (!IsClientInGame(i))
+                return;
 
-        PrintToServer(buffer);   
+            PrintToServer("DEBUG: Hud Player Disconnect MSG: '%s'", buffer);
+            ShowSyncHudText(i, g_HudMessages, buffer);
+        }     
     }
 }

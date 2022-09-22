@@ -66,7 +66,7 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool bDontBroadcas
     delete s_SpawnTimers[client];
     s_SpawnTimers[client] = CreateDataTimer(0.5, Timer_SpawnBonuses, pack, TIMER_FLAG_NO_MAPCHANGE);
     pack.WriteCell(GetClientUserId(client));
-    pack.WriteCell(client); // >:I
+    pack.WriteCell(client);
 }
 
 public Action Timer_SpawnBonuses(Handle tmr, DataPack pack)
