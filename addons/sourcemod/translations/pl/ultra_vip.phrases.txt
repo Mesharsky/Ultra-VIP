@@ -1,1 +1,148 @@
-﻿
+﻿"Phrases"
+{
+    "Config Reloaded"
+    {
+        "pl"    "Plik konfiguracyjny został {green}Pomyślnie przeładowany"
+    }
+    "Config Reload Error"
+    {
+        "pl"    "Wystąpił problem z przeładowaniem pliku konfiguracyjnego. {darkred}Sprawdź Error Logi"
+    }
+
+    "Weapon Menu Title"
+    {
+        "#format"   "{1:s},{2:s}"
+        "pl"    "{1} - Menu Broni{2}Wybierz jedną z opcji poniżej:"
+    }
+    "Weapon Menu New"
+    {
+        "pl"    "Wybierz nowy zestaw broni"
+    }
+    "Weapon Menu Previous"
+    {
+        "pl"    "Wybierz ostatnio wybrany zestaw"
+    }
+    "Rifle Menu Title"
+    {
+        "pl"    "Wybierz Karabin:"
+    }
+    "Pistol Menu Title"
+    {
+        "pl"    "Wybierz Pistolet:"
+    }
+    "Weapon Item Price"
+    {
+        "#format"    "{1:s},{2:i}"
+        "pl"    "{1} ({2$})"
+    }
+
+    "Service Required Command"
+    {
+        "pl"    "Nie posiadasz {darkred}uprawnień {default}by użyć tej komendy."
+    }
+    "Multi Jump Off"
+    {
+        "pl"    "Właśnie {darkred}WYŁĄCZYŁEŚ{default} MultiJump. Użyj ponownie tej komendy by je {green}Włączyć"
+    }
+    "Multi Jump On"
+    {
+        "pl"    "Właśnie {green}WŁĄCZYŁEŚ{default} MultiJump. Użyj ponownie tej komendy by je {lightred}Wyłączyć"
+    }
+
+    "Bonus Spawn Money"
+    {
+        "#format"    "{1:i}"
+        "pl"    "Otrzymałeś dodatkowe {green}{1}${default} Wydaj je z głową!"
+    }
+
+    "Bonus Kill Money"
+    {
+        "#format"   "{1:i}"
+        "pl"    "Otrzymałeś dodatkowe {green}{1}$.{default} Za zabójstwo"
+    }
+    "Bonus Assists Money"
+    {
+        "#format"   "{1:i}"
+        "pl"    "{lightred}Asystowałeś{default} przy zabójstwie. Otrzymałeś dodatkowe {green}{1}$"
+    }
+    "Bonus Headshot Money"
+    {
+        "#format"   "{1:i}"
+        "pl"    "Ładny {darkred}HS{default}. Otrzymałeś dodatkowe {green}{1}$"
+    }
+    "Bonus Knife Money"
+    {
+        "#format"   "{1:i}"
+        "pl"    "Otrzymałeś dodatkowe {green}{1}${default} Za zabójstwo nożem"
+    }
+    "Bonus Zeus Money"
+    {
+        "#format"   "{1:i}"
+        "pl"    "Otrzymałeś dodatkowe {green}{1}${default} Za zabójstwo zeusem"
+    }
+    "Bonus Grenade Money"
+    {
+        "#format"   "{1:i}"
+        "pl"    "Otrzymałeś dodatkowe {green}{1}${default} Za zabójstwo granatem"
+    }
+    "Bonus NoScope Money"
+    {
+        "#format"   "{1:i}"
+        "pl"    "Zabójstwo z NoScope! Otrzymałeś dodatkowe {green}{1}$"
+    }
+    "Bonus Bomb Planted Money"
+    {
+        "#format"   "{1:i}"
+        "pl"    "Otrzymałeś dodatkowe {green}{1}${default} Za podłożenie bomby"
+    }
+    "Bonus Bomb Defused Money"
+    {
+        "#format"   "{1:i}"
+        "pl"    "Otrzymałeś dodatkowe {green}{1}${default} Za rozbrojenie bomby"
+    }
+    "Bonus Mvp Money"
+    {
+        "#format"   "{1:i}"
+        "pl"    "Otrzymałeś dodatkowe {green}{1}${default} Za bycie MVP w tej rundzie"
+    }
+
+    "Bonus Kill HP"
+    {
+        "#format"   "{1:i}"
+        "pl"    "Otrzymałeś dodatkowe {green}{1} HP{default} Za zabójstwo"
+    }
+    "Bonus Assists HP"
+    {
+        "#format"   "{1:i}"
+        "pl"    "Otrzymałeś dodatkowe {green}{1} HP{default} Za asystę przy zabójstwie"
+    }
+    "Bonus Headshot HP"
+    {
+        "#format"   "{1:i}"
+        "pl"    "Ładny {darkred}HS{default}. Otrzymałeś dodatkowe {green}{1} HP{default}"
+    }
+    "Bonus Knife HP"
+    {
+        "#format"   "{1:i}"
+        "pl"    "Otrzymałeś dodatkowe {green}{1} HP{default} Za zabójstwo nożem"
+    }
+    "Bonus Zeus HP"
+    {
+        "#format"   "{1:i}"
+        "pl"    "Otrzymałeś dodatkowe {green}{1} HP{default} Za zabójstwo zeusem"
+    }
+    "Bonus Grenade HP"
+    {
+        "#format"   "{1:i}"
+        "pl"    "Otrzymałeś dodatkowe {green}{1} HP{default} Za zabójstwo granatem"
+    }
+    "Bonus NoScope HP"
+    {
+        "#format"   "{1:i}"
+        "pl"    "Zabójstwo z NoScope! Otrzymałeś dodatkowe {green}{1} HP"
+    }
+    "Bonus Player Respawn"
+    {
+        "pl"    "{green}Gratulacje! {default}Zostałeś odrodzony!"
+    }
+}
