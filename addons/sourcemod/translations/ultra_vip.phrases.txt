@@ -100,6 +100,11 @@
         "#format"   "{1:i}"
         "en"    "You got extra {green}{1}${default} For Defusing a Bomb"
     }
+    "Bonus Mvp Money"
+    {
+        "#format"   "{1:i}"
+        "en"    "You got extra {green}{1}${default} For being MVP this round"
+    }
 
     "Bonus Kill HP"
     {

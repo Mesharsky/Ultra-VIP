@@ -205,6 +205,14 @@ void Bonus_BombDefusedMoney(int client, Service svc)
     _SetMoney(client, svc.BonusBombDefusedMoney, svc.BonusBombDefusedMoneyNotify, "Bonus Bomb Defused Money");  
 }
 
+void Bonus_MvpMoney(int client, Service svc)
+{
+    if (!IsRoundAllowed(svc.BonusMvpMoneyRound))
+        return;
+
+    _SetMoney(client, svc.BonusMvpMoney, svc.BonusMvpMoneyNotify, "Bonus Mvp Money");    
+}
+
 //////////////////////////////////
 /*          HP BONUSES          */
 //////////////////////////////////
