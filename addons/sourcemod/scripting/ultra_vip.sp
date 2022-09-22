@@ -169,6 +169,8 @@ public void OnClientDisconnect(int client)
     g_ClientService[client] = null;
 
     ResetPreviousWeapons(client);
+
+    Bonus_LeaveMessage(client);
 }
 
 public Action Command_ShowServices(int client, int args)

@@ -26,5 +26,4 @@ TODO:
             And it shows list of online users that has this service
         >> Settings menu where player can toggle on/off some of his bonuses.
         >> Services bonuses list (Shows each available service and shows it's bonuses (complicated menu shit with pagination)).
-        >> Seperate secret menu that only shows "Easy 3 hours plugin".
 */

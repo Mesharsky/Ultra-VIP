@@ -30,50 +30,13 @@ public void Event_PlayerConnectFull(Event event, const char[] name, bool bDontBr
     if (svc == null)
         return;
 
-    if (!IsClientInGame(client))
-        return;
-
     char clientName[MAX_NAME_LENGTH];
-    char serviceName[MAX_SERVICE_NAME_SIZE];
-
     GetClientName(client, clientName, sizeof(clientName));
+
+    char serviceName[MAX_SERVICE_NAME_SIZE];
     svc.GetName(serviceName, sizeof(serviceName));    
 
-    Show_WelcomeMessage(svc, clientName, serviceName);
-}
-
-static void Show_WelcomeMessage(Service svc, const char[] clientName, const char[] serviceName)
-{
-    char buffer[128];
-
-    if (svc.ChatWelcomeMessage)
-    {
-        char chat_msg[64];
-        svc.GetChatWelcomeMessage(chat_msg, sizeof(chat_msg));
-
-        Format(buffer, sizeof(buffer), chat_msg);
-        ReplaceString(buffer, sizeof(buffer), "{NAME}", clientName);
-        ReplaceString(buffer, sizeof(buffer), "{SERVICE}", serviceName);
-
-        CPrintToChatAll(buffer);
-    }
-    
-    if (svc.HudWelcomeMessage)
-    {
-        char hud_msg[64];
-        svc.GetHudWelcomeMessage(hud_msg, sizeof(hud_msg));
-
-        Format(buffer, sizeof(buffer), hud_msg);
-        ReplaceString(buffer, sizeof(buffer), "{NAME}", clientName);
-        ReplaceString(buffer, sizeof(buffer), "{SERVICE}", serviceName);
-
-        SetHudTextParams(svc.HudPositionX, svc.HudPositionY, 5.0, svc.HudColorRed, svc.HudColorGreen, svc.HudColorBlue, 255, 1);
-
-        for(int i = 0; i <= MaxClients; ++i)
-        {
-            ShowSyncHudText(i, g_HudMessages, buffer);
-        }
-    }
+    Bonus_WelcomeMessage(svc, clientName, serviceName);
 }
 
 public void Event_RoundStart(Event event, const char[] name, bool bDontBroadcast)

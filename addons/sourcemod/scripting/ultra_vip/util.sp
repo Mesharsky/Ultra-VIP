@@ -278,6 +278,12 @@ bool IsWeaponGrenade(const char[] classname)
     return false;
 }
 
+void ReplaceConfigString(char buffer[MAX_WELCOME_LEAVE_MESSAGE_LENGTH], const char[] name, const char[] serviceName)
+{
+    ReplaceString(buffer, sizeof(buffer), "{NAME}", name);
+    ReplaceString(buffer, sizeof(buffer), "{SERVICE}", serviceName);
+}
+
 int GetCSTeamFromString(const char[] team)
 {
     // ugly but works!
