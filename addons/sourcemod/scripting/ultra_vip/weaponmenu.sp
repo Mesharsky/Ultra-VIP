@@ -67,19 +67,14 @@ static WeaponLoadout s_PreviousWeapon[MAXPLAYERS + 1];
 
 static WeaponType s_SelectionList[MAXPLAYERS + 1] = { Weapon_Invalid, ... };
 
+
 static void GiveLoadoutIfAllowed(int client, WeaponLoadout weapons, Service svc)
 {
-    if (svc.IsWeaponAllowed(weapons.primary))
-    {
-        StripPlayerWeapon(client, CS_SLOT_PRIMARY);
-        GivePlayerItem(client, weapons.primary);
-    }    
+    if (svc.IsWeaponAllowed(weapons.primary) && IsRoundAllowed(svc.RifleWeaponsRound))
+        GivePlayerWeapon(client, weapons.primary, CS_SLOT_PRIMARY);
 
-    if (svc.IsWeaponAllowed(weapons.secondary))
-    {
-        StripPlayerWeapon(client, CS_SLOT_SECONDARY);
-        GivePlayerItem(client, weapons.secondary);
-    }    
+    if (svc.IsWeaponAllowed(weapons.secondary) && IsRoundAllowed(svc.PistolWeaponsRound))
+        GivePlayerWeapon(client, weapons.secondary, CS_SLOT_SECONDARY);
 }
 
 void GetPreviousWeapons(int client)
@@ -139,8 +134,8 @@ public int WeaponMenu_Handler(Menu menu, MenuAction action, int param1, int para
 
             char serviceName[MAX_SERVICE_NAME_SIZE];
             Service svc = GetClientService(param1);
-            
-            svc.GetName(serviceName, sizeof(serviceName));
+            if (svc != null)
+                svc.GetName(serviceName, sizeof(serviceName));
 
             FormatEx(buffer, sizeof(buffer), "%T", "Weapon Menu Title", param1, serviceName, "\n");
 
@@ -324,15 +319,17 @@ public int WeaponSelection_Handler(Menu menu, MenuAction action, int param1, int
             menu.GetItem(param2, info, sizeof(info));
 
             WeaponMenuItem item;
-            if(!DecodeMenuInfo(info, item))
+            if (!DecodeMenuInfo(info, item))
                 SetFailState("Decoding weapon menu item failed");
 
-            if(item.weaponType != s_SelectionList[param1])
+            if (item.weaponType != s_SelectionList[param1])
                 return ITEMDRAW_IGNORE;
 
-            #warning BUG IS PRICE IS SET AND YOU DONT HAVE ENOGH IT SHOULD BE DISABLED. IF WEAPON IS SET TO DIFFERENT TEAM IT SHOULD BE IGNORE
-            if(!CanPurchaseWeapon(param1, item))
+            if (!CanPurchaseWeapon(param1, item))
                 return ITEMDRAW_IGNORE;
+
+            if (!CanAffordWeapon(param1, item))
+                return ITEMDRAW_DISABLED;
 
             return ITEMDRAW_DEFAULT;
         }
@@ -368,12 +365,15 @@ public int WeaponSelection_Handler(Menu menu, MenuAction action, int param1, int
 
             if(CanPurchaseWeapon(param1, item))
             {
-                if (s_SelectionList[param1] == Weapon_Rifle)
-                    StripPlayerWeapon(param1, CS_SLOT_PRIMARY);
-                else if (s_SelectionList[param1] == Weapon_Pistol)
-                    StripPlayerWeapon(param1, CS_SLOT_SECONDARY);
+                int slot = -1;
 
-                PurchaseWeapon(param1, item);
+                if (s_SelectionList[param1] == Weapon_Rifle)
+                    slot = CS_SLOT_PRIMARY;
+                else if (s_SelectionList[param1] == Weapon_Pistol)
+                    slot = CS_SLOT_SECONDARY;
+
+                if (slot != -1)
+                    PurchaseWeapon(param1, item, slot);
 
                 if (s_SelectionList[param1] == Weapon_Rifle)
                     s_PreviousWeapon[param1].primary = item.classname;
@@ -391,24 +391,6 @@ public int WeaponSelection_Handler(Menu menu, MenuAction action, int param1, int
     }
 
     return 0;
-}
-
-void StripPlayerWeapon(int client, int slot = -1)
-{
-    int weapon;
-
-    if (slot == -1)
-        return;
-
-    for(int i = 0; i < 2; i++)
-    {
-        while ((weapon = GetPlayerWeaponSlot(client, slot)) != -1)
-        {
-            RemovePlayerItem(client, weapon);
-            AcceptEntityInput(weapon, "Kill");
-        }
-    }
-
 }
 
 static void DisplayWeaponList(int client)
@@ -456,16 +438,12 @@ static bool CanPurchaseWeapon(int client, WeaponMenuItem item)
     if (item.team != 0 && ((team != CS_TEAM_CT && team != CS_TEAM_T) || team != item.team))
         return false;
 
-    if (GetClientMoney(client) < item.price)
-        return false;
-
     return true;
 }
 
-static void PurchaseWeapon(int client, WeaponMenuItem item)
+static bool CanAffordWeapon(int client, WeaponMenuItem item)
 {
-    GivePlayerItem(client, item.classname);
-    RemovePlayerMoney(client, item.price);
+    return GetClientMoney(client) > item.price;
 }
 
 static void EncodeMenuInfo(const WeaponMenuItem item, char[] output, int size)

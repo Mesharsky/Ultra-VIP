@@ -317,3 +317,33 @@ int GetCSTeamFromString(const char[] team)
 
     return CS_TEAM_NONE;
 }
+
+
+int GivePlayerWeapon(int client, const char[] classname, int stripSlot = -1)
+{
+    StripPlayerWeapon(client, stripSlot);
+    return GivePlayerItem(client, classname);
+}
+
+void StripPlayerWeapon(int client, int slot = -1)
+{
+    if (slot == -1)
+        return;
+
+    int weapon;
+
+    for(int i = 0; i < 2; i++)
+    {
+        while ((weapon = GetPlayerWeaponSlot(client, slot)) != -1)
+        {
+            RemovePlayerItem(client, weapon);
+            AcceptEntityInput(weapon, "Kill");
+        }
+    }
+}
+
+void PurchaseWeapon(int client, WeaponMenuItem item, int slot, bool strip=true)
+{
+    GivePlayerWeapon(client, item.classname, (strip) ? slot : -1);
+    RemovePlayerMoney(client, item.price);
+}
