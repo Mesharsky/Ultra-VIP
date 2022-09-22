@@ -132,8 +132,9 @@ bool LoadConfig(bool fatalError = true)
 
         g_Services.Push(svc);
         s_UsedServiceFlags |= svc.Flag;
-
-    } while (kv.GotoNextKey());
+    } 
+    while (kv.GotoNextKey());
+    //kv.GoBack();// debug
 
     // Get global config *after* getting services so it's not set unless all
     // services are valid, which is both safer and required for "root_service"
@@ -567,6 +568,7 @@ static bool ProcessWeapons(KeyValues kv, Service svc, bool fatalError, const cha
     svc.PistolWeaponsRound = kv.GetNum("pistols_menu_round", 1);
 
     kv.GoBack();
+    kv.GoBack(); // That fixed the problem with getting multiple services
     return true;
 }
 
