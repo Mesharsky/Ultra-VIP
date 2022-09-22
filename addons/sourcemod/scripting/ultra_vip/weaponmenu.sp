@@ -64,6 +64,7 @@ enum struct WeaponLoadout
 static Menu s_WeaponMenu;
 static Service s_WeaponListService[MAXPLAYERS + 1];
 static WeaponLoadout s_PreviousWeapon[MAXPLAYERS + 1];
+static WeaponLoadout s_NewLoadoutBuffer[MAXPLAYERS + 1];
 
 static WeaponType s_SelectionList[MAXPLAYERS + 1] = { Weapon_Invalid, ... };
 
@@ -83,10 +84,18 @@ void GetPreviousWeapons(int client)
     g_Cookie_PrevWeapons.Get(client, value, sizeof(value));
 
     if (!value[0])
+    {
+        ResetPreviousWeapons(client);
         return;
+    }
 
     int index = SplitString(value, ";", s_PreviousWeapon[client].primary, sizeof(WeaponLoadout::primary));
     strcopy(s_PreviousWeapon[client].secondary, sizeof(WeaponLoadout::secondary), value[index]);
+}
+
+static void UpdatePreviousWeapons(int client)
+{
+    s_PreviousWeapon[client] = s_NewLoadoutBuffer[client];
 }
 
 void SavePreviousWeapons(int client)
@@ -99,6 +108,14 @@ void SavePreviousWeapons(int client)
 void ResetPreviousWeapons(int client)
 {
     s_PreviousWeapon[client].Reset();
+}
+
+static void AddToNewLoadoutBuffer(int client, WeaponType type, const char classname[MAX_WEAPON_CLASSNAME_SIZE])
+{
+    if (type == Weapon_Rifle)
+        s_NewLoadoutBuffer[client].primary = classname;
+    else if (type == Weapon_Pistol)
+        s_NewLoadoutBuffer[client].secondary = classname;
 }
 
 void DisplayWeaponMenu(int client, Service weaponListService)
@@ -175,7 +192,7 @@ public int WeaponMenu_Handler(Menu menu, MenuAction action, int param1, int para
                 if (!IsServiceHandleValid(s_WeaponListService[param1]))
                     return 0;
                 
-                ResetPreviousWeapons(param1);
+                s_NewLoadoutBuffer[param1].Reset();
 
 #warning BUG: Need to disable this whole menu if both pistol and rifle are disabled this round.
                 if (GoToNextSelectionList(param1, s_WeaponListService[param1]))
@@ -199,9 +216,11 @@ void WeaponMenu_BuildSelectionsFromConfig(KeyValues kv, const char[] serviceName
     ArrayList weapons = new ArrayList(ByteCountToCells(MAX_WEAPON_CLASSNAME_SIZE));
 
     Menu menu = new Menu(WeaponSelection_Handler, MENU_ACTIONS_ALL);
-
     menu.Pagination = true;
-    menu.ExitBackButton = true;
+
+    // Cannot go back because weapons are given on each selection,
+    // not after all selections are made.
+    menu.ExitBackButton = false;
 
     char encodedInfo[ENCODED_WEAPONITEM_SIZE];
     char weaponName[32];
@@ -295,9 +314,13 @@ public int WeaponSelection_Handler(Menu menu, MenuAction action, int param1, int
 
         case MenuAction_Cancel:
         {
-#warning BUG: Going back needs to reset s_WeaponListService cycle
             if (param2 == MenuCancel_ExitBack)
+            {
+                // TODO: Technically this is broken because we dont refund
+                // the selected weapons, but going back is disabled.
+                s_SelectionList[param1] = Weapon_Invalid;
                 DisplayWeaponMenu(param1, s_WeaponListService[param1]);
+            }
         }
 
         case MenuAction_Display:
@@ -375,15 +398,15 @@ public int WeaponSelection_Handler(Menu menu, MenuAction action, int param1, int
                 if (slot != -1)
                     PurchaseWeapon(param1, item, slot);
 
-                if (s_SelectionList[param1] == Weapon_Rifle)
-                    s_PreviousWeapon[param1].primary = item.classname;
-                else if (s_SelectionList[param1] == Weapon_Pistol)
-                    s_PreviousWeapon[param1].secondary = item.classname;    
+                AddToNewLoadoutBuffer(param1, s_SelectionList[param1], item.classname);
 
                 if (GoToNextSelectionList(param1, s_WeaponListService[param1]))
                     DisplayWeaponList(param1);
                 else
-                    SavePreviousWeapons(param1);    
+                {
+                    UpdatePreviousWeapons(param1);
+                    SavePreviousWeapons(param1);
+                }
             }
             else
                 LogError("Selected weapon {%s} when CanPurchaseWeapon is false", item.classname);
