@@ -205,10 +205,13 @@ Service FindClientService(int client)
         return svc;
 
     // Search using steamid overrides
-    char auth[MAX_AUTHID_LENGTH];
-    if (GetClientAuthId(client, AuthId_Steam2, auth, sizeof(auth)))
+    int account = GetSteamAccountID(client);
+    if (account)
     {
-        if (g_SteamIDServices.GetValue(auth, svc))
+        char buffer[16];
+        IntToString(account, buffer, sizeof(buffer));
+
+        if (g_SteamIDServices.GetValue(buffer, svc))
             return svc;
     }
 

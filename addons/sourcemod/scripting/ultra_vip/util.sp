@@ -347,3 +347,39 @@ void PurchaseWeapon(int client, WeaponMenuItem item, int slot, bool strip=true)
     GivePlayerWeapon(client, item.classname, (strip) ? slot : -1);
     RemovePlayerMoney(client, item.price);
 }
+
+
+/**
+ * Get the account number from a SteamID2 or SteamID3
+ */
+int GetAccountFromSteamID(const char[] steamId)
+{
+    // TODO: Make this less janky with regex?
+    // Is the performance cost worth it?
+
+    int len = strlen(steamId);
+
+    // SteamID2
+    if (StrContains(steamId, "STEAM_") == 0 && len >= 11)
+    {
+        // Extract Y
+        char c[2];
+        c[0] = steamId[8];
+        int y = StringToInt(c);
+
+        // Skip "STEAM_0:1:"
+        return (StringToInt(steamId[10]) << 1) + y;
+    }
+
+    // SteamID3
+    if (len >= 7
+        && steamId[0] == '['
+        && steamId[2] == ':'
+        && steamId[4] == ':')
+    {
+        // Skip "[U:1:", StringToInt should ignore the last ']'
+        return StringToInt(steamId[5]);
+    }
+
+    return 0;
+}

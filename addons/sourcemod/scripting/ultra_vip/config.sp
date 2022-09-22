@@ -241,15 +241,28 @@ static bool Config_ProcessSteamIDAccess(KeyValues kv, Service svc, bool fatalErr
     if (!kv.GotoFirstSubKey())
     {
         kv.GoBack(); // To "Main Configuration"
-        return true;
+        return false;
     }
 
     char auth[MAX_AUTHID_LENGTH];
     do
     {
         kv.GetString("steamid2", auth, sizeof(auth));
-        if (auth[0])
+        if (!auth[0]) // fucking yikes
+            kv.GetString("steamid3", auth, sizeof(auth));
+        if (!auth[0])
+            kv.GetString("steamid", auth, sizeof(auth));
+        if (!auth[0])
+            kv.GetString("auth", auth, sizeof(auth));
+
+        int account = GetAccountFromSteamID(auth);
+        if (account)
+        {
+            IntToString(account, auth, sizeof(auth));
             g_SteamIDServices.SetValue(auth, svc);
+        }
+        else
+            LogError("Invalid SteamID2 or SteamID3 \"%s\" for Service \"%s\"", auth, serviceName);
 
     } while (kv.GotoNextKey());
 
