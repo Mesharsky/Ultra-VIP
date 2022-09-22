@@ -34,7 +34,7 @@ public void Event_RoundStart(Event event, const char[] name, bool bDontBroadcast
 
 public void Event_TeamChange(Event event, const char[] name, bool bDontBroadcast)
 {
-    g_RoundCount = -1;
+    g_RoundCount = 0;
 }
 
 public void Event_PlayerSpawn(Event event, const char[] name, bool bDontBroadcast)

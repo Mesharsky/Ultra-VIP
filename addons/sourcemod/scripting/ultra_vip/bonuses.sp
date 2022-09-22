@@ -143,7 +143,7 @@ void Bonus_KillMoney(int attacker, Service svc)
 
 void Bonus_AssisterMoney(int assister, Service svc)
 {
-    if (assister && svc == null || !IsRoundAllowed(svc.BonusAssistMoneyRound))
+    if (!assister || svc == null || !IsRoundAllowed(svc.BonusAssistMoneyRound))
         return;
 
     _SetMoney(assister, svc.BonusAssistMoney, svc.BonusAssistMoneyNotify, "Bonus Assists Money");
@@ -228,7 +228,7 @@ void Bonus_KillHP(int attacker, Service svc)
 
 void Bonus_AssisterHP(int assister, Service svc)
 {
-    if (assister && svc == null || !IsRoundAllowed(svc.BonusAssistHPRound))
+    if (!assister || svc == null || !IsRoundAllowed(svc.BonusAssistHPRound))
         return;
 
     _SetHP(assister, svc.BonusAssistHP, svc, svc.BonusAssistHPNotify, "Bonus Assists HP");    

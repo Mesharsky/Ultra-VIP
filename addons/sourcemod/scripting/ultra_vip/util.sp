@@ -121,7 +121,7 @@ bool CanGiveDefuser(int client)
 {
     if (!IsClientInGame(client) || !IsPlayerAlive(client))
         return false;
-    if (GetClientTeam(client) == CS_TEAM_CT)
+    if (GetClientTeam(client) != CS_TEAM_CT)
         return false;
     if (GetEntProp(client, Prop_Send, "m_bHasDefuser"))
         return false;
