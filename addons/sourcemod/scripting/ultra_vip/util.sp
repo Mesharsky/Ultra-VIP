@@ -389,3 +389,8 @@ bool IsOnPlayingTeam(int client)
     int team = GetClientTeam(client);
     return team == CS_TEAM_CT || team == CS_TEAM_T;
 }
+
+bool IsWarmup()
+{
+    return GameRules_GetProp("m_bWarmupPeriod") != 0;
+}

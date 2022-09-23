@@ -111,6 +111,9 @@ public void OnPluginStart()
 
     HookEvent("announce_phase_end", Event_TeamChange);
     HookEvent("cs_intermission", Event_TeamChange);
+    HookEvent("cs_win_panel_match", Event_TeamChange);
+    HookEvent("cs_match_end_restart", Event_TeamChange);
+
     HookEvent("player_connect_full", Event_PlayerConnectFull);
 
 	//g_Cvar_ArenaMode = CreateConVar("arena_mode", "0", "Should arena mode (splewis) be enabled?\nRemeber that plugin will use arena configuration file instead if enabled");

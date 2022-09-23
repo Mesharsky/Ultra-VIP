@@ -24,6 +24,5 @@ TODO:
     IDEAS:
         >> Services online (Like !vips in normal plugin but you first choose service as a category.
             And it shows list of online users that has this service
-        >> Settings menu where player can toggle on/off some of his bonuses.
         >> Services bonuses list (Shows each available service and shows it's bonuses (complicated menu shit with pagination)).
 */

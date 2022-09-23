@@ -48,8 +48,7 @@ public void Event_PlayerConnectFull(Event event, const char[] name, bool bDontBr
 
 public void Event_RoundStart(Event event, const char[] name, bool bDontBroadcast)
 {
-    #warning REWRITE THIS FUNCTION DEBUG
-    if (GameRules_GetProp("m_bWarmupPeriod"))
+    if (IsWarmup())
 		return;
 
     g_RoundCount++;
