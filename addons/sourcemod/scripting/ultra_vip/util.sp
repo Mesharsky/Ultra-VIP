@@ -278,12 +278,6 @@ bool IsWeaponGrenade(const char[] classname)
     return false;
 }
 
-void ReplaceConfigString(char buffer[MAX_WELCOME_LEAVE_MESSAGE_LENGTH], const char[] name, const char[] serviceName)
-{
-    ReplaceString(buffer, sizeof(buffer), "{NAME}", name);
-    ReplaceString(buffer, sizeof(buffer), "{SERVICE}", serviceName);
-}
-
 int GetCSTeamFromString(const char[] team)
 {
     // ugly but works!
@@ -388,4 +382,10 @@ int GetAccountFromSteamID(const char[] steamId)
     }
 
     return 0;
+}
+
+bool IsOnPlayingTeam(int client)
+{
+    int team = GetClientTeam(client);
+    return team == CS_TEAM_CT || team == CS_TEAM_T;
 }

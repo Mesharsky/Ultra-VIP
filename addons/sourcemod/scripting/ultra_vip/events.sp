@@ -22,6 +22,13 @@
 
 static Handle s_SpawnTimers[MAXPLAYERS + 1];
 
+void Events_OnMapEnd()
+{
+    // TIMER_FLAG_NO_MAPCHANGE, so manually null it but don't delete
+    for (int i = 0; i < sizeof(s_SpawnTimers); ++i)
+        s_SpawnTimers[i] = null;
+}
+
 public void Event_PlayerConnectFull(Event event, const char[] name, bool bDontBroadcast)
 {
     int client = GetClientOfUserId(event.GetInt("userid"));
@@ -58,9 +65,11 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool bDontBroadcas
 {
     int client = GetClientOfUserId(event.GetInt("userid"));
 
-    PrintToChatAll("DEBUG: -- PlayerSpawn ---");
+    if (!IsOnPlayingTeam(client))
+        return;
 
-    // TODO / NOTE: Delay spawn events to force them to occur after round_start
+    // NOTE: Delay spawn events to force them to occur after round_start
+    // TODO: Find better method?
     // stupid janky bastard engine
     DataPack pack;
     delete s_SpawnTimers[client];
@@ -77,6 +86,12 @@ public Action Timer_SpawnBonuses(Handle tmr, DataPack pack)
     if (!client)
     {
         client = pack.ReadCell(); // Get original index
+        s_SpawnTimers[client] = null;
+        return Plugin_Handled;
+    }
+
+    if (!IsOnPlayingTeam(client))
+    {
         s_SpawnTimers[client] = null;
         return Plugin_Handled;
     }

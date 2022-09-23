@@ -681,6 +681,32 @@ methodmap Service < StringMap
         public get() { return Service_GetCell(this, "hud_color_blue", 255); }
         public set(int value) { this.SetValue("hud_color_blue", value); }
     }
+    property int HudColorAlpha
+    {
+        public get() { return Service_GetCell(this, "hud_color_alpha", 255); }
+        public set(int value) { this.SetValue("hud_color_alpha", value); }
+    }
+
+    public void SetHudParams(
+        float holdTime,
+        int effect=0,
+        float fxTime=6.0,
+        float fadeIn=0.1,
+        float fadeOut=0.2)
+    {
+        SetHudTextParams(
+            this.HudPositionX,
+            this.HudPositionY,
+            holdTime,
+            this.HudColorRed,
+            this.HudColorGreen,
+            this.HudColorBlue,
+            this.HudColorAlpha,
+            effect,
+            fxTime,
+            fadeIn,
+            fadeOut);
+    }
 
     property Menu WeaponMenu
     {

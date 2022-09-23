@@ -29,6 +29,11 @@
 #endif
 #define REQUIRE_PLUGIN
 
+#if !defined MAXLENGTH_NAME
+    #define MAXLENGTH_NAME 64 // scp.inc
+#endif
+
+
 #pragma newdecls required
 #pragma semicolon 1
 
@@ -141,6 +146,11 @@ static void HandleLateLoad()
 public void OnMapStart()
 {
     g_RoundCount = 0;
+}
+
+public void OnMapEnd()
+{
+    Events_OnMapEnd();
 }
 
 public void OnClientCookiesCached(int client)
@@ -322,9 +332,11 @@ public void OnAllPluginsLoaded()
         g_ChatTagPlugin.processor = Processor_ChatProcessor;
         PrintToServer("[Ultra VIP] Successfuly loaded: %s", g_ChatTagPlugin.name);
     }
-
-    if (g_ChatTagPlugin.processor == Processor_Null)
+    else
+    {
+        g_ChatTagPlugin.processor = Processor_Null;
         PrintToServer("[Ultra VIP] Chat Processor not loaded");
+    }
 }
 
 public void OnLibraryAdded(const char[] name)
@@ -347,6 +359,8 @@ public void OnLibraryAdded(const char[] name)
 
 public void OnLibraryRemoved(const char[] name)
 {
-    if (StrEqual(name, "scp") && StrEqual(name, "chat-processor"))
-        g_ChatTagPlugin.processor = Processor_Null;   
+    if (StrEqual(name, "scp") && g_ChatTagPlugin.processor == Processor_SCP)
+        g_ChatTagPlugin.processor = Processor_Null;
+    else if (StrEqual(name, "chat-processor") && g_ChatTagPlugin.processor == Processor_ChatProcessor)
+        g_ChatTagPlugin.processor = Processor_Null;
 }

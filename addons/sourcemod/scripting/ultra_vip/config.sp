@@ -134,7 +134,6 @@ bool LoadConfig(bool fatalError = true)
         s_UsedServiceFlags |= svc.Flag;
     } 
     while (kv.GotoNextKey());
-    //kv.GoBack();// debug
 
     // Get global config *after* getting services so it's not set unless all
     // services are valid, which is both safer and required for "root_service"
@@ -255,6 +254,10 @@ static bool Config_ProcessSteamIDAccess(KeyValues kv, Service svc, bool fatalErr
             kv.GetString("steamid", auth, sizeof(auth));
         if (!auth[0])
             kv.GetString("auth", auth, sizeof(auth));
+
+        // If still empty just ignore it, it's probably intentionally blank
+        if (!auth[0])
+            continue;
 
         int account = GetAccountFromSteamID(auth);
         if (account)
@@ -567,8 +570,8 @@ static bool ProcessWeapons(KeyValues kv, Service svc, bool fatalError, const cha
 
     svc.PistolWeaponsRound = kv.GetNum("pistols_menu_round", 1);
 
-    kv.GoBack();
-    kv.GoBack(); // That fixed the problem with getting multiple services
+    kv.GoBack(); // To "Advanced Weapons Menu"
+    kv.GoBack(); // To service name
     return true;
 }
 

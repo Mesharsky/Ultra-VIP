@@ -18,6 +18,10 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+#define MAX_SERVICE_MESSAGE_LENGTH 128
+#define HUD_MESSAGE_TIME 5.0
+
+
 //////////////////////////////////
 /*        SPAWN BONUSES         */
 //////////////////////////////////
@@ -325,40 +329,30 @@ public Action Timer_RespawnPlayer(Handle tmr, DataPack pack)
     return Plugin_Handled;    
 }
 
-#define MAX_WELCOME_LEAVE_MESSAGE_LENGTH 128
-
-char chat_msg[MAX_WELCOME_LEAVE_MESSAGE_LENGTH];
-char hud_msg[MAX_WELCOME_LEAVE_MESSAGE_LENGTH];
-
 void Bonus_WelcomeMessage(Service svc, const char[] clientName, const char[] serviceName)
 {
-    char buffer[MAX_WELCOME_LEAVE_MESSAGE_LENGTH];
+    char buffer[MAX_SERVICE_MESSAGE_LENGTH];
 
     if (svc.ChatWelcomeMessage)
     {
-        svc.GetChatWelcomeMessage(chat_msg, sizeof(chat_msg));
-
-        Format(buffer, sizeof(buffer), chat_msg);
+        svc.GetChatWelcomeMessage(buffer, sizeof(buffer));
         ReplaceConfigString(buffer, clientName, serviceName);
-
         CPrintToChatAll(buffer);
     }
-    
+
     if (svc.HudWelcomeMessage)
     {
-        svc.GetHudWelcomeMessage(hud_msg, sizeof(hud_msg));
-
-        Format(buffer, sizeof(buffer), hud_msg);
+        svc.GetHudWelcomeMessage(buffer, sizeof(buffer));
         ReplaceConfigString(buffer, clientName, serviceName);
 
-        SetHudTextParams(svc.HudPositionX, svc.HudPositionY, 5.0, svc.HudColorRed, svc.HudColorGreen, svc.HudColorBlue, 255, 0);
+        svc.SetHudParams(HUD_MESSAGE_TIME);
 
         for(int i = 1; i <= MaxClients; ++i)
         {
             if (!IsClientInGame(i))
-                return;
+                continue;
             ShowSyncHudText(i, g_HudMessages, buffer);  
-        }    
+        }
     }
 }
 
@@ -373,35 +367,39 @@ void Bonus_LeaveMessage(int client)
 
     char serviceName[MAX_SERVICE_NAME_SIZE];
     svc.GetName(serviceName, sizeof(serviceName));
-    char buffer[MAX_WELCOME_LEAVE_MESSAGE_LENGTH];
+
+    char buffer[MAX_SERVICE_MESSAGE_LENGTH];
 
     if (svc.ChatLeaveMessage)
     {
-        svc.GetChatLeaveMessage(chat_msg, sizeof(chat_msg));
-
-        Format(buffer, sizeof(buffer), chat_msg);
+        svc.GetChatLeaveMessage(buffer, sizeof(buffer));
         ReplaceConfigString(buffer, clientName, serviceName);
 
         CPrintToChatAll(buffer);
-        PrintToServer("DEBUG: Chat Player Disconnect MSG: '%s'", buffer);
     }
 
     if (svc.HudLeaveMessage)
     {
-        svc.GetHudLeaveMessage(hud_msg, sizeof(hud_msg));
-
-        Format(buffer, sizeof(buffer), hud_msg);
+        svc.GetHudLeaveMessage(buffer, sizeof(buffer));
         ReplaceConfigString(buffer, clientName, serviceName);
 
-        SetHudTextParams(svc.HudPositionX, svc.HudPositionY, 5.0, svc.HudColorRed, svc.HudColorGreen, svc.HudColorBlue, 255, 0);
+        svc.SetHudParams(HUD_MESSAGE_TIME);
 
         for(int i = 1; i <= MaxClients; ++i)
         {
             if (!IsClientInGame(i))
-                return;
+                continue;
 
-            PrintToServer("DEBUG: Hud Player Disconnect MSG: '%s'", buffer);
             ShowSyncHudText(i, g_HudMessages, buffer);
         }     
     }
+}
+
+static void ReplaceConfigString(
+    char buffer[MAX_SERVICE_MESSAGE_LENGTH],
+    const char[] name,
+    const char[] serviceName)
+{
+    ReplaceString(buffer, sizeof(buffer), "{NAME}", name);
+    ReplaceString(buffer, sizeof(buffer), "{SERVICE}", serviceName);
 }
