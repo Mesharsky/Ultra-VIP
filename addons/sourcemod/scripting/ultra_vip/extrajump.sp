@@ -22,6 +22,8 @@
 
 static bool s_IsEnabled[MAXPLAYERS + 1] = { EXTRAJUMP_DEFAULT_STATE, ... };
 
+static bool s_IsDoingExtraJump[MAXPLAYERS + 1] = { false, ... };
+
 static bool s_AllowedToMultiJump[MAXPLAYERS + 1];
 static int s_MaxMultiJumps[MAXPLAYERS + 1];
 static float s_JumpHeight[MAXPLAYERS + 1];
@@ -50,6 +52,11 @@ public Action Command_ToggleJumps(int client, int args)
     return Plugin_Handled;
 }
 
+bool ExtraJump_IsDoingExtraJump(int client)
+{
+    return s_IsDoingExtraJump[client];
+}
+
 void ExtraJump_OnPlayerRunCmd(int client)
 {
     if (!s_AllowedToMultiJump[client])
@@ -63,7 +70,10 @@ void ExtraJump_OnPlayerRunCmd(int client)
     int buttons = GetClientButtons(client);
 
     if (HasJustLanded(previousFlags[client], flags))
+    {
         jumpCount[client] = 0;
+        s_IsDoingExtraJump[client] = false;
+    }
     else if (HasJustStartedJump(previousButtons[client], buttons))
     {
         if (HasJustLeftGround(previousFlags[client], flags))
@@ -79,6 +89,8 @@ void ExtraJump_OnPlayerRunCmd(int client)
             {
                 ++jumpCount[client];
                 FakeJump(client, s_JumpHeight[client]);
+
+                s_IsDoingExtraJump[client] = true;
             }
         }
     }
@@ -130,6 +142,7 @@ void ExtraJump_OnClientDisconect(int client)
     s_MaxMultiJumps[client] = 0;
     s_JumpHeight[client] = EXTRAJUMP_DEFAULT_HEIGHT;
     s_AllowedToMultiJump[client] = false;
+    s_IsDoingExtraJump[client] = false;
 }
 
 static void FakeJump(int client, float jumpHeight = EXTRAJUMP_DEFAULT_HEIGHT)

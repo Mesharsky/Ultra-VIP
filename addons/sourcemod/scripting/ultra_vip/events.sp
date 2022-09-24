@@ -260,9 +260,15 @@ public Action Hook_OnTakeDamage(int client, int &attacker, int &inflictor, float
 
     if (damagetype & DMG_FALL)
     {
+        if (ExtraJump_IsDoingExtraJump(client) && !clientSvc.BonusExtraJumpsTakeFallDamage)
+        {
+            damage = 0.0;
+            state = Plugin_Changed;
+        }
+
         // TODO: I think technically if multiple damage types exist the scaling
         // should be different, but eh.
-        if (IsRoundAllowed(clientSvc.BonusPlayerFallDamagePercentRound))
+        else if (IsRoundAllowed(clientSvc.BonusPlayerFallDamagePercentRound))
         {
             damage *= clientSvc.BonusPlayerFallDamagePercent * 0.01;
             state = Plugin_Changed;

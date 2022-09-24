@@ -349,6 +349,7 @@ static bool ProcessSpecialBonuses(KeyValues kv, Service svc, bool fatalError, co
     svc.BonusExtraJumps = kv.GetNum("player_extra_jumps", 1);
     svc.BonusJumpHeight = kv.GetFloat("player_extra_jump_height", EXTRAJUMP_DEFAULT_HEIGHT);
     svc.BonusExtraJumpsRound = kv.GetNum("player_extra_jumps_round", 1);
+    svc.BonusExtraJumpsTakeFallDamage = view_as<bool>(kv.GetNum("player_extra_jumps_falldamage", 1));
 
     svc.BonusPlayerShield = view_as<bool>(kv.GetNum("player_shield", 0));
     svc.BonusPlayerShieldRound = kv.GetNum("player_shield_round", 1);

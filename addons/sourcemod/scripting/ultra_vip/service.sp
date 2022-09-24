@@ -256,6 +256,11 @@ methodmap Service < StringMap
         public get() { return Service_GetCell(this, "player_extra_jumps_round", 1); }
         public set(int value) { this.SetValue("player_extra_jumps_round", value); }
     }
+    property bool BonusExtraJumpsTakeFallDamage
+    {
+        public get() { return Service_GetCell(this, "player_extra_jumps_falldamage", true); }
+        public set(bool value) { this.SetValue("player_extra_jumps_falldamage", value); }
+    }
 
     property bool BonusPlayerShield
     {
