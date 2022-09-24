@@ -19,7 +19,6 @@
 #pragma semicolon 1
 
 #define EXTRAJUMP_DEFAULT_STATE (true)
-#define EXTRAJUMP_HEIGHT 250.0
 
 static bool s_IsEnabled[MAXPLAYERS + 1] = { EXTRAJUMP_DEFAULT_STATE, ... };
 
@@ -129,11 +128,11 @@ void ExtraJump_OnClientDisconect(int client)
 {
     s_IsEnabled[client] = EXTRAJUMP_DEFAULT_STATE;
     s_MaxMultiJumps[client] = 0;
-    s_JumpHeight[client] = EXTRAJUMP_HEIGHT;
+    s_JumpHeight[client] = EXTRAJUMP_DEFAULT_HEIGHT;
     s_AllowedToMultiJump[client] = false;
 }
 
-static void FakeJump(int client, float jumpHeight = EXTRAJUMP_HEIGHT)
+static void FakeJump(int client, float jumpHeight = EXTRAJUMP_DEFAULT_HEIGHT)
 {
     float velocity[3];
     GetEntPropVector(client, Prop_Data, "m_vecVelocity", velocity);

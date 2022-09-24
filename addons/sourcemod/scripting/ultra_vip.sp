@@ -41,6 +41,7 @@
 
 #define MAX_WEAPON_CLASSNAME_SIZE 24 // https://wiki.alliedmods.net/Counter-Strike:_Global_Offensive_Weapons
 #define MAX_SERVICE_NAME_SIZE 64
+#define EXTRAJUMP_DEFAULT_HEIGHT 250.0
 
 Handle g_HudMessages;
 

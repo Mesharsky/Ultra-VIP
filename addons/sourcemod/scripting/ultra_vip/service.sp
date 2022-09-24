@@ -241,7 +241,7 @@ methodmap Service < StringMap
     }
     property float BonusJumpHeight
     {
-        public get() { return Service_GetCell(this, "player_extra_jump_height", 250.0); }
+        public get() { return Service_GetCell(this, "player_extra_jump_height", EXTRAJUMP_DEFAULT_HEIGHT); }
         public set(float value) { this.SetValue("player_extra_jump_height", value); }
     }
     property int BonusExtraJumpsRound
