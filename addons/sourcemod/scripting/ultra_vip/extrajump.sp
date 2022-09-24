@@ -19,11 +19,13 @@
 #pragma semicolon 1
 
 #define EXTRAJUMP_DEFAULT_STATE (true)
+#define EXTRAJUMP_HEIGHT 250.0
 
 static bool s_IsEnabled[MAXPLAYERS + 1] = { EXTRAJUMP_DEFAULT_STATE, ... };
 
 static bool s_AllowedToMultiJump[MAXPLAYERS + 1];
 static int s_MaxMultiJumps[MAXPLAYERS + 1];
+static float s_JumpHeight[MAXPLAYERS + 1];
 
 // Players with service can toggle multijumps on/off.
 public Action Command_ToggleJumps(int client, int args)
@@ -77,7 +79,7 @@ void ExtraJump_OnPlayerRunCmd(int client)
             if (CanJumpAgain(client, jumpCount[client]))
             {
                 ++jumpCount[client];
-                FakeJump(client);
+                FakeJump(client, s_JumpHeight[client]);
             }
         }
     }
@@ -96,6 +98,7 @@ void ExtraJump_OnClientPostAdminCheck(int client, Service svc)
     }
 
     s_MaxMultiJumps[client] = svc.BonusExtraJumps;
+    s_JumpHeight[client] = svc.BonusJumpHeight;
 }
 
 void ExtraJump_OnPlayerSpawn(int client, Service svc)
@@ -126,10 +129,11 @@ void ExtraJump_OnClientDisconect(int client)
 {
     s_IsEnabled[client] = EXTRAJUMP_DEFAULT_STATE;
     s_MaxMultiJumps[client] = 0;
+    s_JumpHeight[client] = EXTRAJUMP_HEIGHT;
     s_AllowedToMultiJump[client] = false;
 }
 
-static void FakeJump(int client, float jumpHeight = 250.0)
+static void FakeJump(int client, float jumpHeight = EXTRAJUMP_HEIGHT)
 {
     float velocity[3];
     GetEntPropVector(client, Prop_Data, "m_vecVelocity", velocity);

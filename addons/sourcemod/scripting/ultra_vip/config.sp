@@ -346,6 +346,7 @@ static bool ProcessSpecialBonuses(KeyValues kv, Service svc, bool fatalError, co
         return HandleError(svc, fatalError, "Service \"%s\" is missing section \"Special Bonuses\".", serviceName);
 
     svc.BonusExtraJumps = kv.GetNum("player_extra_jumps", 1);
+    svc.BonusJumpHeight = kv.GetFloat("player_extra_jump_height", 250.0);
     svc.BonusExtraJumpsRound = kv.GetNum("player_extra_jumps_round", 1);
 
     svc.BonusPlayerShield = view_as<bool>(kv.GetNum("player_shield", 0));

@@ -239,6 +239,11 @@ methodmap Service < StringMap
         public get() { return Service_GetCell(this, "player_extra_jumps", 1); }
         public set(int value) { this.SetValue("player_extra_jumps", value); }
     }
+    property float BonusJumpHeight
+    {
+        public get() { return Service_GetCell(this, "player_extra_jump_height", 250.0); }
+        public set(float value) { this.SetValue("player_extra_jump_height", value); }
+    }
     property int BonusExtraJumpsRound
     {
         public get() { return Service_GetCell(this, "player_extra_jumps_round", 1); }
