@@ -88,11 +88,18 @@ int NStringToInt(const char[] str, int length, int base = 10)
     return StringToInt(buffer, base);
 }
 
-bool FloatEqual(float a, float b)
+bool FloatEqual(float A, float B, float maxRelDiff = 0.00001)
 {
-    float sum = a + b;
-    float product = a * b;
-    return (sum - product) < 0.00001; // Minimum value of FLT_EPSILON in C Standard
+    // Calculate the difference.
+    float diff = FloatAbs(A - B);
+    A = FloatAbs(A);
+    B = FloatAbs(B);
+    // Find the largest
+    float largest = (B > A) ? B : A;
+
+    if (diff <= largest * maxRelDiff)
+        return true;
+    return false;
 }
 
 stock bool ClientsAreTeammates(int clientA, int clientB)
