@@ -219,6 +219,14 @@ static bool ProcessMainConfiguration(KeyValues kv, Service svc, bool fatalError,
     if (buffer[0])
         svc.SetChatTag(buffer);
 
+    kv.GetString("chat_name_color", buffer, sizeof(buffer));
+    if (buffer[0])
+        svc.SetChatNameColor(buffer);
+
+    kv.GetString("chat_message_color", buffer, sizeof(buffer));
+    if (buffer[0])
+        svc.SetChatMsgColor(buffer);    
+
     kv.GetString("scoreboard_tag", buffer, sizeof(buffer));
     if (buffer[0])
         svc.SetScoreboardTag(buffer);

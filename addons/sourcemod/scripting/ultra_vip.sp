@@ -32,6 +32,9 @@
 #if !defined MAXLENGTH_NAME
     #define MAXLENGTH_NAME 64 // scp.inc
 #endif
+#if !defined MAXLENGTH_MESSAGE
+    #define MAXLENGTH_MESSAGE 128
+#endif    
 
 
 #pragma newdecls required

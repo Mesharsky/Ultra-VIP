@@ -67,6 +67,12 @@ methodmap Service < StringMap
     public void GetChatTag(char[] output, int size) { Service_GetString(this, "chat_tag", output, size, ""); }
     public void SetChatTag(const char[] tag) { this.SetString("chat_tag", tag); }
 
+    public void GetChatNameColor(char[] output, int size) { Service_GetString(this, "chat_name_color", output, size, ""); }
+    public void SetChatNameColor(const char[] tag) { this.SetString("chat_name_color", tag); }
+
+    public void GetChatMsgColor(char[] output, int size) { Service_GetString(this, "chat_message_color", output, size, ""); }
+    public void SetChatMsgColor(const char[] tag) { this.SetString("chat_message_color", tag); }
+
     public void GetScoreboardTag(char[] output, int size) { Service_GetString(this, "scoreboard_tag", output, size, ""); }
     public void SetScoreboardTag(const char[] tag) { this.SetString("scoreboard_tag", tag); }
 
