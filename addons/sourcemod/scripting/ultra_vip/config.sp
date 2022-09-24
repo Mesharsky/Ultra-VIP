@@ -315,6 +315,7 @@ static bool ProcessPlayerSpawnBonuses(KeyValues kv, Service svc, bool fatalError
     svc.BonusDefuserEnabled = view_as<bool>(kv.GetNum("player_defuser", 1));
     svc.BonusDefuserRound = kv.GetNum("player_defuser_round", 2);
 
+    svc.ShouldStripConsumables = view_as<bool>(kv.GetNum("strip_grenades", 0));
     svc.BonusHEGrenades = kv.GetNum("he_grenade_amount", 1);
     svc.BonusHEGrenadesRound = kv.GetNum("he_grenade_round", 1);
     svc.BonusFlashGrenades = kv.GetNum("flash_grenade_amount", 1);

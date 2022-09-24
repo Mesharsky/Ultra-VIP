@@ -214,19 +214,27 @@ void SetPlayerScoreBoardTag(int client, Service svc)
 
 int GetPlayerWeapon(int client, CSWeaponID wepid)
 {
+    if (wepid == CSWeapon_NONE)
+        return -1;
+
     int maxWeapons = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
     for (int i = 0; i < maxWeapons; i++)
     {
         int weapon = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i);
-        if (weapon != -1)
-        {
-            int def = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
-            if (CS_ItemDefIndexToID(def) == wepid)
-                return weapon;
-        }
+        if (GetWeaponEntityID(weapon) == wepid)
+            return weapon;
     }
 
     return -1;
+}
+
+CSWeaponID GetWeaponEntityID(int weapon)
+{
+    if (weapon <= MaxClients)
+        return CSWeapon_NONE;
+
+    int def = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
+    return CS_ItemDefIndexToID(def);
 }
 
 void GivePlayerUnlimitedAmmo(int client, int weapon)

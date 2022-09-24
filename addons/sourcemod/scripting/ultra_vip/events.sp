@@ -121,7 +121,7 @@ public Action Timer_SpawnBonuses(Handle tmr, DataPack pack)
     Bonus_GivePlayerShield(client, svc);
 
     DisplayWeaponMenu(client, svc);
-    GiveGrenades(client, svc);
+    Bonus_GiveGrenades(client, svc);
 
     s_SpawnTimers[client] = null;
     return Plugin_Handled;

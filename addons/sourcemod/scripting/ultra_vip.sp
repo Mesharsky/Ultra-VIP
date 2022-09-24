@@ -77,6 +77,7 @@ int g_RoundCount;
 #include "ultra_vip/extrajump.sp"
 #include "ultra_vip/util.sp"
 #include "ultra_vip/chat.sp"
+#include "ultra_vip/grenade.sp"
 
 Service g_ClientService[MAXPLAYERS +1];
 

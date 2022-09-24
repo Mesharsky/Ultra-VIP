@@ -124,6 +124,13 @@ methodmap Service < StringMap
         public set(int value) { this.SetValue("player_defuser_round", value); }
     }
 
+    // For use with grenade.sp::GivePlayerConsumables
+    property bool ShouldStripConsumables
+    {
+        public get() { return Service_GetCell(this, "strip_consumables", false); }
+        public set(bool value) { this.SetValue("strip_consumables", value); }
+    }
+
     property int BonusHEGrenades
     {
         public get() { return Service_GetCell(this, "he_grenade_amount", 1); }

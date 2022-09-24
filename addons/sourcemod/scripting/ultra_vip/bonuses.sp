@@ -119,9 +119,11 @@ void Bonus_GivePlayerShield(int client, Service svc)
         GivePlayerItem(client, "weapon_shield");
 }
 
-void GiveGrenades(int client, Service svc)
+void Bonus_GiveGrenades(int client, Service svc)
 {
-    // xd
+    ConsumableItems items;
+    items.SetFromClientService(client, svc);
+    GivePlayerConsumables(client, items, svc.ShouldStripConsumables);
 }
 
 //////////////////////////////////
