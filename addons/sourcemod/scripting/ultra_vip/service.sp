@@ -201,6 +201,39 @@ methodmap Service < StringMap
         public set(int value) { this.SetValue("tag_grenade_round", value); }
     }
 
+    property int BonusSnowballGrenades
+    {
+        public get() { return Service_GetCell(this, "snowball_grenade_amount", 0); }
+        public set(int value) { this.SetValue("snowball_grenade_amount", value); }
+    }
+    property int BonusSnowballGrenadesRound
+    {
+        public get() { return Service_GetCell(this, "snowball_grenade_round", 1); }
+        public set(int value) { this.SetValue("snowball_grenade_round", value); }
+    }
+
+    property int BonusBreachchargeGrenades
+    {
+        public get() { return Service_GetCell(this, "breachcharge_grenade_amount", 0); }
+        public set(int value) { this.SetValue("breachcharge_grenade_amount", value); }
+    }
+    property int BonusBreachchargeGrenadesRound
+    {
+        public get() { return Service_GetCell(this, "breachcharge_grenade_round", 1); }
+        public set(int value) { this.SetValue("breachcharge_grenade_round", value); }
+    }
+
+    property int BonusBumpmineGrenades
+    {
+        public get() { return Service_GetCell(this, "bumpmine_grenade_amount", 0); }
+        public set(int value) { this.SetValue("bumpmine_grenade_amount", value); }
+    }
+    property int BonusBumpmineGrenadesRound
+    {
+        public get() { return Service_GetCell(this, "bumpmine_grenade_round", 1); }
+        public set(int value) { this.SetValue("bumpmine_grenade_round", value); }
+    }
+
     property int BonusExtraJumps
     {
         public get() { return Service_GetCell(this, "player_extra_jumps", 1); }
