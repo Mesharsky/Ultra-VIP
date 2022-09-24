@@ -91,7 +91,7 @@ methodmap Service < StringMap
         public get() { return Service_GetCell(this, "player_vest", true); }
         public set(bool value) { this.SetValue("player_vest", value); }
     }
-    property int BonusArmorValue
+    property int BonusArmor
     {
         public get() { return Service_GetCell(this, "player_vest_value", 100); }
         public set(int value) { this.SetValue("player_vest_value", value); }
@@ -168,7 +168,7 @@ methodmap Service < StringMap
         public set(int value) { this.SetValue("decoy_grenade_round", value); }
     }
 
-    property int BonusMolotovGrenadesValue
+    property int BonusMolotovGrenades
     {
         public get() { return Service_GetCell(this, "molotov_grenade_amount", 0); }
         public set(int value) { this.SetValue("molotov_grenade_amount", value); }

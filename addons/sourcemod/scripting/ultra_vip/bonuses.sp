@@ -51,7 +51,7 @@ void Bonus_GivePlayerArmor(int client, Service svc)
     if(!svc.BonusArmorEnabled || !IsRoundAllowed(svc.BonusArmorRound))
         return;
     
-    SetEntProp(client, Prop_Send, "m_ArmorValue", svc.BonusArmorValue);
+    SetEntProp(client, Prop_Send, "m_ArmorValue", svc.BonusArmor);
 }
 
 void Bonus_GivePlayerDefuser(int client, Service svc)

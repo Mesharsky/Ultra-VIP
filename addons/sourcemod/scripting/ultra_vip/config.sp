@@ -306,7 +306,7 @@ static bool ProcessPlayerSpawnBonuses(KeyValues kv, Service svc, bool fatalError
     svc.BonusMaxPlayerHealth = kv.GetNum("player_max_hp", 110);
 
     svc.BonusArmorEnabled = view_as<bool>(kv.GetNum("player_vest", 1));
-    svc.BonusArmorValue = kv.GetNum("player_vest_value", 100);
+    svc.BonusArmor = kv.GetNum("player_vest_value", 100);
     svc.BonusArmorRound = kv.GetNum("player_vest_round", 2);
 
     svc.BonusHelmetEnabled = view_as<bool>(kv.GetNum("player_helmet", 1));
@@ -323,7 +323,7 @@ static bool ProcessPlayerSpawnBonuses(KeyValues kv, Service svc, bool fatalError
     svc.BonusSmokeGrenadesRound = kv.GetNum("smoke_grenade_round", 1);
     svc.BonusDecoyGrenades = kv.GetNum("decoy_grenade_amount", 0);
     svc.BonusDecoyGrenadesRound = kv.GetNum("decoy_grenade_round", 1);
-    svc.BonusMolotovGrenadesValue = kv.GetNum("molotov_grenade_amount", 0);
+    svc.BonusMolotovGrenades = kv.GetNum("molotov_grenade_amount", 0);
     svc.BonusMolotovGrenadesRound = kv.GetNum("molotov_grenade_round", 1);
     svc.BonusHealthshotGrenades = kv.GetNum("molotov_grenade_amount", 0);
     svc.BonusHealthshotGrenadesRound = kv.GetNum("healthshot_grenade_round", 3);
