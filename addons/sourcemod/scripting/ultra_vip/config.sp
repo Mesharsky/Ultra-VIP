@@ -211,6 +211,8 @@ static bool ProcessMainConfiguration(KeyValues kv, Service svc, bool fatalError,
     svc.Flag = flag;
     // s_UsedServiceFlags is updated when the service is pushed to g_Services
 
+    svc.Priority = kv.GetNum("priority", 0);
+
     kv.GetString("override", buffer, sizeof(buffer));
     if (buffer[0])
         svc.SetOverride(buffer);
@@ -626,6 +628,7 @@ static bool BuildSortedFlagList()
     {
         list.GetArray(i, data, sizeof(data));
         g_SortedServiceFlags.Set(i, data.flag);
+        PrintToServer("DEBUG: g_SortedServiceFlags[%i] = %x", i, data.flag);
     }
 
     delete list;
