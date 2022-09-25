@@ -194,8 +194,8 @@ methodmap Service < StringMap
 
     property int BonusHealthshotGrenades
     {
-        public get() { return Service_GetCell(this, "molotov_grenade_amount", 0); }
-        public set(int value) { this.SetValue("molotov_grenade_amount", value); }
+        public get() { return Service_GetCell(this, "healthshot_grenade_amount", 0); }
+        public set(int value) { this.SetValue("healthshot_grenade_amount", value); }
     }
     property int BonusHealthshotGrenadesRound
     {

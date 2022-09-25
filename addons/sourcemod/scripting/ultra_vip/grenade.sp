@@ -202,7 +202,7 @@ bool GivePlayerConsumables(
         GetAllAmmoTypes();
 
     if (strip)
-        StripPlayerConsumables(client);
+        StripPlayerConsumables(client);  
 
     // AddConsumableAmmo adds up to a target amount, and no further.
     // That means if a player is to get 2 flashes but already has 1,
@@ -318,9 +318,9 @@ static void AddConsumableAmmo(int client, CSItemType type, int targetAmount)
         case Item_Snowball:
         {
             int current = GetAmmoCount(client, type);
-            int limit = s_limitSnowball.IntValue - current;
+            int limit = s_limitSnowball.IntValue;
 
-            targetAmount = _MIN(limit, targetAmount);
+            targetAmount = _MIN(limit, targetAmount) - current; // Add only up to targetAmount
 
             for (int i = 0; i < targetAmount; ++i)
                 GivePlayerItem(client, s_Classnames[view_as<int>(type)]);
@@ -329,9 +329,9 @@ static void AddConsumableAmmo(int client, CSItemType type, int targetAmount)
         case Item_Healthshot:
         {
             int current = GetAmmoCount(client, type);
-            int limit = s_limitHealthshot.IntValue - current;
+            int limit = s_limitHealthshot.IntValue;
 
-            targetAmount = _MIN(limit, targetAmount);
+            targetAmount = _MIN(limit, targetAmount) - current; // Add only up to targetAmount
 
             for (int i = 0; i < targetAmount; ++i)
                 GivePlayerItem(client, s_Classnames[view_as<int>(type)]);

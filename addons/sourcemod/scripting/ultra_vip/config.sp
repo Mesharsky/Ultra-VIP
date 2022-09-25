@@ -334,7 +334,7 @@ static bool ProcessPlayerSpawnBonuses(KeyValues kv, Service svc, bool fatalError
     svc.BonusDecoyGrenadesRound = kv.GetNum("decoy_grenade_round", 1);
     svc.BonusMolotovGrenades = kv.GetNum("molotov_grenade_amount", 0);
     svc.BonusMolotovGrenadesRound = kv.GetNum("molotov_grenade_round", 1);
-    svc.BonusHealthshotGrenades = kv.GetNum("molotov_grenade_amount", 0);
+    svc.BonusHealthshotGrenades = kv.GetNum("healthshot_grenade_amount", 0);
     svc.BonusHealthshotGrenadesRound = kv.GetNum("healthshot_grenade_round", 3);
     svc.BonusTacticalGrenades = kv.GetNum("tag_grenade_amount", 0);
     svc.BonusTacticalGrenadesRound = kv.GetNum("BonusTacticalGrenadesRound", 1);
