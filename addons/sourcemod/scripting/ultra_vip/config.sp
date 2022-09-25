@@ -18,12 +18,21 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+enum RootServiceMode
+{
+    Mode_None = 0,      // Root does not get a service.
+    Mode_Auto,          // Root gets the highest priority service.
+    Mode_Specified      // Root gets a specific service.
+}
+
 char g_ChatTag[64];
 bool g_UseOnlineList;
 StringMap g_OnlineListCommands;
 bool g_IsDeathmatchMode;
 bool g_BotsGrantBonuses;
-int g_RootServiceFlag;
+
+Service g_RootService;
+RootServiceMode g_RootServiceMode;
 StringMap g_SteamIDServices;    // Maps SteamID2 to Service handle (g_Services)
 
 static int s_UsedServiceFlags;
@@ -178,16 +187,42 @@ static bool GetGlobalConfiguration(KeyValues kv, bool fatalError)
 
     SplitIntoStringMap(g_OnlineListCommands, buffer, ONLINE_CMD_SEPARATOR);
 
+    if (!GetRootService(kv))
+        return HandleError(kv, fatalError, "An error occurred while processing the \"root_service\".");
+
+    return true;
+}
+
+static bool GetRootService(KeyValues kv)
+{
+    char buffer[64];
     kv.GetString("root_service", buffer, sizeof(buffer));
-    Service rootSvc = FindServiceByName(buffer);
-    if (rootSvc == null)
+
+    g_RootService = null;
+    g_RootServiceMode = Mode_None;
+
+    if (!buffer[0])
     {
-        g_RootServiceFlag = 0;
-        if (buffer[0])
-            return HandleError(kv, fatalError, "\"root_service\" is set to an unknown service \"%s\"", buffer);
+        LogError("\"root_service\" cannot be empty. You must use \"NONE\", \"AUTO\" or the name of a service.");
+        return false;
     }
-    else
-        g_RootServiceFlag = rootSvc.Flag;
+
+    if (StrEqual(buffer, "NONE", false))
+        return true;
+    else if (StrEqual(buffer, "AUTO", false))
+    {
+        g_RootServiceMode = Mode_Auto;
+        return true;
+    }
+
+    g_RootService = FindServiceByName(buffer);
+    if (g_RootService == null)
+    {
+        LogError("\"root_service\" is set to an unknown service \"%s\"", buffer);
+        return false;
+    }
+
+    g_RootServiceMode = Mode_Specified;
     return true;
 }
 
@@ -628,7 +663,6 @@ static bool BuildSortedFlagList()
     {
         list.GetArray(i, data, sizeof(data));
         g_SortedServiceFlags.Set(i, data.flag);
-        PrintToServer("DEBUG: g_SortedServiceFlags[%i] = %x", i, data.flag);
     }
 
     delete list;

@@ -240,16 +240,20 @@ Service FindClientService(int client)
     if (!IsClientAuthorized(client) || IsFakeClient(client))
         return null;
 
-    Service svc;
-
     // Find root service, if any
     int flags = GetUserFlagBits(client);
 
     if (flags & ADMFLAG_ROOT)
-        flags |= g_RootServiceFlag;
+    {
+        if (g_RootServiceMode == Mode_None)
+            return null;
+        else if (g_RootServiceMode == Mode_Specified)
+            return g_RootService;
+        // Mode_Auto handled below
+    }
 
     // Search using admin flags
-    svc = FindHighestPriorityService(flags);
+    Service svc = FindHighestPriorityService(flags);
     if (svc != null)
         return svc;
 
@@ -275,13 +279,17 @@ Service FindHighestPriorityService(int adminFlags)
     if (!adminFlags)
         return null;
 
+    // TODO / BUG: Does not correctly support priority searching for services without flags
+    // You'll probably need to change how they're stored and replace g_SortedServiceFlags
+    // with just a sorted list of the service handles.
+
     // Find highest priority flag in param that matches a service
     int len = g_SortedServiceFlags.Length;
     int foundFlag;
     for (int i = 0; i < len; ++i)
     {
         int temp = g_SortedServiceFlags.Get(i);
-        if (temp & adminFlags)
+        if (HasAdminFlagAccess(temp, adminFlags))
         {
             foundFlag = temp;
             break;

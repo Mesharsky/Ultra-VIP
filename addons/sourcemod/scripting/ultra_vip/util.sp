@@ -409,3 +409,8 @@ bool IsWarmup()
 {
     return GameRules_GetProp("m_bWarmupPeriod") != 0;
 }
+
+bool HasAdminFlagAccess(int flag, int flags)
+{
+    return flag & flags || flags & ADMFLAG_ROOT;
+}
