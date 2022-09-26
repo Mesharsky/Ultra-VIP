@@ -182,6 +182,9 @@ static bool IsJumpingAfterFalling(int jumpCount, int entityFlags)
 
 static bool CanJumpAgain(int client, int &jumpCount)
 {
+    if (GetEntityMoveType(client) == MOVETYPE_NOCLIP)
+        return false;
+
     // 0 is the first jump from the ground, so it shouldn't be counted.
     // That makes s_MaxMultiJumps 1-indexed (so use <=)
     return jumpCount > 0 && jumpCount <= s_MaxMultiJumps[client];

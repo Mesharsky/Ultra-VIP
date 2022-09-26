@@ -163,6 +163,8 @@ static bool CanDisplayWeaponMenu(int client, Service svc)
         return false;
     if (IsWarmup())
         return false;
+    if (!IsOnPlayingTeam(client) || !IsPlayerAlive(client))
+        return false;
 
     // This check is a little redunant but it's fine i guess
     return CanSelectNewWeapons(svc) || s_PreviousWeapon[client].IsAnyAllowedThisRound(svc);
@@ -223,6 +225,10 @@ public int WeaponMenu_Handler(Menu menu, MenuAction action, int param1, int para
         {
             char info[16];
             menu.GetItem(param2, info, sizeof(info));
+
+            // Prevent exploit where you can leave the menu open and then use it in spec
+            if (!IsOnPlayingTeam(param1) || !IsPlayerAlive(param1))
+                return 0;
 
             if (StrEqual(info, "NEW"))
             {
