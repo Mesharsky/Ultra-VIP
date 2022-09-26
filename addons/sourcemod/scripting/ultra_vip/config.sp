@@ -283,24 +283,18 @@ static bool Config_ProcessSteamIDAccess(KeyValues kv, Service svc, bool fatalErr
     if (!kv.JumpToKey("SteamID Access"))
         return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is missing secttion \"SteamID Access\".", serviceName);
 
-    if (!kv.GotoFirstSubKey())
+    if (!kv.GotoFirstSubKey(false))
     {
         kv.GoBack(); // To "Main Configuration"
-        return false;
+        return true;
     }
 
     char auth[MAX_AUTHID_LENGTH];
     do
     {
-        kv.GetString("steamid2", auth, sizeof(auth));
-        if (!auth[0]) // fucking yikes
-            kv.GetString("steamid3", auth, sizeof(auth));
-        if (!auth[0])
-            kv.GetString("steamid", auth, sizeof(auth));
-        if (!auth[0])
-            kv.GetString("auth", auth, sizeof(auth));
+        kv.GetString(NULL_STRING, auth, sizeof(auth));
 
-        // If still empty just ignore it, it's probably intentionally blank
+        // Empty steamid is not an error
         if (!auth[0])
             continue;
 
@@ -313,7 +307,7 @@ static bool Config_ProcessSteamIDAccess(KeyValues kv, Service svc, bool fatalErr
         else
             LogError("Invalid SteamID2 or SteamID3 \"%s\" for Service \"%s\"", auth, serviceName);
 
-    } while (kv.GotoNextKey());
+    } while (kv.GotoNextKey(false));
 
     kv.GoBack(); // To SteamID Access
     kv.GoBack(); // To "Main Configuration"
