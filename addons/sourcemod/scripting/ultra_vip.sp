@@ -48,6 +48,7 @@
 
 Handle g_HudMessages;
 
+bool g_IsLateLoad;
 ArrayList g_Services;
 ArrayList g_SortedServiceFlags;
 
@@ -93,6 +94,18 @@ public Plugin myinfo =
     url = "https://github.com/Mesharsky/Ultra-VIP"
 };
 
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+    if (GetEngineVersion() != Engine_CSGO)
+    {
+        Format(error, err_max, "Ultra-VIP only works with CS:GO.");
+        return APLRes_Failure;
+    }
+
+    g_IsLateLoad = late;
+    return APLRes_Success;
+}
+
 public void OnPluginStart()
 {
     g_Services = new ArrayList();
@@ -132,11 +145,18 @@ public void OnPluginStart()
 
 static void HandleLateLoad()
 {
-#warning FIXME I dont know if we can, but we should also trigger any of the "OnSpawn" effect in HandleLateLoad
+    /**
+     * NOTE / TODO: Lateloading is not properly supported.
+     * It doesn't handle Event_PlayerSpawn so players will not get bonuses until the next round.
+     * Some other things may behave incorrectly or be completely broken.
+     *
+     * Otherwise, it does *try* to make sure the plugin will work correctly on the next round.
+     */
 
-    // HOWEVER, we might risk breaking things if we just triggered the Event_PlayerSpawn
-    // stuff manually, so it might be better to actually disable the whole plugin until
-    // the next round, or not bother with that and just let it be not-fully-working
+    if (!g_IsLateLoad)
+        return;
+
+    PrintToServer("[Ultra VIP] %T", "Late load warning", LANG_SERVER);
 
     for (int i = 1; i <= MaxClients; ++i)
     {
@@ -199,7 +219,6 @@ public Action Command_ShowServices(int client, int args)
 
 public Action Command_ReloadServices(int client, int args)
 {
-#warning FIXME LoadConfig will leave some globals in an invalid state if it doesn't fail fatally.
     if(LoadConfig(false))
         CReplyToCommand(client, "%t", "Config Reloaded");
     else

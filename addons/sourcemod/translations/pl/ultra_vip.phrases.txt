@@ -1,5 +1,9 @@
 ﻿"Phrases"
 {
+    "Late load warning"
+    {
+        "pl"    "Ostrzeżenie: Przeładowanie/Ładowanie Ultra-Vip'a może spowodować, że plugin nie będzie działał poprawnie. Jeżeli zostanie załadowany podczas gdy serwer już działa. Niektóre rzeczy/funkcjonalności zaczną działać dopiero od następnej rundy."
+    }
     "Config Reloaded"
     {
         "pl"    "Plik konfiguracyjny został {green}Pomyślnie przeładowany"
