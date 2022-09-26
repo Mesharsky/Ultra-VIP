@@ -139,112 +139,112 @@ methodmap Service < StringMap
 
     property int BonusHEGrenades
     {
-        public get() { return Service_GetCell(this, "he_grenade_amount", 1); }
-        public set(int value) { this.SetValue("he_grenade_amount", value); }
+        public get() { return Service_GetCell(this, "he_amount", 1); }
+        public set(int value) { this.SetValue("he_amount", value); }
     }
     property int BonusHEGrenadesRound
     {
-        public get() { return Service_GetCell(this, "he_grenade_round", 1); }
-        public set(int value) { this.SetValue("he_grenade_round", value); }
+        public get() { return Service_GetCell(this, "he_round", 1); }
+        public set(int value) { this.SetValue("he_round", value); }
     }
 
     property int BonusFlashGrenades
     {
-        public get() { return Service_GetCell(this, "flash_grenade_amount", 1); }
-        public set(int value) { this.SetValue("flash_grenade_amount", value); }
+        public get() { return Service_GetCell(this, "flash_amount", 1); }
+        public set(int value) { this.SetValue("flash_amount", value); }
     }
     property int BonusFlashGrenadesRound
     {
-        public get() { return Service_GetCell(this, "flash_grenade_round", 1); }
-        public set(int value) { this.SetValue("flash_grenade_round", value); }
+        public get() { return Service_GetCell(this, "flash_round", 1); }
+        public set(int value) { this.SetValue("flash_round", value); }
     }
 
     property int BonusSmokeGrenades
     {
-        public get() { return Service_GetCell(this, "smoke_grenade_amount", 1); }
-        public set(int value) { this.SetValue("smoke_grenade_amount", value); }
+        public get() { return Service_GetCell(this, "smoke_amount", 1); }
+        public set(int value) { this.SetValue("smoke_amount", value); }
     }
     property int BonusSmokeGrenadesRound
     {
-        public get() { return Service_GetCell(this, "smoke_grenade_round", 1); }
-        public set(int value) { this.SetValue("smoke_grenade_round", value); }
+        public get() { return Service_GetCell(this, "smoke_round", 1); }
+        public set(int value) { this.SetValue("smoke_round", value); }
     }
 
     property int BonusDecoyGrenades
     {
-        public get() { return Service_GetCell(this, "decoy_grenade_amount", 0); }
-        public set(int value) { this.SetValue("decoy_grenade_amount", value); }
+        public get() { return Service_GetCell(this, "decoy_amount", 0); }
+        public set(int value) { this.SetValue("decoy_amount", value); }
     }
     property int BonusDecoyGrenadesRound
     {
-        public get() { return Service_GetCell(this, "decoy_grenade_round", 1); }
-        public set(int value) { this.SetValue("decoy_grenade_round", value); }
+        public get() { return Service_GetCell(this, "decoy_round", 1); }
+        public set(int value) { this.SetValue("decoy_round", value); }
     }
 
     property int BonusMolotovGrenades
     {
-        public get() { return Service_GetCell(this, "molotov_grenade_amount", 0); }
-        public set(int value) { this.SetValue("molotov_grenade_amount", value); }
+        public get() { return Service_GetCell(this, "molotov_amount", 0); }
+        public set(int value) { this.SetValue("molotov_amount", value); }
     }
     property int BonusMolotovGrenadesRound
     {
-        public get() { return Service_GetCell(this, "molotov_grenade_round", 1); }
-        public set(int value) { this.SetValue("molotov_grenade_round", value); }
+        public get() { return Service_GetCell(this, "molotov_round", 1); }
+        public set(int value) { this.SetValue("molotov_round", value); }
     }
 
     property int BonusHealthshotGrenades
     {
-        public get() { return Service_GetCell(this, "healthshot_grenade_amount", 0); }
-        public set(int value) { this.SetValue("healthshot_grenade_amount", value); }
+        public get() { return Service_GetCell(this, "healthshot_amount", 0); }
+        public set(int value) { this.SetValue("healthshot_amount", value); }
     }
     property int BonusHealthshotGrenadesRound
     {
-        public get() { return Service_GetCell(this, "healthshot_grenade_round", 3); }
-        public set(int value) { this.SetValue("healthshot_grenade_round", value); }
+        public get() { return Service_GetCell(this, "healthshot_round", 3); }
+        public set(int value) { this.SetValue("healthshot_round", value); }
     }
 
     property int BonusTacticalGrenades
     {
-        public get() { return Service_GetCell(this, "tag_grenade_amount", 0); }
-        public set(int value) { this.SetValue("tag_grenade_amount", value); }
+        public get() { return Service_GetCell(this, "tag_amount", 0); }
+        public set(int value) { this.SetValue("tag_amount", value); }
     }
     property int BonusTacticalGrenadesRound
     {
-        public get() { return Service_GetCell(this, "tag_grenade_round", 1); }
-        public set(int value) { this.SetValue("tag_grenade_round", value); }
+        public get() { return Service_GetCell(this, "tag_round", 1); }
+        public set(int value) { this.SetValue("tag_round", value); }
     }
 
     property int BonusSnowballGrenades
     {
-        public get() { return Service_GetCell(this, "snowball_grenade_amount", 0); }
-        public set(int value) { this.SetValue("snowball_grenade_amount", value); }
+        public get() { return Service_GetCell(this, "snowball_amount", 0); }
+        public set(int value) { this.SetValue("snowball_amount", value); }
     }
     property int BonusSnowballGrenadesRound
     {
-        public get() { return Service_GetCell(this, "snowball_grenade_round", 1); }
-        public set(int value) { this.SetValue("snowball_grenade_round", value); }
+        public get() { return Service_GetCell(this, "snowball_round", 1); }
+        public set(int value) { this.SetValue("snowball_round", value); }
     }
 
     property int BonusBreachchargeGrenades
     {
-        public get() { return Service_GetCell(this, "breachcharge_grenade_amount", 0); }
-        public set(int value) { this.SetValue("breachcharge_grenade_amount", value); }
+        public get() { return Service_GetCell(this, "breachcharge_amount", 0); }
+        public set(int value) { this.SetValue("breachcharge_amount", value); }
     }
     property int BonusBreachchargeGrenadesRound
     {
-        public get() { return Service_GetCell(this, "breachcharge_grenade_round", 1); }
-        public set(int value) { this.SetValue("breachcharge_grenade_round", value); }
+        public get() { return Service_GetCell(this, "breachcharge_round", 1); }
+        public set(int value) { this.SetValue("breachcharge_round", value); }
     }
 
     property int BonusBumpmineGrenades
     {
-        public get() { return Service_GetCell(this, "bumpmine_grenade_amount", 0); }
-        public set(int value) { this.SetValue("bumpmine_grenade_amount", value); }
+        public get() { return Service_GetCell(this, "bumpmine_amount", 0); }
+        public set(int value) { this.SetValue("bumpmine_amount", value); }
     }
     property int BonusBumpmineGrenadesRound
     {
-        public get() { return Service_GetCell(this, "bumpmine_grenade_round", 1); }
-        public set(int value) { this.SetValue("bumpmine_grenade_round", value); }
+        public get() { return Service_GetCell(this, "bumpmine_round", 1); }
+        public set(int value) { this.SetValue("bumpmine_round", value); }
     }
 
     property int BonusExtraJumps
