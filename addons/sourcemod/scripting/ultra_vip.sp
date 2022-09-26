@@ -193,6 +193,7 @@ public void OnClientDisconnect(int client)
 
 public Action Command_ShowServices(int client, int args)
 {
+#warning FIXME Command_ShowServices
 	return Plugin_Handled;
 }
 
@@ -219,13 +220,6 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 int IsRoundAllowed(int round)
 {
     return g_RoundCount >= round;
-}
-
-bool IsServiceHandleValid(Handle hndl)
-{
-    if (hndl == null)
-        return false;
-    return g_Services.FindValue(hndl) != -1;
 }
 
 Service GetClientService(int client)

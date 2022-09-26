@@ -43,6 +43,17 @@ enum struct WeaponLoadout
         return this.primary[0] || this.secondary[0];
     }
 
+    bool IsAnyAllowedThisRound(Service svc)
+    {
+        if (svc == null)
+            return false;
+        if (this.primary[0] && IsRoundAllowed(svc.RifleWeaponsRound))
+            return true;
+        if (this.secondary[0] && IsRoundAllowed(svc.PistolWeaponsRound))
+            return true;
+        return false;
+    }
+
     void Reset()
     {
         this.primary[0] = '\0';
@@ -120,6 +131,9 @@ static void AddToNewLoadoutBuffer(int client, WeaponType type, const char classn
 
 void DisplayWeaponMenu(int client, Service weaponListService)
 {
+    if (!CanDisplayWeaponMenu(client, weaponListService))
+        return;
+
     if (s_WeaponMenu == null)
     {
         s_WeaponMenu = new Menu(WeaponMenu_Handler, MENU_ACTIONS_ALL);
@@ -134,6 +148,24 @@ void DisplayWeaponMenu(int client, Service weaponListService)
     s_WeaponListService[client] = weaponListService;
 
     s_WeaponMenu.Display(client, MENU_TIME_FOREVER);
+}
+
+static bool CanSelectNewWeapons(Service svc)
+{
+    if (svc == null)
+        return false;
+    return IsRoundAllowed(svc.RifleWeaponsRound) || IsRoundAllowed(svc.PistolWeaponsRound);
+}
+
+static bool CanDisplayWeaponMenu(int client, Service svc)
+{
+    if (svc == null)
+        return false;
+    if (IsWarmup())
+        return false;
+
+    // This check is a little redunant but it's fine i guess
+    return CanSelectNewWeapons(svc) || s_PreviousWeapon[client].IsAnyAllowedThisRound(svc);
 }
 
 public int WeaponMenu_Handler(Menu menu, MenuAction action, int param1, int param2)
@@ -165,8 +197,13 @@ public int WeaponMenu_Handler(Menu menu, MenuAction action, int param1, int para
             char info[16];
             menu.GetItem(param2, info, sizeof(info));
 
-            if (StrEqual(info, "PREVIOUS") && !s_PreviousWeapon[param1].IsSet())
+            if (StrEqual(info, "NEW") && !CanSelectNewWeapons(s_WeaponListService[param1]))
                 return ITEMDRAW_DISABLED;
+            else if (StrEqual(info, "PREVIOUS"))
+            {
+                if (!s_PreviousWeapon[param1].IsAnyAllowedThisRound(s_WeaponListService[param1]))
+                    return ITEMDRAW_DISABLED;
+            }
 
             return ITEMDRAW_DEFAULT;
         }
@@ -189,18 +226,14 @@ public int WeaponMenu_Handler(Menu menu, MenuAction action, int param1, int para
 
             if (StrEqual(info, "NEW"))
             {
-                if (!IsServiceHandleValid(s_WeaponListService[param1]))
-                    return 0;
-                
                 s_NewLoadoutBuffer[param1].Reset();
 
-#warning BUG: Need to disable this whole menu if both pistol and rifle are disabled this round.
                 if (GoToNextSelectionList(param1, s_WeaponListService[param1]))
                     DisplayWeaponList(param1);
             }
             else if (StrEqual(info, "PREVIOUS"))
             {
-                if(!s_PreviousWeapon[param1].IsSet())
+                if (!s_PreviousWeapon[param1].IsSet())
                     return 0;
 
                 GiveLoadoutIfAllowed(param1, s_PreviousWeapon[param1], s_WeaponListService[param1]);
@@ -492,10 +525,4 @@ static bool DecodeMenuInfo(const char[] info, WeaponMenuItem outputItem)
     return true;
 }
 
-/*
-    - The "round" variables will be stored per weapon
-    - The build function will get them itself for each weapon type,
-       otherwise we'd have to pass them in as a hardcoded array.
-    - Later, if we want to add in a "per-weapon round" we can easily
-      add it as an override to the "x_menu_round" variable.
-*/
+// i hate this file
