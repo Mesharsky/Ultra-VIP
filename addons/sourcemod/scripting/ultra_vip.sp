@@ -41,14 +41,29 @@
 #pragma semicolon 1
 
 #define PLUGIN_VERSION "0.1"
+#define DEBUG
 
+#define INVALID_ROUND 0
 #define MAX_WEAPON_CLASSNAME_SIZE 24 // https://wiki.alliedmods.net/Counter-Strike:_Global_Offensive_Weapons
 #define MAX_SERVICE_NAME_SIZE 64
 #define EXTRAJUMP_DEFAULT_HEIGHT 250.0
 
-Handle g_HudMessages;
+
+enum
+{
+	GamePhase_Warmup,
+	GamePhase_Standard,
+	GamePhase_PlayingFirstHalf,
+	GamePhase_PlayingSecondHalf,
+	GamePhase_Halftime,
+	GamePhase_MatchEnded,
+	GamePhase_TOTAL
+};
+
+static ConVar s_Cvar_MaxRounds;
 
 bool g_IsLateLoad;
+Handle g_HudMessages;
 ArrayList g_Services;
 ArrayList g_SortedServiceFlags;
 
@@ -113,6 +128,10 @@ public void OnPluginStart()
 
     LoadTranslations("ultra_vip.phrases.txt");
 
+    s_Cvar_MaxRounds = FindConVar("mp_maxrounds");
+    if (s_Cvar_MaxRounds == null)
+        SetFailState("Game is somehow missing the required \"mp_maxrounds\" ConVar.");
+
     RegConsoleCmd("sm_vips", Command_ShowServices);
     RegConsoleCmd("sm_jumps", Command_ToggleJumps);
 
@@ -126,13 +145,11 @@ public void OnPluginStart()
     HookEvent("hostage_rescued", Event_HostageRescued);
     HookEvent("round_start", Event_RoundStart);
     HookEvent("weapon_fire", Event_WeaponFire);
-
-    HookEvent("announce_phase_end", Event_TeamChange);
-    HookEvent("cs_intermission", Event_TeamChange);
-    HookEvent("cs_win_panel_match", Event_TeamChange);
-    HookEvent("cs_match_end_restart", Event_TeamChange);
-
     HookEvent("player_connect_full", Event_PlayerConnectFull);
+
+#if defined DEBUG
+    RegConsoleCmd("sm_endround", Command_EndRound);
+#endif
 
 	//g_Cvar_ArenaMode = CreateConVar("arena_mode", "0", "Should arena mode (splewis) be enabled?\nRemeber that plugin will use arena configuration file instead if enabled");
 
@@ -173,7 +190,7 @@ static void HandleLateLoad()
 
 public void OnMapStart()
 {
-    g_RoundCount = 0;
+    g_RoundCount = INVALID_ROUND;
 }
 
 public void OnMapEnd()
@@ -211,6 +228,29 @@ public void OnClientDisconnect(int client)
     WeaponMenu_ResetPreviousWeapons(client);
 }
 
+#if defined DEBUG
+public Action Command_EndRound(int client, int args)
+{
+    if (args != 1)
+    {
+        ReplyToCommand(client, "sm_endround <CT/T or anything else for draw>");
+        return Plugin_Handled;
+    }
+
+    char arg1[3];
+    GetCmdArg(1, arg1, sizeof(arg1));
+
+    CSRoundEndReason reason = CSRoundEnd_Draw;
+    if (StrEqual(arg1, "ct", false))
+        reason = CSRoundEnd_CTWin;
+    else if (StrEqual(arg1, "t", false))
+        reason = CSRoundEnd_TerroristWin;
+
+    CS_TerminateRound(5.0, reason);
+    return Plugin_Handled;
+}
+#endif
+
 public Action Command_ShowServices(int client, int args)
 {
 #warning FIXME Command_ShowServices
@@ -234,6 +274,19 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 {
     ExtraJump_OnPlayerRunCmd(client);
     return Plugin_Continue;
+}
+
+int GetRoundOfCurrentHalf()
+{
+    if (IsWarmup())
+        return INVALID_ROUND;
+
+    // Increase by 1 so 0 = invalid/INVALID_ROUND and 1 = first round
+    int roundNum = GameRules_GetProp("m_totalRoundsPlayed") + 1;
+
+    if (GameRules_GetProp("m_gamePhase") == GamePhase_PlayingSecondHalf)
+        return roundNum - (s_Cvar_MaxRounds.IntValue / 2);
+    return roundNum;
 }
 
 int IsRoundAllowed(int round)

@@ -48,16 +48,15 @@ public void Event_PlayerConnectFull(Event event, const char[] name, bool bDontBr
 
 public void Event_RoundStart(Event event, const char[] name, bool bDontBroadcast)
 {
-    if (IsWarmup())
-		return;
+    g_RoundCount = GetRoundOfCurrentHalf();
 
-    g_RoundCount++;
-    PrintToChatAll("%i", g_RoundCount);
-}
-
-public void Event_TeamChange(Event event, const char[] name, bool bDontBroadcast)
-{
-    g_RoundCount = 0;
+#if defined DEBUG
+    PrintToServer("DEBUG: [Round %i] IsWarmup:%i, m_totalRoundsPlayed:%i, m_gamePhase:%i",
+        g_RoundCount,
+        IsWarmup(),
+        GameRules_GetProp("m_totalRoundsPlayed"),
+        GameRules_GetProp("m_gamePhase"));
+#endif
 }
 
 public void Event_PlayerSpawn(Event event, const char[] name, bool bDontBroadcast)
