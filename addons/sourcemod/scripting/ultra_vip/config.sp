@@ -125,6 +125,8 @@ bool LoadConfig(bool fatalError = true)
             continue;
         if (!ProcessPlayerSpawnBonuses(kv, svc, fatalError, serviceName))
             continue;
+        if (!ProcessPlayerGrenadesOnSpawn(kv, svc, fatalError, serviceName))
+            continue;
         if (!ProcessSpecialBonuses(kv, svc, fatalError, serviceName))
             continue;
         if (!ProcessEventMoneyBonuses(kv, svc, fatalError, serviceName))
@@ -354,27 +356,36 @@ static bool ProcessPlayerSpawnBonuses(KeyValues kv, Service svc, bool fatalError
     svc.BonusDefuserEnabled = view_as<bool>(kv.GetNum("player_defuser", 1));
     svc.BonusDefuserRound = kv.GetNum("player_defuser_round", 2);
 
+    kv.GoBack(); // To service name
+    return true;
+}
+
+static bool ProcessPlayerGrenadesOnSpawn(KeyValues kv, Service svc, bool fatalError, const char[] serviceName)
+{
+    if (!kv.JumpToKey("Grenades On Spawn"))
+        return HandleError(svc, fatalError, "Service \"%s\" is missing section \"Grenades On Spawn\".", serviceName);
+
     svc.ShouldStripConsumables = view_as<bool>(kv.GetNum("strip_grenades", 0));
-    svc.BonusHEGrenades = kv.GetNum("he_grenade_amount", 1);
-    svc.BonusHEGrenadesRound = kv.GetNum("he_grenade_round", 1);
-    svc.BonusFlashGrenades = kv.GetNum("flash_grenade_amount", 1);
-    svc.BonusFlashGrenadesRound = kv.GetNum("flash_grenade_round", 1);
-    svc.BonusSmokeGrenades = kv.GetNum("smoke_grenade_amount", 1);
-    svc.BonusSmokeGrenadesRound = kv.GetNum("smoke_grenade_round", 1);
-    svc.BonusDecoyGrenades = kv.GetNum("decoy_grenade_amount", 0);
-    svc.BonusDecoyGrenadesRound = kv.GetNum("decoy_grenade_round", 1);
-    svc.BonusMolotovGrenades = kv.GetNum("molotov_grenade_amount", 0);
-    svc.BonusMolotovGrenadesRound = kv.GetNum("molotov_grenade_round", 1);
-    svc.BonusHealthshotGrenades = kv.GetNum("healthshot_grenade_amount", 0);
-    svc.BonusHealthshotGrenadesRound = kv.GetNum("healthshot_grenade_round", 3);
-    svc.BonusTacticalGrenades = kv.GetNum("tag_grenade_amount", 0);
+    svc.BonusHEGrenades = kv.GetNum("he_amount", 1);
+    svc.BonusHEGrenadesRound = kv.GetNum("he_round", 1);
+    svc.BonusFlashGrenades = kv.GetNum("flash_amount", 1);
+    svc.BonusFlashGrenadesRound = kv.GetNum("flash_round", 1);
+    svc.BonusSmokeGrenades = kv.GetNum("smoke_amount", 1);
+    svc.BonusSmokeGrenadesRound = kv.GetNum("smoke_round", 1);
+    svc.BonusDecoyGrenades = kv.GetNum("decoy_amount", 0);
+    svc.BonusDecoyGrenadesRound = kv.GetNum("decoy_round", 1);
+    svc.BonusMolotovGrenades = kv.GetNum("molotov_amount", 0);
+    svc.BonusMolotovGrenadesRound = kv.GetNum("molotov_round", 1);
+    svc.BonusHealthshotGrenades = kv.GetNum("healthshot_amount", 0);
+    svc.BonusHealthshotGrenadesRound = kv.GetNum("healthshot_round", 3);
+    svc.BonusTacticalGrenades = kv.GetNum("tag_amount", 0);
     svc.BonusTacticalGrenadesRound = kv.GetNum("BonusTacticalGrenadesRound", 1);
-    svc.BonusSnowballGrenades = kv.GetNum("snowball_grenade_amount", 0);
-    svc.BonusSnowballGrenadesRound = kv.GetNum("snowball_grenade_round", 1);
-    svc.BonusBreachchargeGrenades = kv.GetNum("breachcharge_grenade_amount", 0);
-    svc.BonusBreachchargeGrenadesRound = kv.GetNum("breachcharge_grenade_round", 1);
-    svc.BonusBumpmineGrenades = kv.GetNum("bumpmine_grenade_amount", 0);
-    svc.BonusBumpmineGrenadesRound = kv.GetNum("bumpmine_grenade_round", 1);
+    svc.BonusSnowballGrenades = kv.GetNum("snowball_amount", 0);
+    svc.BonusSnowballGrenadesRound = kv.GetNum("snowball_round", 1);
+    svc.BonusBreachchargeGrenades = kv.GetNum("breachcharge_amount", 0);
+    svc.BonusBreachchargeGrenadesRound = kv.GetNum("breachcharge_round", 1);
+    svc.BonusBumpmineGrenades = kv.GetNum("bumpmine_amount", 0);
+    svc.BonusBumpmineGrenadesRound = kv.GetNum("bumpmine_round", 1);
 
     kv.GoBack(); // To service name
     return true;
