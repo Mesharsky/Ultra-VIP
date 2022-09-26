@@ -32,7 +32,7 @@ public Action CP_OnChatMessage(int& author, ArrayList recipients, char[] flagstr
 
     // Colors does not support {teamcolor} at all. So we need to create it manually. It's gross and nasty but can't think of other way.
     // Since we support name and message color that's the only approach i can think of.
-    FormatTeamColor(author, namecolor);
+    FormatTeamColor(namecolor, sizeof(namecolor));
     ApplyColors(name, namecolor, message, svc);
 	
     return Plugin_Changed;
@@ -50,22 +50,15 @@ public Action OnChatMessage(int &author, Handle recipients, char[] name, char[] 
     char namecolor[32];
     svc.GetChatNameColor(namecolor, sizeof(namecolor));    
     
-    FormatTeamColor(author, namecolor);
+    FormatTeamColor(namecolor, sizeof(namecolor));
     ApplyColors(name, namecolor, message, svc);
 
     return Plugin_Changed;
 }
 
-void FormatTeamColor(int author, char namecolor[32])
+void FormatTeamColor(char[] namecolor, int size)
 {
-    int team = GetClientTeam(author);
-
-    if (team == CS_TEAM_CT)
-        ReplaceString(namecolor, sizeof(namecolor), "{teamcolor}", "{blue}");
-    else if (team == CS_TEAM_T)
-        ReplaceString(namecolor, sizeof(namecolor), "{teamcolor}", "\x03");
-    else if (team == CS_TEAM_SPECTATOR)
-        ReplaceString(namecolor, sizeof(namecolor), "{teamcolor}", "{grey}");
+    ReplaceString(namecolor, size, "{teamcolor}", "\x03");
 }
 
 void ApplyColors(char[] name, char[] namecolor, char[] message, Service svc)

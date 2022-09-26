@@ -38,12 +38,6 @@ methodmap Service < StringMap
     public void GetName(char[] output, int size) { this.GetString("name", output, size); }
     public void SetName(const char[] name) { this.SetString("name", name); }
 
-    property bool Enabled
-    {
-        public get() { return Service_GetCell(this, "service_enabled", false); }
-        public set(bool value) { this.SetValue("service_enabled", value); }
-    }
-
     property int Priority
     {
         public get() { return Service_GetCell(this, "priority", 0); }

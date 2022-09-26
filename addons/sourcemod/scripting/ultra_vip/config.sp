@@ -117,6 +117,9 @@ bool LoadConfig(bool fatalError = true)
     {
         kv.GetSectionName(serviceName, sizeof(serviceName));
 
+        if (!IsServiceEnabled(kv))
+            continue;
+
         Service svc = new Service(serviceName);
 
         // svc automatically deleted on fail
@@ -228,6 +231,15 @@ static bool GetRootService(KeyValues kv)
     return true;
 }
 
+static bool IsServiceEnabled(KeyValues kv)
+{
+    if (!kv.JumpToKey("Main Configuration"))
+        return false;
+
+    bool result = view_as<bool>(kv.GetNum("service_enabled", 0));
+    kv.GoBack();
+    return result;
+}
 
 static bool ProcessMainConfiguration(KeyValues kv, Service svc, bool fatalError, const char[] serviceName)
 {
@@ -236,14 +248,14 @@ static bool ProcessMainConfiguration(KeyValues kv, Service svc, bool fatalError,
 
     char buffer[128];
 
-    svc.Enabled = view_as<bool>(kv.GetNum("service_enabled", 0));
-
     kv.GetString("flag", buffer, sizeof(buffer));
     int flag = ReadFlagString(buffer);
     if (!HasOnlySingleBit(flag))
         return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is not allowed to have multiple admin flags.", serviceName);
     if (s_UsedServiceFlags & flag)
         return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is using an already-assigned admin flag '%s'", serviceName, buffer);
+    if (flag & ADMFLAG_ROOT)
+        return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is not allowed to have the ROOT flag (z). Use \"root_service\" instead.", serviceName);
 
     svc.Flag = flag;
     // s_UsedServiceFlags is updated when the service is pushed to g_Services
