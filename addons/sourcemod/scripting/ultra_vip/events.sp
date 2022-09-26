@@ -120,7 +120,7 @@ public Action Timer_SpawnBonuses(Handle tmr, DataPack pack)
     Bonus_GivePlayerSpawnMoney(client, svc);
     Bonus_GivePlayerShield(client, svc);
 
-    DisplayWeaponMenu(client, svc);
+    WeaponMenu_Display(client, svc);
     Bonus_GiveGrenades(client, svc);
 
     s_SpawnTimers[client] = null;

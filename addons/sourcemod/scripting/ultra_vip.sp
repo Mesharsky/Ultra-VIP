@@ -166,7 +166,7 @@ public void OnClientCookiesCached(int client)
     if (IsFakeClient(client))
         return;
 
-    GetPreviousWeapons(client);    
+    WeaponMenu_GetPreviousWeapons(client);
 }
 
 public void OnClientPostAdminCheck(int client)
@@ -188,7 +188,7 @@ public void OnClientDisconnect(int client)
 
     g_ClientService[client] = null;
 
-    ResetPreviousWeapons(client);
+    WeaponMenu_ResetPreviousWeapons(client);
 }
 
 public Action Command_ShowServices(int client, int args)

@@ -18,21 +18,31 @@
 #pragma newdecls required
 #pragma semicolon 1
 
-enum WeaponType
+/**
+ * Types of weapon menus that can be displayed.
+ */
+enum WeaponMenuType
 {
     Weapon_Invalid = -1,
     Weapon_Rifle = 0,
     Weapon_Pistol
 }
 
+/**
+ * Structure for storing a menu item from the config file.
+ */
 enum struct WeaponMenuItem
 {
-    WeaponType weaponType;
+    WeaponMenuType weaponType;
     int team;
     int price;
     char classname[MAX_WEAPON_CLASSNAME_SIZE];
 }
 
+/**
+ * Classnames representing a player's weapon loadout
+ * Only weapons with corresponding menus are supported.
+ */
 enum struct WeaponLoadout
 {
     char primary[MAX_WEAPON_CLASSNAME_SIZE];
@@ -61,14 +71,20 @@ enum struct WeaponLoadout
     }
 }
 
-// "weapon_primary;weapon_secondary"
+
+/**
+ * Size of cookie string storing previous weapons
+ * e.g. "weapon_primary;weapon_secondary"
+ */
 #define LOADOUT_COOKIE_SIZE (sizeof(WeaponLoadout::primary) + sizeof(WeaponLoadout::secondary) + 1)
 
-// Size of string output by EncodeMenuItem(). Fits:
-// - Weapon type (zero-padded hex)
-// - Team (zero-padded hex)
-// - Price (zero-padded hex)
-// - Classname (string)
+/**
+ * Size of string output by EncodeMenuInfo(). Fits:
+ * - Weapon type (zero-padded hex int)
+ * - Team (zero-padded hex int)
+ * - Price (zero-padded hex int)
+ * - Classname (string + null)
+ */
 #define ENCODED_WEAPONITEM_MINSIZE (8 * 3) // Size with empty classname
 #define ENCODED_WEAPONITEM_SIZE (ENCODED_WEAPONITEM_MINSIZE + sizeof(WeaponMenuItem::classname))
 
@@ -77,26 +93,20 @@ static Service s_WeaponListService[MAXPLAYERS + 1];
 static WeaponLoadout s_PreviousWeapon[MAXPLAYERS + 1];
 static WeaponLoadout s_NewLoadoutBuffer[MAXPLAYERS + 1];
 
-static WeaponType s_SelectionList[MAXPLAYERS + 1] = { Weapon_Invalid, ... };
+static WeaponMenuType s_SelectionList[MAXPLAYERS + 1] = { Weapon_Invalid, ... };
 
 
-static void GiveLoadoutIfAllowed(int client, WeaponLoadout weapons, Service svc)
-{
-    if (svc.IsWeaponAllowed(weapons.primary) && IsRoundAllowed(svc.RifleWeaponsRound))
-        GivePlayerWeapon(client, weapons.primary, CS_SLOT_PRIMARY);
-
-    if (svc.IsWeaponAllowed(weapons.secondary) && IsRoundAllowed(svc.PistolWeaponsRound))
-        GivePlayerWeapon(client, weapons.secondary, CS_SLOT_SECONDARY);
-}
-
-void GetPreviousWeapons(int client)
+//--------------------------------------------------------------
+// Load a client's previous weapons from the cookie.
+//--------------------------------------------------------------
+void WeaponMenu_GetPreviousWeapons(int client)
 {
     char value[LOADOUT_COOKIE_SIZE];
     g_Cookie_PrevWeapons.Get(client, value, sizeof(value));
 
     if (!value[0])
     {
-        ResetPreviousWeapons(client);
+        WeaponMenu_ResetPreviousWeapons(client);
         return;
     }
 
@@ -104,39 +114,37 @@ void GetPreviousWeapons(int client)
     strcopy(s_PreviousWeapon[client].secondary, sizeof(WeaponLoadout::secondary), value[index]);
 }
 
-static void UpdatePreviousWeapons(int client)
-{
-    s_PreviousWeapon[client] = s_NewLoadoutBuffer[client];
-}
-
-void SavePreviousWeapons(int client)
+//--------------------------------------------------------------
+// Save a client's previous weapons to the cookie.
+//--------------------------------------------------------------
+void WeaponMenu_SavePreviousWeapons(int client)
 {
     char value[LOADOUT_COOKIE_SIZE];
     FormatEx(value, sizeof(value), "%s;%s", s_PreviousWeapon[client].primary, s_PreviousWeapon[client].secondary);
     g_Cookie_PrevWeapons.Set(client, value);
 }
 
-void ResetPreviousWeapons(int client)
+//--------------------------------------------------------------
+// Reset the previous weapon cache for a client.
+// Does not affect the value stored in the cookie.
+//--------------------------------------------------------------
+void WeaponMenu_ResetPreviousWeapons(int client)
 {
     s_PreviousWeapon[client].Reset();
 }
 
-static void AddToNewLoadoutBuffer(int client, WeaponType type, const char classname[MAX_WEAPON_CLASSNAME_SIZE])
-{
-    if (type == Weapon_Rifle)
-        s_NewLoadoutBuffer[client].primary = classname;
-    else if (type == Weapon_Pistol)
-        s_NewLoadoutBuffer[client].secondary = classname;
-}
 
-void DisplayWeaponMenu(int client, Service weaponListService)
+//--------------------------------------------------------------
+// Main weapon menu
+//--------------------------------------------------------------
+void WeaponMenu_Display(int client, Service weaponListService)
 {
     if (!CanDisplayWeaponMenu(client, weaponListService))
         return;
 
     if (s_WeaponMenu == null)
     {
-        s_WeaponMenu = new Menu(WeaponMenu_Handler, MENU_ACTIONS_ALL);
+        s_WeaponMenu = new Menu(WeaponMenu_MainHandler, MENU_ACTIONS_ALL);
 
         s_WeaponMenu.Pagination = false;
         s_WeaponMenu.ExitButton = true;
@@ -170,7 +178,7 @@ static bool CanDisplayWeaponMenu(int client, Service svc)
     return CanSelectNewWeapons(svc) || s_PreviousWeapon[client].IsAnyAllowedThisRound(svc);
 }
 
-public int WeaponMenu_Handler(Menu menu, MenuAction action, int param1, int param2)
+public int WeaponMenu_MainHandler(Menu menu, MenuAction action, int param1, int param2)
 {
     switch(action)
     {
@@ -250,11 +258,23 @@ public int WeaponMenu_Handler(Menu menu, MenuAction action, int param1, int para
     return 0;
 }
 
+
+//--------------------------------------------------------------
+// Weapon selection list (the list of individual weapons shown
+// after you select "NEW" on the main weapon menu)
+//--------------------------------------------------------------
+static void DisplayWeaponList(int client)
+{
+    Menu listMenu = s_WeaponListService[client].WeaponMenu;
+    if (listMenu != null)
+        listMenu.Display(client, MENU_TIME_FOREVER);
+}
+
 void WeaponMenu_BuildSelectionsFromConfig(KeyValues kv, const char[] serviceName, Menu &outputMenu, ArrayList &outputWeapons)
 {
     ArrayList weapons = new ArrayList(ByteCountToCells(MAX_WEAPON_CLASSNAME_SIZE));
 
-    Menu menu = new Menu(WeaponSelection_Handler, MENU_ACTIONS_ALL);
+    Menu menu = new Menu(WeaponMenu_SelectionHandler, MENU_ACTIONS_ALL);
     menu.Pagination = true;
 
     // Cannot go back because weapons are given on each selection,
@@ -275,7 +295,7 @@ void WeaponMenu_BuildSelectionsFromConfig(KeyValues kv, const char[] serviceName
         "rifles_menu_enabled",
         "pistols_menu_enabled"
     };
-    WeaponType sectionTypes[] =
+    WeaponMenuType sectionTypes[] =
     {
         Weapon_Rifle,
         Weapon_Pistol
@@ -342,7 +362,7 @@ static void GetWeaponMenuItem(KeyValues kv, WeaponMenuItem outputItem)
     outputItem.price = kv.GetNum("price");
 }
 
-public int WeaponSelection_Handler(Menu menu, MenuAction action, int param1, int param2)
+public int WeaponMenu_SelectionHandler(Menu menu, MenuAction action, int param1, int param2)
 {
     switch(action)
     {
@@ -358,7 +378,7 @@ public int WeaponSelection_Handler(Menu menu, MenuAction action, int param1, int
                 // TODO: Technically this is broken because we dont refund
                 // the selected weapons, but going back is disabled.
                 s_SelectionList[param1] = Weapon_Invalid;
-                DisplayWeaponMenu(param1, s_WeaponListService[param1]);
+                WeaponMenu_Display(param1, s_WeaponListService[param1]);
             }
         }
 
@@ -444,7 +464,7 @@ public int WeaponSelection_Handler(Menu menu, MenuAction action, int param1, int
                 else
                 {
                     UpdatePreviousWeapons(param1);
-                    SavePreviousWeapons(param1);
+                    WeaponMenu_SavePreviousWeapons(param1);
                 }
             }
             else
@@ -455,13 +475,12 @@ public int WeaponSelection_Handler(Menu menu, MenuAction action, int param1, int
     return 0;
 }
 
-static void DisplayWeaponList(int client)
-{
-    Menu listMenu = s_WeaponListService[client].WeaponMenu;
-    if (listMenu != null)
-        listMenu.Display(client, MENU_TIME_FOREVER);
-}
 
+//--------------------------------------------------------------
+// Cycle through the different menus that can display.
+// Used to filter out weapons to display the 'next' menu when
+// redisplaying the selection list.
+//--------------------------------------------------------------
 #if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 11
 static_assert(Weapon_Invalid < Weapon_Rifle);
 static_assert(Weapon_Rifle < Weapon_Pistol);
@@ -487,6 +506,40 @@ static bool GoToNextSelectionList(int client, Service svc)
     return false;
 }
 
+//--------------------------------------------------------------
+// Add a weapon classname to the temporary buffer used to update
+// previous weapons once the selection list menu is fully done.
+//--------------------------------------------------------------
+static void AddToNewLoadoutBuffer(int client, WeaponMenuType type, const char classname[MAX_WEAPON_CLASSNAME_SIZE])
+{
+    if (type == Weapon_Rifle)
+        s_NewLoadoutBuffer[client].primary = classname;
+    else if (type == Weapon_Pistol)
+        s_NewLoadoutBuffer[client].secondary = classname;
+}
+
+//--------------------------------------------------------------
+// Update a client's previous weapons using the temporary
+// selection list menu buffer.
+//--------------------------------------------------------------
+static void UpdatePreviousWeapons(int client)
+{
+    s_PreviousWeapon[client] = s_NewLoadoutBuffer[client];
+}
+
+
+//--------------------------------------------------------------
+// Can a client afford an item on the menu.
+//--------------------------------------------------------------
+static bool CanAffordWeapon(int client, WeaponMenuItem item)
+{
+    return GetClientMoney(client) > item.price;
+}
+
+//--------------------------------------------------------------
+// Add a weapon classname to the temporary buffer used
+// to update previous weapons.
+//--------------------------------------------------------------
 static bool CanPurchaseWeapon(int client, WeaponMenuItem item)
 {
     if (!IsClientInGame(client) || !IsPlayerAlive(client))
@@ -503,11 +556,23 @@ static bool CanPurchaseWeapon(int client, WeaponMenuItem item)
     return true;
 }
 
-static bool CanAffordWeapon(int client, WeaponMenuItem item)
+//--------------------------------------------------------------
+// Give a player weapons, checking if each type is allowed
+// on this current round.
+//--------------------------------------------------------------
+static void GiveLoadoutIfAllowed(int client, WeaponLoadout weapons, Service svc)
 {
-    return GetClientMoney(client) > item.price;
+    if (svc.IsWeaponAllowed(weapons.primary) && IsRoundAllowed(svc.RifleWeaponsRound))
+        GivePlayerWeapon(client, weapons.primary, CS_SLOT_PRIMARY);
+
+    if (svc.IsWeaponAllowed(weapons.secondary) && IsRoundAllowed(svc.PistolWeaponsRound))
+        GivePlayerWeapon(client, weapons.secondary, CS_SLOT_SECONDARY);
 }
 
+//--------------------------------------------------------------
+// Encode a WeaponMenuItem into a string.
+// Used for passing WeaponMenuItems to the menu handler.
+//--------------------------------------------------------------
 static void EncodeMenuInfo(const WeaponMenuItem item, char[] output, int size)
 {
     FormatEx(output, size, "%08X%08X%08X%s",
@@ -517,13 +582,16 @@ static void EncodeMenuInfo(const WeaponMenuItem item, char[] output, int size)
         item.classname);
 }
 
+//--------------------------------------------------------------
+// Decode a WeaponMenuItem from a string (encoded with EncodeMenuInfo)
+//--------------------------------------------------------------
 static bool DecodeMenuInfo(const char[] info, WeaponMenuItem outputItem)
 {
     int len = strlen(info);
     if (len < ENCODED_WEAPONITEM_MINSIZE)
         return false; // Invalid size, cannot decode
 
-    outputItem.weaponType = view_as<WeaponType>(NStringToInt(info, 8, 16));
+    outputItem.weaponType = view_as<WeaponMenuType>(NStringToInt(info, 8, 16));
     outputItem.team = NStringToInt(info[8], 8, 16);
     outputItem.price = NStringToInt(info[16], 8, 16);
     strcopy(outputItem.classname, sizeof(WeaponMenuItem::classname), info[24]);
