@@ -150,7 +150,7 @@ void WeaponMenu_Display(int client, Service weaponListService)
         s_WeaponMenu.ExitButton = true;
 
         s_WeaponMenu.AddItem("NEW", "Weapon Menu New"); // Translation phrase
-        s_WeaponMenu.AddItem("PREVIOUS", "Weapon Menu Previous");
+        s_WeaponMenu.AddItem("PREVIOUS", "");
     }
 
     s_WeaponListService[client] = weaponListService;
@@ -224,7 +224,10 @@ public int WeaponMenu_MainHandler(Menu menu, MenuAction action, int param1, int 
             char display[64];
             menu.GetItem(param2, info, sizeof(info), _, display, sizeof(display));
 
-            Format(display, sizeof(display), "%T", display, param1);
+            if (StrEqual(info, "PREVIOUS"))
+                MakePreviousWeaponText(param1, display, sizeof(display));
+            else
+                Format(display, sizeof(display), "%T", display, param1);
 
             return RedrawMenuItem(display);
         }
@@ -504,6 +507,46 @@ static bool GoToNextSelectionList(int client, Service svc)
 
     s_SelectionList[client] = Weapon_Invalid;
     return false;
+}
+
+//--------------------------------------------------------------
+// Make the "Get Previous Weapons" ("PREVIOUS") menu item text.
+//--------------------------------------------------------------
+void MakePreviousWeaponText(int client, char[] output, int size)
+{
+    char weapons[64];
+    bool isFirst = true;
+
+    if (s_PreviousWeapon[client].primary[0])
+    {
+        isFirst = false;
+
+        if (TranslationPhraseExists(s_PreviousWeapon[client].primary))
+            FormatEx(weapons, sizeof(weapons), "%T", s_PreviousWeapon[client].primary, client);
+        else
+            weapons = s_PreviousWeapon[client].primary; // Use classname if we can't translate
+    }
+
+    if (s_PreviousWeapon[client].secondary[0])
+    {
+        if (TranslationPhraseExists(s_PreviousWeapon[client].secondary))
+        {
+            Format(weapons, sizeof(weapons), "%s%s%T",
+                weapons,
+                (isFirst) ? "" : ", ",
+                s_PreviousWeapon[client].secondary,
+                client);
+        }
+        else
+        {
+            Format(weapons, sizeof(weapons), "%s%s%s",
+                weapons,
+                (isFirst) ? "" : ", ",
+                s_PreviousWeapon[client].secondary);
+        }
+    }
+
+    FormatEx(output, size, "%T", "Weapon Menu Previous", client, weapons);
 }
 
 //--------------------------------------------------------------
