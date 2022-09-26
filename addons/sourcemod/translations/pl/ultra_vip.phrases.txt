@@ -149,4 +149,141 @@
     {
         "pl"    "{green}Gratulacje! {default}Zostałeś odrodzony!"
     }
+
+    "weapon_ak47"
+    {
+        "pl"    "AK-47"
+    }
+    "weapon_aug"
+    {
+        "pl"    "AUG"
+    }
+    "weapon_awp"
+    {
+        "pl"    "AWP"
+    }
+    "weapon_bizon"
+    {
+        "pl"    "Bizon"
+    }
+    "weapon_deagle"
+    {
+        "pl"    "Deagle"
+    }
+    "weapon_elite"
+    {
+        "pl"    "Dual Elites"
+    }
+    "weapon_famas"
+    {
+        "pl"    "Famas"
+    }
+    "weapon_fiveseven"
+    {
+        "pl"    "Five-Seven"
+    }
+    "weapon_g3sg1"
+    {
+        "pl"    "G3SG1"
+    }
+    "weapon_galilar"
+    {
+        "pl"    "Galil AR"
+    }
+    "weapon_glock"
+    {
+        "pl"    "Glock"
+    }
+    "weapon_hkp2000"
+    {
+        "pl"    "P2000"
+    }
+    "weapon_m249"
+    {
+        "pl"    "M249"
+    }
+    "weapon_m4a1"
+    {
+        "pl"    "M4A1"
+    }
+    "weapon_mac10"
+    {
+        "pl"    "MAC-10"
+    }
+    "weapon_mag7"
+    {
+        "pl"    "MAG-7"
+    }
+    "weapon_mp5sd"
+    {
+        "pl"    "MP5"
+    }
+    "weapon_tec9"
+    {
+        "pl"    "TEC-9"
+    }
+    "weapon_cz75a"
+    {
+        "pl"    "CZ-75"
+    }
+    "weapon_revolver"
+    {
+        "pl"    "R8 Revolver"
+    }
+    "weapon_usp_silencer"
+    {
+        "pl"    "USP-S"
+    }
+    "weapon_p250"
+    {
+        "pl"    "P250"
+    }
+    "weapon_mp7"
+    {
+        "pl"    "MP7"
+    }
+    "weapon_mp9"
+    {
+        "pl"    "MP9"
+    }
+    "weapon_ump45"
+    {
+        "pl"    "UMP 45"
+    }
+    "weapon_p90"
+    {
+        "pl"    "P90"
+    }
+    "weapon_nova"
+    {
+        "pl"    "Nova"
+    }
+    "weapon_xm1014"
+    {
+        "pl"    "XM1014"
+    }
+    "weapon_sawedoff"
+    {
+        "pl"    "Sawed-Off"
+    }
+    "weapon_negev"
+    {
+        "pl"    "Negev"
+    }
+    "weapon_m4a1_silencer"
+    {
+        "pl"    "M4A1-S"
+    }
+    "weapon_ssg08"
+    {
+        "pl"    "SSG 08"
+    }
+    "weapon_sg556"
+    {
+        "pl"    "SG 553"
+    }
+    "weapon_scar20"
+    {
+        "pl"    "SCAR-20"
+    }
 }
