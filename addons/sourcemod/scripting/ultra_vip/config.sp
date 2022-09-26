@@ -379,7 +379,7 @@ static bool ProcessPlayerGrenadesOnSpawn(KeyValues kv, Service svc, bool fatalEr
     svc.BonusHealthshotGrenades = kv.GetNum("healthshot_amount", 0);
     svc.BonusHealthshotGrenadesRound = kv.GetNum("healthshot_round", 3);
     svc.BonusTacticalGrenades = kv.GetNum("tag_amount", 0);
-    svc.BonusTacticalGrenadesRound = kv.GetNum("BonusTacticalGrenadesRound", 1);
+    svc.BonusTacticalGrenadesRound = kv.GetNum("tag_round", 1);
     svc.BonusSnowballGrenades = kv.GetNum("snowball_amount", 0);
     svc.BonusSnowballGrenadesRound = kv.GetNum("snowball_round", 1);
     svc.BonusBreachchargeGrenades = kv.GetNum("breachcharge_amount", 0);
