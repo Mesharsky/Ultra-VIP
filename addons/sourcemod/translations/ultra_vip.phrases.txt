@@ -25,7 +25,7 @@
     "Weapon Menu Previous"
     {
         "#format"   "{1:s}"
-        "en"    "Get Previous Weapons ({1})"
+        "en"    "Get Previous Weapons {1}"
     }
     "Rifle Menu Title"
     {
