@@ -771,6 +771,7 @@ methodmap Service < StringMap
 
     public bool IsWeaponAllowed(const char[] className)
     {
+#warning MOTHER. FUCKER. This will conflict with the api.
         return this.Weapons.FindString(className) != -1;
     }
 

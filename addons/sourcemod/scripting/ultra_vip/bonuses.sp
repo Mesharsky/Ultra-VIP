@@ -92,7 +92,7 @@ void Bonus_SetPlayerVisibility(int client, Service svc)
         return;
 
     int value = svc.BonusPlayerVisibility;
-    if (value == 255)
+    if (value >= 255)
         return;
 
     SetPlayerVisibility(client, value);

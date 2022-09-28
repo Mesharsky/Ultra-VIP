@@ -62,7 +62,7 @@ void ExtraJump_OnPlayerRunCmd(int client)
     if (!s_AllowedToMultiJump[client])
         return;
 
-    static int previousButtons[MAXPLAYERS + 1];
+    static int previousButtons[MAXPLAYERS + 1]; // m_nOldButtons doesn't work?
     static int previousFlags[MAXPLAYERS + 1];
     static int jumpCount[MAXPLAYERS + 1];
 

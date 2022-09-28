@@ -220,7 +220,6 @@ public void OnClientDisconnect(int client)
 {
     Bonus_LeaveMessage(client);
 
-    SDKUnhook(client, SDKHook_OnTakeDamage, Hook_OnTakeDamage);
     ExtraJump_OnClientDisconect(client);
 
     g_ClientService[client] = null;
@@ -291,7 +290,7 @@ int GetRoundOfCurrentHalf()
 
 int IsRoundAllowed(int round)
 {
-    return g_RoundCount >= round;
+    return g_RoundCount >= round && round > 0;
 }
 
 Service GetClientService(int client)
