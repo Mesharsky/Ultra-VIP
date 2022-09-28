@@ -34,7 +34,7 @@
 #endif
 #if !defined MAXLENGTH_MESSAGE
     #define MAXLENGTH_MESSAGE 128
-#endif    
+#endif
 
 
 #pragma newdecls required
@@ -231,7 +231,7 @@ public Action Command_OnlineList(int client, int args)
 {
     if (!g_UseOnlineList)
         return Plugin_Handled;
-        
+
     if (!IsClientInGame(client) || IsFakeClient(client))
         return Plugin_Handled;
 

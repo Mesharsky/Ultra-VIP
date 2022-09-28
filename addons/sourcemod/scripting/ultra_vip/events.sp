@@ -41,7 +41,7 @@ public void Event_PlayerConnectFull(Event event, const char[] name, bool bDontBr
     GetClientName(client, clientName, sizeof(clientName));
 
     char serviceName[MAX_SERVICE_NAME_SIZE];
-    svc.GetName(serviceName, sizeof(serviceName));    
+    svc.GetName(serviceName, sizeof(serviceName));
 
     Bonus_WelcomeMessage(svc, clientName, serviceName);
 }
@@ -115,7 +115,7 @@ public Action Timer_SpawnBonuses(Handle tmr, DataPack pack)
     Bonus_SetPlayerGravity(client, svc);
     Bonus_SetPlayerSpeed(client, svc);
     Bonus_SetPlayerVisibility(client, svc);
-    
+
     Bonus_GivePlayerSpawnMoney(client, svc);
     Bonus_GivePlayerShield(client, svc);
 
@@ -172,7 +172,7 @@ public void Event_PlayerDeath(Event event, const char[] name, bool bDontBroadcas
     Bonus_ZeusHP(attacker, weapon, svcAttacker);
     Bonus_GrenadeKillHP(attacker, weapon, svcAttacker);
     Bonus_NoScopeHP(attacker, noscope, svcAttacker);
-    
+
     Bonus_RespawnPlayer(victim);
 }
 
@@ -198,7 +198,7 @@ public void Event_BombPlanted(Event event, const char[] name, bool bDontBroadcas
     if (svc == null)
         return;
 
-    Bonus_BombPlantedMoney(client, svc);    
+    Bonus_BombPlantedMoney(client, svc);
 }
 
 public void Event_BombDefused(Event event, const char[] name, bool bDontBroadcast)
