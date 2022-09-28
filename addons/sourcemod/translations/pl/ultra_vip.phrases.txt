@@ -151,6 +151,20 @@
         "pl"    "{green}Gratulacje! {default}Zostałeś odrodzony!"
     }
 
+    "Service Category List"
+    {
+        "en"    "Wybierz jedną z grup poniżej, aby zobaczyć graczy Online:"
+    }
+    "Service Players Online"
+    {
+        "#format"   "{1:s},{2:s}"
+        "en"    "Gracze online z usługą: [ {1} ]{2}-----------------------------------------"
+    }
+    "No Players Online"
+    {
+        "en"    "Brak graczy na serwerze z tą usługą"
+    }
+
     "weapon_ak47"
     {
         "pl"    "AK-47"

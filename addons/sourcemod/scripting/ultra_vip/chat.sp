@@ -18,6 +18,38 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+public Action OnClientSayCommand(int client, const char[] command, const char[] sArgs)
+{
+    if (!g_UseOnlineList)
+        return Plugin_Continue;
+
+    int len = strlen(sArgs);
+    char[] filtered = new char[len +1];
+
+    BreakString(sArgs, filtered, len);
+
+    int count = 0;
+    for(int i = 0; i < len; ++i)
+    {
+        if (sArgs[i] != '!' && sArgs[i] != '/')
+        {
+            filtered[count] = sArgs[i];
+            ++count;
+        }
+    }
+
+    if (!filtered[0])
+        return Plugin_Continue;
+
+    if (g_OnlineListCommands.ContainsKey(filtered))
+    {
+        ShowOnlineList(client);
+        return Plugin_Handled;
+    }
+
+    return Plugin_Continue;
+}
+
 public Action CP_OnChatMessage(int& author, ArrayList recipients, char[] flagstring, char[] name, char[] message, bool& processcolors, bool& removecolors)
 {
     if (g_ChatTagPlugin.processor != Processor_ChatProcessor)

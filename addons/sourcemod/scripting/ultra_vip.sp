@@ -132,8 +132,8 @@ public void OnPluginStart()
     if (s_Cvar_MaxRounds == null)
         SetFailState("Game is somehow missing the required \"mp_maxrounds\" ConVar.");
 
-    RegConsoleCmd("sm_vips", Command_ShowServices);
     RegConsoleCmd("sm_jumps", Command_ToggleJumps);
+    RegConsoleCmd("sm_vips", Command_OnlineList);
 
     RegAdminCmd("sm_reloadservices", Command_ReloadServices, ADMFLAG_ROOT, "Reloads configuration file");
 
@@ -228,6 +228,19 @@ public void OnClientDisconnect(int client)
     WeaponMenu_ResetPreviousWeapons(client);
 }
 
+public Action Command_OnlineList(int client, int args)
+{
+    if (!g_UseOnlineList)
+        return Plugin_Handled;
+        
+    if (!IsClientInGame(client) || IsFakeClient(client))
+        return Plugin_Handled;
+
+    ShowOnlineList(client);
+
+    return Plugin_Handled;
+}
+
 #if defined DEBUG
 public Action Command_EndRound(int client, int args)
 {
@@ -250,12 +263,6 @@ public Action Command_EndRound(int client, int args)
     return Plugin_Handled;
 }
 #endif
-
-public Action Command_ShowServices(int client, int args)
-{
-#warning FIXME Command_ShowServices
-	return Plugin_Handled;
-}
 
 public Action Command_ReloadServices(int client, int args)
 {

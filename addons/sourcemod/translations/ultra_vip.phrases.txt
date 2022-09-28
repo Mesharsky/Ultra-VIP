@@ -151,6 +151,20 @@
         "en"    "{green}Congratulations! {default}You Respawned!"
     }
 
+    "Service Category List"
+    {
+        "en"    "Select VIP Service below to display online users:"
+    }
+    "Service Players Online"
+    {
+        "#format"   "{1:s},{2:s}"
+        "en"    "Players Online with service: [ {1} ]{2}-----------------------------------------"
+    }
+    "No Players Online"
+    {
+        "en"    "There are no players online with that service"
+    }
+
     "weapon_ak47"
     {
         "en"    "AK-47"
