@@ -633,6 +633,7 @@ static bool ProcessWeapons(KeyValues kv, Service svc, bool fatalError, const cha
         return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is missing section \"Rifles\".", serviceName);
 
     svc.RifleWeaponsRound = kv.GetNum("rifles_menu_round", 3);
+    svc.RifleWeaponsEnabled = view_as<bool>(kv.GetNum("rifles_menu_enabled", 0));
 
     kv.GoBack();
 
@@ -640,6 +641,7 @@ static bool ProcessWeapons(KeyValues kv, Service svc, bool fatalError, const cha
         return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is missing section \"Pistols\".", serviceName);
 
     svc.PistolWeaponsRound = kv.GetNum("pistols_menu_round", 1);
+    svc.PistolWeaponsEnabled = view_as<bool>(kv.GetNum("pistols_menu_enabled", 0));
 
     kv.GoBack(); // To "Advanced Weapons Menu"
     kv.GoBack(); // To service name

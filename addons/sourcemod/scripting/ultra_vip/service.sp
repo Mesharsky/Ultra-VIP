@@ -780,10 +780,20 @@ methodmap Service < StringMap
         public get() { return Service_GetCell(this, "rifles_menu_round", 0); }
         public set(int value) { this.SetValue("rifles_menu_round", value); }
     }
+    property bool RifleWeaponsEnabled
+    {
+        public get() { return Service_GetCell(this, "rifles_menu_enabled", false); }
+        public set(bool value) { this.SetValue("rifles_menu_enabled", value); }
+    }
     property int PistolWeaponsRound
     {
         public get() { return Service_GetCell(this, "pistols_menu_round", 0); }
         public set(int value) { this.SetValue("pistols_menu_round", value); }
+    }
+    property bool PistolWeaponsEnabled
+    {
+        public get() { return Service_GetCell(this, "pistols_menu_enabled", false); }
+        public set(bool value) { this.SetValue("pistols_menu_enabled", value); }
     }
 }
 

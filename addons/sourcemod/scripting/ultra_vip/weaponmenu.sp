@@ -57,9 +57,9 @@ enum struct WeaponLoadout
     {
         if (svc == null)
             return false;
-        if (this.primary[0] && IsRoundAllowed(svc.RifleWeaponsRound))
+        if (svc.RifleWeaponsEnabled && CanGiveWeapon(svc, this.primary, svc.RifleWeaponsRound))
             return true;
-        if (this.secondary[0] && IsRoundAllowed(svc.PistolWeaponsRound))
+        if (svc.PistolWeaponsEnabled && CanGiveWeapon(svc, this.secondary, svc.PistolWeaponsRound))
             return true;
         return false;
     }
@@ -162,7 +162,12 @@ static bool CanSelectNewWeapons(Service svc)
 {
     if (svc == null)
         return false;
-    return IsRoundAllowed(svc.RifleWeaponsRound) || IsRoundAllowed(svc.PistolWeaponsRound);
+
+    if (svc.RifleWeaponsEnabled && IsRoundAllowed(svc.RifleWeaponsRound))
+        return true;
+    if (svc.PistolWeaponsEnabled && IsRoundAllowed(svc.PistolWeaponsRound))
+        return true;
+    return false;
 }
 
 static bool CanDisplayWeaponMenu(int client, Service svc)
@@ -174,7 +179,6 @@ static bool CanDisplayWeaponMenu(int client, Service svc)
     if (!IsOnPlayingTeam(client) || !IsPlayerAlive(client))
         return false;
 
-    // This check is a little redunant but it's fine i guess
     return CanSelectNewWeapons(svc) || s_PreviousWeapon[client].IsAnyAllowedThisRound(svc);
 }
 
@@ -225,7 +229,7 @@ public int WeaponMenu_MainHandler(Menu menu, MenuAction action, int param1, int 
             menu.GetItem(param2, info, sizeof(info), _, display, sizeof(display));
 
             if (StrEqual(info, "PREVIOUS"))
-                MakePreviousWeaponText(param1, display, sizeof(display));
+                MakePreviousWeaponText(param1, s_WeaponListService[param1], display, sizeof(display));
             else
                 Format(display, sizeof(display), "%T", display, param1);
 
@@ -315,6 +319,11 @@ void WeaponMenu_BuildSelectionsFromConfig(KeyValues kv, const char[] serviceName
         }
 
         // If section is disabled, skip it
+        // NOTE:
+        // Because it is skipped, Service::IsWeaponAllowed will fail for those weapons.
+        // You could argue that means you therefore dont need to check Service::RifleWeaponsEnabled
+        // if you also check IsWeaponAllowed/CanGiveWeapon but because IsWeaponAllowed is planned
+        // to be changed I wont make that assumption (at the cost of performance).
         if (!kv.GetNum(sectionStateKeys[i], 0))
         {
             kv.GoBack(); // To Advanced Weapons Menu
@@ -493,13 +502,13 @@ static bool GoToNextSelectionList(int client, Service svc)
     // Go to the next selection list that is allowed, checking in the order
     // we want each list/menu to appear in the cycle (assuming each is allowed)
 
-    if (s_SelectionList[client] < Weapon_Rifle && IsRoundAllowed(svc.RifleWeaponsRound))
+    if (s_SelectionList[client] < Weapon_Rifle && svc.RifleWeaponsEnabled && IsRoundAllowed(svc.RifleWeaponsRound))
     {
         s_SelectionList[client] = Weapon_Rifle;
         return true;
     }
 
-    if (s_SelectionList[client] < Weapon_Pistol && IsRoundAllowed(svc.PistolWeaponsRound))
+    if (s_SelectionList[client] < Weapon_Pistol && svc.PistolWeaponsEnabled && IsRoundAllowed(svc.PistolWeaponsRound))
     {
         s_SelectionList[client] = Weapon_Pistol;
         return true;
@@ -512,28 +521,31 @@ static bool GoToNextSelectionList(int client, Service svc)
 //--------------------------------------------------------------
 // Make the "Get Previous Weapons" ("PREVIOUS") menu item text.
 //--------------------------------------------------------------
-void MakePreviousWeaponText(int client, char[] output, int size)
+void MakePreviousWeaponText(int client, Service svc, char[] output, int size)
 {
+    if (!s_PreviousWeapon[client].IsSet())
+        FormatEx(output, size, "%T", "Weapon Menu Previous", client, "");
+
     char weapons[64];
     bool isFirst = true;
 
-    if (s_PreviousWeapon[client].primary[0])
+    if (svc.RifleWeaponsEnabled && CanGiveWeapon(svc, s_PreviousWeapon[client].primary, svc.RifleWeaponsRound))
     {
         isFirst = false;
 
         if (TranslationPhraseExists(s_PreviousWeapon[client].primary))
-            FormatEx(weapons, sizeof(weapons), "%T", s_PreviousWeapon[client].primary, client);
+            FormatEx(weapons, sizeof(weapons), " (%T", s_PreviousWeapon[client].primary, client);
         else
             weapons = s_PreviousWeapon[client].primary; // Use classname if we can't translate
     }
 
-    if (s_PreviousWeapon[client].secondary[0])
+    if (svc.PistolWeaponsEnabled && CanGiveWeapon(svc, s_PreviousWeapon[client].secondary, svc.PistolWeaponsRound))
     {
         if (TranslationPhraseExists(s_PreviousWeapon[client].secondary))
         {
             Format(weapons, sizeof(weapons), "%s%s%T",
                 weapons,
-                (isFirst) ? "" : ", ",
+                (isFirst) ? " (" : ", ",
                 s_PreviousWeapon[client].secondary,
                 client);
         }
@@ -541,12 +553,15 @@ void MakePreviousWeaponText(int client, char[] output, int size)
         {
             Format(weapons, sizeof(weapons), "%s%s%s",
                 weapons,
-                (isFirst) ? "" : ", ",
+                (isFirst) ? " (" : ", ",
                 s_PreviousWeapon[client].secondary);
         }
     }
 
-    FormatEx(output, size, "%T", "Weapon Menu Previous", client, weapons);
+    // If at least 1 name is in weapons, add the finishing ).
+    // It must be done this way because either menu can be disabled independently,
+    // so only-rifle-menu needs to work.
+    FormatEx(output, size, "%T%s", "Weapon Menu Previous", client, weapons, (weapons[0]) ? ")" : "");
 }
 
 //--------------------------------------------------------------
@@ -605,11 +620,16 @@ static bool CanPurchaseWeapon(int client, WeaponMenuItem item)
 //--------------------------------------------------------------
 static void GiveLoadoutIfAllowed(int client, WeaponLoadout weapons, Service svc)
 {
-    if (svc.IsWeaponAllowed(weapons.primary) && IsRoundAllowed(svc.RifleWeaponsRound))
+    if (svc.RifleWeaponsEnabled && CanGiveWeapon(svc, weapons.primary, svc.RifleWeaponsRound))
         GivePlayerWeapon(client, weapons.primary, CS_SLOT_PRIMARY);
 
-    if (svc.IsWeaponAllowed(weapons.secondary) && IsRoundAllowed(svc.PistolWeaponsRound))
+    if (svc.PistolWeaponsEnabled && CanGiveWeapon(svc, weapons.secondary, svc.PistolWeaponsRound))
         GivePlayerWeapon(client, weapons.secondary, CS_SLOT_SECONDARY);
+}
+
+static bool CanGiveWeapon(Service svc, const char[] classname, int round)
+{
+    return classname[0] && svc.IsWeaponAllowed(classname) && IsRoundAllowed(round);
 }
 
 //--------------------------------------------------------------
@@ -642,4 +662,4 @@ static bool DecodeMenuInfo(const char[] info, WeaponMenuItem outputItem)
     return true;
 }
 
-// i hate this file
+// i really fucking hate this file
