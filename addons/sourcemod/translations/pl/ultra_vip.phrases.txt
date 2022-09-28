@@ -25,7 +25,7 @@
     "Weapon Menu Previous"
     {
         "#format"   "{1:s}"
-        "pl"    "Wybierz ostatnio wybrany zestaw ({1})"
+        "pl"    "Wybierz ostatnio wybrany zestaw{1}"
     }
     "Rifle Menu Title"
     {

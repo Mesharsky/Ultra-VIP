@@ -41,7 +41,7 @@
 #pragma semicolon 1
 
 #define PLUGIN_VERSION "0.1"
-#define DEBUG
+//#define DEBUG
 
 #define INVALID_ROUND 0
 #define MAX_WEAPON_CLASSNAME_SIZE 24 // https://wiki.alliedmods.net/Counter-Strike:_Global_Offensive_Weapons
@@ -220,7 +220,6 @@ public void OnClientDisconnect(int client)
 {
     Bonus_LeaveMessage(client);
 
-    SDKUnhook(client, SDKHook_OnTakeDamage, Hook_OnTakeDamage);
     ExtraJump_OnClientDisconect(client);
 
     g_ClientService[client] = null;
@@ -298,7 +297,7 @@ int GetRoundOfCurrentHalf()
 
 int IsRoundAllowed(int round)
 {
-    return g_RoundCount >= round;
+    return g_RoundCount >= round && round > 0;
 }
 
 Service GetClientService(int client)
