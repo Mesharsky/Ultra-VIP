@@ -110,6 +110,11 @@
         "#format"   "{1:i}"
         "pl"    "Otrzymałeś dodatkowe {green}{1}${default} Za bycie MVP w tej rundzie"
     }
+    "Bonus Hostage Rescue Money"
+    {
+        "#format"   "{1:i}"
+        "pl"    "Otrzymałeś dodatkowe {green}{1}${default} Za uratowanie zakładnika"
+    }
 
     "Bonus Kill HP"
     {

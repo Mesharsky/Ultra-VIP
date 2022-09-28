@@ -219,6 +219,8 @@ public void Event_HostageRescued(Event event, const char[] name, bool bDontBroad
     Service svc = GetClientService(client);
     if (svc == null)
         return;
+
+    Bonus_HostageRescuedMoney(client, svc);
 }
 
 public void Event_WeaponFire(Event event, const char[] name, bool bDontBroadcast)

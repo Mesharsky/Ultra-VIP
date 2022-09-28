@@ -219,6 +219,14 @@ void Bonus_MvpMoney(int client, Service svc)
     _SetMoney(client, svc.BonusMvpMoney, svc.BonusMvpMoneyNotify, "Bonus Mvp Money");    
 }
 
+void Bonus_HostageRescuedMoney(int client, Service svc)
+{
+    if (!IsRoundAllowed(svc.BonusHostageMoneyRound))
+        return;
+
+    _SetMoney(client, svc.BonusHostageMoney, svc.BonusHostageMoneyNotify, "Bonus Hostage Rescue Money");    
+}
+
 //////////////////////////////////
 /*          HP BONUSES          */
 //////////////////////////////////
