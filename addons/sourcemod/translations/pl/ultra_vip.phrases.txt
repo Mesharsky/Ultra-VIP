@@ -153,16 +153,16 @@
 
     "Service Category List"
     {
-        "en"    "Wybierz jedną z grup poniżej, aby zobaczyć graczy Online:"
+        "pl"    "Wybierz jedną z grup poniżej, aby zobaczyć graczy Online:"
     }
     "Service Players Online"
     {
         "#format"   "{1:s},{2:s}"
-        "en"    "Gracze online z usługą: [ {1} ]{2}-----------------------------------------"
+        "pl"    "Gracze online z usługą: [ {1} ]{2}-----------------------------------------"
     }
     "No Players Online"
     {
-        "en"    "Brak graczy na serwerze z tą usługą"
+        "pl"    "Brak graczy na serwerze z tą usługą"
     }
 
     "weapon_ak47"
