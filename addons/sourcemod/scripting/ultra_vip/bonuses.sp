@@ -301,7 +301,7 @@ void Bonus_RespawnPlayer(int client)
         return;
 
     if (!IsRoundAllowed(svc.BonusPlayerRespawnPercentRound))
-        return;
+        return;    
 
     if (svc.BonusPlayerRespawnPercent >= GetRandomInt(1, 100))
     {

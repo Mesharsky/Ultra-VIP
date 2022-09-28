@@ -363,7 +363,6 @@ void PurchaseWeapon(int client, WeaponMenuItem item, int slot, bool strip=true)
     RemovePlayerMoney(client, item.price);
 }
 
-
 /**
  * Get the account number from a SteamID2 or SteamID3
  */

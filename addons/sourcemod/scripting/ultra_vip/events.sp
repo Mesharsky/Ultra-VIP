@@ -223,7 +223,6 @@ public void Event_HostageRescued(Event event, const char[] name, bool bDontBroad
 
 public void Event_WeaponFire(Event event, const char[] name, bool bDontBroadcast)
 {
-    #warning REWRITE
     int client = GetClientOfUserId(event.GetInt("userid"));
     int weapon = GetEntPropEnt(client, Prop_Data, "m_hActiveWeapon");
 
