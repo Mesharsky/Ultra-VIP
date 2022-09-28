@@ -53,20 +53,20 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 public Action CP_OnChatMessage(int& author, ArrayList recipients, char[] flagstring, char[] name, char[] message, bool& processcolors, bool& removecolors)
 {
     if (g_ChatTagPlugin.processor != Processor_ChatProcessor)
-        return Plugin_Continue; 
+        return Plugin_Continue;
 
     Service svc = GetClientService(author);
     if (svc == null)
         return Plugin_Continue;
 
     char namecolor[32];
-    svc.GetChatNameColor(namecolor, sizeof(namecolor));    
+    svc.GetChatNameColor(namecolor, sizeof(namecolor));
 
     // Colors does not support {teamcolor} at all. So we need to create it manually. It's gross and nasty but can't think of other way.
     // Since we support name and message color that's the only approach i can think of.
     FormatTeamColor(namecolor, sizeof(namecolor));
     ApplyColors(name, namecolor, message, svc);
-	
+
     return Plugin_Changed;
 }
 
@@ -80,8 +80,8 @@ public Action OnChatMessage(int &author, Handle recipients, char[] name, char[] 
         return Plugin_Continue;
 
     char namecolor[32];
-    svc.GetChatNameColor(namecolor, sizeof(namecolor));    
-    
+    svc.GetChatNameColor(namecolor, sizeof(namecolor));
+
     FormatTeamColor(namecolor, sizeof(namecolor));
     ApplyColors(name, namecolor, message, svc);
 

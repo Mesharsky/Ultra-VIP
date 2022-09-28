@@ -146,7 +146,7 @@ bool LoadConfig(bool fatalError = true)
 
         g_Services.Push(svc);
         s_UsedServiceFlags |= svc.Flag;
-    } 
+    }
     while (kv.GotoNextKey());
 
     // Get global config *after* getting services so it's not set unless all
@@ -276,7 +276,7 @@ static bool ProcessMainConfiguration(KeyValues kv, Service svc, bool fatalError,
 
     kv.GetString("chat_message_color", buffer, sizeof(buffer));
     if (buffer[0])
-        svc.SetChatMsgColor(buffer);    
+        svc.SetChatMsgColor(buffer);
 
     kv.GetString("scoreboard_tag", buffer, sizeof(buffer));
     if (buffer[0])
@@ -604,7 +604,7 @@ static bool ProcessHudWelcomeLeaveMessages(KeyValues kv, Service svc, bool fatal
 
     kv.GoBack(); // Welcome and Leave Messages
     kv.GoBack(); // Service Name
-    
+
     return true;
 }
 

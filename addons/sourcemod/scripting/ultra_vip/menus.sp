@@ -67,7 +67,7 @@ public int MenuHandler_List(Menu menu, MenuAction action, int param1, int param2
 
             if (StrEqual(info, "noservices"))
                 return ITEMDRAW_DISABLED;
-                
+
             return ITEMDRAW_DEFAULT;
         }
         case MenuAction_Select:
@@ -149,7 +149,7 @@ public int MenuHandler_Online(Menu menu, MenuAction action, int param1, int para
 
             if (StrEqual(info, "nodata"))
                 return ITEMDRAW_DISABLED;
-                
+
             return ITEMDRAW_DEFAULT;
         }
         case MenuAction_Select:

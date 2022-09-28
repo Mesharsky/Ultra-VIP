@@ -202,7 +202,7 @@ bool GivePlayerConsumables(
         GetAllAmmoTypes();
 
     if (strip)
-        StripPlayerConsumables(client);  
+        StripPlayerConsumables(client);
 
     // AddConsumableAmmo adds up to a target amount, and no further.
     // That means if a player is to get 2 flashes but already has 1,

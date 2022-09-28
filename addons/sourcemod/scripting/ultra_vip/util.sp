@@ -39,7 +39,7 @@ bool HasOnlySingleBit(int value)
 {
     if (!value)
         return false;
-    
+
     // is value a power of 2
     return (value & (value - 1)) == 0;
 }
@@ -259,7 +259,7 @@ void GivePlayerUnlimitedAmmo(int client, int weapon)
             SetEntProp(weapon, Prop_Send, "m_iClip1", 32);
             SetEntProp(weapon, Prop_Send, "m_iClip2", 32);
         }
-    }    
+    }
 }
 
 bool IsWeaponKnife(const char[] classname)
@@ -277,15 +277,15 @@ bool IsWeaponTaser(const char[] classname)
 
 bool IsWeaponGrenade(const char[] classname)
 {
-    if (StrContains(classname, "hegrenade", false) != -1 
-        || StrContains(classname, "smokegrenade", false) != -1 
+    if (StrContains(classname, "hegrenade", false) != -1
+        || StrContains(classname, "smokegrenade", false) != -1
         || StrContains(classname, "flashbang", false) != -1
-        || StrContains(classname, "decoy", false) != -1 
-        || StrContains(classname, "molotov", false) != -1 
-        || StrContains(classname, "incgrenade", false) != -1 
-        || StrContains(classname, "breachcharge", false) != -1 
-        || StrContains(classname, "bumpmine", false) != -1 
-        || StrContains(classname, "snowball", false) != -1 
+        || StrContains(classname, "decoy", false) != -1
+        || StrContains(classname, "molotov", false) != -1
+        || StrContains(classname, "incgrenade", false) != -1
+        || StrContains(classname, "breachcharge", false) != -1
+        || StrContains(classname, "bumpmine", false) != -1
+        || StrContains(classname, "snowball", false) != -1
         || StrContains(classname, "tagrenade", false) != -1)
     {
         return true;
