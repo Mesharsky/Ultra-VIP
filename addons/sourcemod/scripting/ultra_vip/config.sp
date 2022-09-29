@@ -356,6 +356,7 @@ static bool ProcessPlayerSpawnBonuses(KeyValues kv, Service svc, bool fatalError
         return HandleError(svc, fatalError, "Service \"%s\" is missing section \"Player Spawn Bonuses\".", serviceName);
 
     svc.BonusPlayerHealth = kv.GetNum("player_hp", 105);
+    svc.BonusPlayerHealthRound = kv.GetNum("player_hp_round", 1);
     svc.BonusMaxPlayerHealth = kv.GetNum("player_max_hp", 110);
 
     svc.BonusArmorEnabled = view_as<bool>(kv.GetNum("player_vest", 1));
