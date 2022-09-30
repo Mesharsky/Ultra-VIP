@@ -413,3 +413,12 @@ bool HasAdminFlagAccess(int flag, int flags)
 {
     return flag & flags || flags & ADMFLAG_ROOT;
 }
+
+int GetClientAdminGroupCount(int client)
+{
+    AdminId id = GetUserAdmin(client);
+    if (id == INVALID_ADMIN_ID)
+        return 0;
+
+    return GetAdminGroupCount(id);
+}
