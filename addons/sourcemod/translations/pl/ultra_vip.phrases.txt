@@ -170,6 +170,21 @@
         "pl"    "Brak graczy na serwerze z tą usługą"
     }
 
+    "Service Category List Bonuses"
+    {
+        "pl"    "Wybierz jedną z grup poniżej, aby zobaczyć jej bonusy:"
+    }
+    "Service Bonuses List"
+    {
+       "#format"   "{1:s},{2:s}"
+        "pl"    "Jakie bonusy otrzymasz mając: [ {1} ]{2}-----------------------------------------"
+    }
+    "Menu player_hp"
+    {
+        "#format"   "{1:i}"
+        "pl"    "Ilość zdrowia na respie: {1}"
+    }
+
     "weapon_ak47"
     {
         "pl"    "AK-47"

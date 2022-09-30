@@ -170,6 +170,260 @@
         "en"    "There are no players online with that service"
     }
 
+    "Service Category List Bonuses"
+    {
+        "en"    "Select Service below to display bonuses it gives you:"
+    }
+    "Service Bonuses List"
+    {
+       "#format"   "{1:s},{2:s}"
+        "en"    "What bonuses you get with: [ {1} ]{2}-----------------------------------------"
+    }
+
+    "Menu player_hp"
+    {
+        "#format"   "{1:i}"
+        "en"    "Health on spawn: {1}"
+    }
+    "Menu player_vest"
+    {
+        "#format" "{1:i}"
+        "en" "Free Armour on spawn: {1}"
+    }
+    "Menu player_helmet"
+    {
+        "en" "Free Helmet on spawn"
+    }
+    "Menu player_defuser"
+    {
+        "en" "Free Defuser Kit on spawn"
+    }
+
+    "Menu he_amount"
+    {
+        "#format" "{1:i}"
+        "en" "HE Grenades on spawn: {1}"
+    }
+    "Menu flash_amount"
+    {
+        "#format" "{1:i}"
+        "en" "Flash Grenades on spawn: {1}"
+    }
+    "Menu smoke_amount"
+    {
+        "#format" "{1:i}"
+        "en" "Smoke Grenades on spawn: {1}"
+    }
+    "Menu decoy_amount"
+    {
+        "#format" "{1:i}"
+        "en" "Decoy Grenades on spawn: {1}"
+    }
+    "Menu molotov_amount"
+    {
+        "#format" "{1:i}"
+        "en" "Molotov Grenades on spawn: {1}"
+    }
+    "Menu healthshot_amount"
+    {
+        "#format" "{1:i}"
+        "en" "Healtshots on spawn: {1}"
+    }
+    "Menu tag_amount"
+    {
+        "#format" "{1:i}"
+        "en" "TAG Grenades on spawn: {1}"
+    }
+    "Menu snowball_amount"
+    {
+        "#format" "{1:i}"
+        "en" "Snowballs on spawn: {1}"
+    }
+    "Menu breachcharge_amount"
+    {
+        "#format" "{1:i}"
+        "en" "Breach Charges on spawn: {1}"
+    }
+    "Menu bumpmine_amount"
+    {
+        "#format" "{1:i}"
+        "en" "Bumpmines on spawn: {1}"
+    }
+
+    "Menu player_extra_jumps"
+    {
+        "#format" "{1:i}"
+        "en" "Amount of Extra Jumps: {1}"
+    }
+    "Menu player_shield"
+    {
+        "en" "Free Shield on spawn"
+    }
+    "Menu player_gravity"
+    {
+        "#format" "{1:.2f}"
+        "en" "Gravity scale: {1}"
+    }
+    "Menu player_speed"
+    {
+        "#format" "{1:.2f}"
+        "en" "Player Speed: {1}"
+    }
+    "Menu player_visibility"
+    {
+        "#format" "{1:i}"
+        "en" "Player visibility: {1}%"
+    }
+    "Menu player_respawn_percent"
+    {
+        "#format" "{1:i}"
+        "en" "{1}% Chances to respawn"
+    }
+    "Menu player_fall_damage_percent"
+    {
+        "#format" "{1:i}"
+        "en" "-{1}% Fall Damage"
+    }
+    "Menu player_attack_damage"
+    {
+        "#format" "{1:i}"
+        "en" "Attack Damage: {1}"
+    }
+    "Menu player_damage_resist"
+    {
+        "#format" "{1:i}"
+        "en" "Damage Reduction: {1}%"
+    }
+    "Menu player_unlimited_ammo"
+    {
+        "en" "Unlimited Ammo"
+    }
+
+    "Menu spawn_bonus"
+    {
+        "#format" "{1:i}"
+        "en" "Extra {1}$ on spawn"
+    }
+    "Menu kill_bonus"
+    {
+        "#format" "{1:i}"
+        "en" "Extra {1}$ for kill"
+    }
+    "Menu assist_bonus"
+    {
+        "#format" "{1:i}"
+        "en" "Extra {1}$ on assist"
+    }
+    "Menu headshot_bonus"
+    {
+        "#format" "{1:i}"
+        "en" "Extra {1}$ on HeadShot"
+    }
+    "Menu knife_bonus"
+    {
+        "#format" "{1:i}"
+        "en" "Extra {1}$ on Knife Kill"
+    }
+    "Menu zeus_bonus"
+    {
+        "#format" "{1:i}"
+        "en" "Extra {1}$ on Zeus Kill"
+    }
+    "Menu grenade_bonus"
+    {
+        "#format" "{1:i}"
+        "en" "Extra {1}$ on Grenade Kill"
+    }
+    "Menu mvp_bonus"
+    {
+        "#format" "{1:i}"
+        "en" "Extra {1}$ if MVP"
+    }
+    "Menu noscope_bonus"
+    {
+        "#format" "{1:i}"
+        "en" "Extra {1}$ on NoScope Kill"
+    }
+    "Menu hostage_bonus"
+    {
+        "#format" "{1:i}"
+        "en" "Extra {1}$ for resucing hostage"
+    }
+    "Menu bomb_planted_bonus"
+    {
+        "#format" "{1:i}"
+        "en" "Extra {1}$ for Planting Bomb"
+    }
+    "Menu bomb_defused_bonus"
+    {
+        "#format" "{1:i}"
+        "en" "Extra {1}$ for Defusing Bomb"
+    }
+
+    "Menu kill_hp_bonus"
+    {
+        "#format" "{1:i}"
+        "en" "Extra {1}HP on kill"
+    }
+    "Menu assist_hp_bonus"
+    {
+        "#format" "{1:i}"
+        "en" "Extra {1}HP on assist"
+    }
+    "Menu headshot_hp_bonus"
+    {
+        "#format" "{1:i}"
+        "en" "Extra {1}HP on HeadShot"
+    }
+    "Menu knife_hp_bonus"
+    {
+        "#format" "{1:i}"
+        "en" "Extra {1}HP on Knife Kill"
+    }
+    "Menu zeus_hp_bonus"
+    {
+        "#format" "{1:i}"
+        "en" "Extra {1}HP on Zeus Kill"
+    }
+    "Menu grenade_hp_bonus"
+    {
+        "#format" "{1:i}"
+        "en" "Extra {1}HP on Grenades Kill"
+    }
+    "Menu noscope_hp_bonus"
+    {
+        "#format" "{1:i}"
+        "en" "Extra {1}HP on NoScope Kill"
+    }
+
+    "Menu chat_join_msg_enable"
+    {
+        "en" "Global chat message when joins"
+    }
+    "Menu chat_leave_msg_enable"
+    {
+        "en" "Global chat message when leaves"
+    }
+    "Menu hud_join_msg_enable"
+    {
+        "en" "Global hud message when joins"
+    }
+    "Menu hud_leave_msg_enable"
+    {
+        "en" "Global hud message when leaves"
+    }
+
+    "Menu rifles_menu_enabled"
+    {
+        "#format" "{1:i}"
+        "en" "Rifle Menu from round: {1}"
+    }
+    "Menu pistols_menu_enabled"
+    {
+        "#format" "{1:i}"
+        "en" "Pistols Menu from round: {1}"
+    }
+
     "weapon_ak47"
     {
         "en"    "AK-47"

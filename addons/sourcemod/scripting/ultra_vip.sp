@@ -133,7 +133,10 @@ public void OnPluginStart()
         SetFailState("Game is somehow missing the required \"mp_maxrounds\" ConVar.");
 
     RegConsoleCmd("sm_jumps", Command_ToggleJumps);
+
     RegConsoleCmd("sm_vips", Command_OnlineList);
+    RegConsoleCmd("sm_vipbonus", Command_VipBonuses);
+
 
     RegAdminCmd("sm_reloadservices", Command_ReloadServices, ADMFLAG_ROOT, "Reloads configuration file");
 
@@ -238,6 +241,15 @@ public Action Command_OnlineList(int client, int args)
     ShowOnlineList(client);
 
     return Plugin_Handled;
+}
+
+public Action Command_VipBonuses(int client, int args)
+{
+    if (!IsClientInGame(client) || IsFakeClient(client))
+        return Plugin_Handled;
+
+    ShowServiceBonuses(client);
+    return Plugin_Handled;    
 }
 
 #if defined DEBUG
