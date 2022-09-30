@@ -59,7 +59,6 @@
         "#format"    "{1:i}"
         "en"    "You got extra {green}{1}${default} Spend it wisely!"
     }
-
     "Bonus Kill Money"
     {
         "#format"   "{1:i}"
@@ -183,12 +182,12 @@
     "Menu player_hp"
     {
         "#format"   "{1:i}"
-        "en"    "Health on spawn: {1}"
+        "en"    "+{1} HP on spawn"
     }
     "Menu player_vest"
     {
         "#format" "{1:i}"
-        "en" "Free Armour on spawn: {1}"
+        "en" "+{1} Armor on spawn"
     }
     "Menu player_helmet"
     {
@@ -196,58 +195,58 @@
     }
     "Menu player_defuser"
     {
-        "en" "Free Defuser Kit on spawn"
+        "en" "Free Defuse Kit on spawn"
     }
 
     "Menu he_amount"
     {
         "#format" "{1:i}"
-        "en" "HE Grenades on spawn: {1}"
+        "en" "{1}x HE Grenades on spawn"
     }
     "Menu flash_amount"
     {
         "#format" "{1:i}"
-        "en" "Flash Grenades on spawn: {1}"
+        "en" "{1}x Flashbangs on spawn"
     }
     "Menu smoke_amount"
     {
         "#format" "{1:i}"
-        "en" "Smoke Grenades on spawn: {1}"
+        "en" "{1}x Smoke Grenades on spawn"
     }
     "Menu decoy_amount"
     {
         "#format" "{1:i}"
-        "en" "Decoy Grenades on spawn: {1}"
+        "en" "{1}x Decoy Grenades on spawn"
     }
     "Menu molotov_amount"
     {
         "#format" "{1:i}"
-        "en" "Molotov Grenades on spawn: {1}"
+        "en" "{1}x Molotovs/Incendiarys on spawn"
     }
     "Menu healthshot_amount"
     {
         "#format" "{1:i}"
-        "en" "Healtshots on spawn: {1}"
+        "en" "{1}x Healthshots on spawn"
     }
     "Menu tag_amount"
     {
         "#format" "{1:i}"
-        "en" "TAG Grenades on spawn: {1}"
+        "en" "{1}x TA Grenades on spawn"
     }
     "Menu snowball_amount"
     {
         "#format" "{1:i}"
-        "en" "Snowballs on spawn: {1}"
+        "en" "{1}x Snowballs on spawn"
     }
     "Menu breachcharge_amount"
     {
         "#format" "{1:i}"
-        "en" "Breach Charges on spawn: {1}"
+        "en" "{1}x Breach Charges on spawn"
     }
     "Menu bumpmine_amount"
     {
         "#format" "{1:i}"
-        "en" "Bumpmines on spawn: {1}"
+        "en" "{1}x Bumpmines on spawn"
     }
 
     "Menu player_extra_jumps"
@@ -262,37 +261,37 @@
     "Menu player_gravity"
     {
         "#format" "{1:.2f}"
-        "en" "Gravity scale: {1}"
+        "en" "Gravity scale: {1}x"
     }
     "Menu player_speed"
     {
         "#format" "{1:.2f}"
-        "en" "Player Speed: {1}"
+        "en" "Player speed: {1}x"
     }
     "Menu player_visibility"
     {
         "#format" "{1:i}"
-        "en" "Player visibility: {1}%"
+        "en" "Player visibility: {1}%%"
     }
     "Menu player_respawn_percent"
     {
         "#format" "{1:i}"
-        "en" "{1}% Chances to respawn"
+        "en" "{1}%% Chance to respawn"
     }
     "Menu player_fall_damage_percent"
     {
         "#format" "{1:i}"
-        "en" "-{1}% Fall Damage"
+        "en" "-{1}%% Fall damage taken"
     }
     "Menu player_attack_damage"
     {
         "#format" "{1:i}"
-        "en" "Attack Damage: {1}"
+        "en" "{1}x Attack Damage"
     }
     "Menu player_damage_resist"
     {
         "#format" "{1:i}"
-        "en" "Damage Reduction: {1}%"
+        "en" "Damage taken reduced by {1}%%"
     }
     "Menu player_unlimited_ammo"
     {
@@ -302,115 +301,115 @@
     "Menu spawn_bonus"
     {
         "#format" "{1:i}"
-        "en" "Extra {1}$ on spawn"
+        "en" "+${1} on spawn"
     }
     "Menu kill_bonus"
     {
         "#format" "{1:i}"
-        "en" "Extra {1}$ for kill"
+        "en" "+${1} for kill"
     }
     "Menu assist_bonus"
     {
         "#format" "{1:i}"
-        "en" "Extra {1}$ on assist"
+        "en" "+${1} on assist"
     }
     "Menu headshot_bonus"
     {
         "#format" "{1:i}"
-        "en" "Extra {1}$ on HeadShot"
+        "en" "+${1} on Headshot Kill"
     }
     "Menu knife_bonus"
     {
         "#format" "{1:i}"
-        "en" "Extra {1}$ on Knife Kill"
+        "en" "+${1} on Knife Kill"
     }
     "Menu zeus_bonus"
     {
         "#format" "{1:i}"
-        "en" "Extra {1}$ on Zeus Kill"
+        "en" "+${1} on Zeus Kill"
     }
     "Menu grenade_bonus"
     {
         "#format" "{1:i}"
-        "en" "Extra {1}$ on Grenade Kill"
+        "en" "+${1} on Grenade Kill"
     }
     "Menu mvp_bonus"
     {
         "#format" "{1:i}"
-        "en" "Extra {1}$ if MVP"
+        "en" "+${1} for earning MVP"
     }
     "Menu noscope_bonus"
     {
         "#format" "{1:i}"
-        "en" "Extra {1}$ on NoScope Kill"
+        "en" "+${1} on No-scope Kill"
     }
     "Menu hostage_bonus"
     {
         "#format" "{1:i}"
-        "en" "Extra {1}$ for resucing hostage"
+        "en" "+${1} for Resucing hostage"
     }
     "Menu bomb_planted_bonus"
     {
         "#format" "{1:i}"
-        "en" "Extra {1}$ for Planting Bomb"
+        "en" "+${1} for Planting Bomb"
     }
     "Menu bomb_defused_bonus"
     {
         "#format" "{1:i}"
-        "en" "Extra {1}$ for Defusing Bomb"
+        "en" "+${1} for Defusing Bomb"
     }
 
     "Menu kill_hp_bonus"
     {
         "#format" "{1:i}"
-        "en" "Extra {1}HP on kill"
+        "en" "+{1}HP on kill"
     }
     "Menu assist_hp_bonus"
     {
         "#format" "{1:i}"
-        "en" "Extra {1}HP on assist"
+        "en" "+{1}HP on assist"
     }
     "Menu headshot_hp_bonus"
     {
         "#format" "{1:i}"
-        "en" "Extra {1}HP on HeadShot"
+        "en" "+{1}HP on Headshot Kill"
     }
     "Menu knife_hp_bonus"
     {
         "#format" "{1:i}"
-        "en" "Extra {1}HP on Knife Kill"
+        "en" "+{1}HP on Knife Kill"
     }
     "Menu zeus_hp_bonus"
     {
         "#format" "{1:i}"
-        "en" "Extra {1}HP on Zeus Kill"
+        "en" "+{1}HP on Zeus Kill"
     }
     "Menu grenade_hp_bonus"
     {
         "#format" "{1:i}"
-        "en" "Extra {1}HP on Grenades Kill"
+        "en" "+{1}HP on Grenades Kill"
     }
     "Menu noscope_hp_bonus"
     {
         "#format" "{1:i}"
-        "en" "Extra {1}HP on NoScope Kill"
+        "en" "+{1}HP on NoScope Kill"
     }
 
     "Menu chat_join_msg_enable"
     {
-        "en" "Global chat message when joins"
+        "en" "Display server-wide chat greeting"
     }
     "Menu chat_leave_msg_enable"
     {
-        "en" "Global chat message when leaves"
+        "en" "Display server-wide leave message"
     }
     "Menu hud_join_msg_enable"
     {
-        "en" "Global hud message when joins"
+        "en" "Display HUD greeting"
     }
     "Menu hud_leave_msg_enable"
     {
-        "en" "Global hud message when leaves"
+        "en" "Display HUD leave message"
     }
 
     "Menu rifles_menu_enabled"

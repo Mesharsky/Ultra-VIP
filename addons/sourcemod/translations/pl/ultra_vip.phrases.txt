@@ -179,10 +179,249 @@
        "#format"   "{1:s},{2:s}"
         "pl"    "Jakie bonusy otrzymasz mając: [ {1} ]{2}-----------------------------------------"
     }
+
     "Menu player_hp"
     {
         "#format"   "{1:i}"
-        "pl"    "Ilość zdrowia na respie: {1}"
+        "pl"    "Ilość zdrowia: {1}"
+    }
+    "Menu player_vest"
+    {
+        "#format" "{1:i}"
+        "pl" "+{1} Kamizelki"
+    }
+    "Menu player_helmet"
+    {
+        "pl" "Darmowy hełm"
+    }
+    "Menu player_defuser"
+    {
+        "pl" "Darmowy zestaw rozbrajający"
+    }
+
+    "Menu he_amount"
+    {
+        "#format" "{1:i}"
+        "pl" "{1}x Granatów HE przy odrodzeniu"
+    }
+    "Menu flash_amount"
+    {
+        "#format" "{1:i}"
+        "pl" "{1}x Granatów Flash przy odrodzeniu"
+    }
+    "Menu smoke_amount"
+    {
+        "#format" "{1:i}"
+        "pl" "{1}x Granatów Smoke przy odrodzeniu"
+    }
+    "Menu decoy_amount"
+    {
+        "#format" "{1:i}"
+        "pl" "{1}x Granatów Decoy przy odrodzeniu"
+    }
+    "Menu molotov_amount"
+    {
+        "#format" "{1:i}"
+        "pl" "{1}x Granatów Podpalających przy odrodzeniu"
+    }
+    "Menu healthshot_amount"
+    {
+        "#format" "{1:i}"
+        "pl" "{1}x Granatów Uzdrawiających przy odrodzeniu"
+    }
+    "Menu tag_amount"
+    {
+        "#format" "{1:i}"
+        "pl" "{1}x Granatów Taktycznych przy odrodzeniu"
+    }
+    "Menu snowball_amount"
+    {
+        "#format" "{1:i}"
+        "pl" "{1}x Śnieżek przy odrodzeniu"
+    }
+    "Menu breachcharge_amount"
+    {
+        "#format" "{1:i}"
+        "pl" "{1}x Granatów Breachcharge przy odrodzeniu"
+    }
+    "Menu bumpmine_amount"
+    {
+        "#format" "{1:i}"
+        "pl" "{1}x Granatów Wybuchowych przy odrodzeniu"
+    }
+
+    "Menu player_extra_jumps"
+    {
+        "#format" "{1:i}"
+        "pl" "Ilość dodatkowych skoków: {1}"
+    }
+    "Menu player_shield"
+    {
+        "pl" "Darmowa Tarcza przy odrodzeniu"
+    }
+    "Menu player_gravity"
+    {
+        "#format" "{1:.2f}"
+        "pl" "Grawitacja: {1}x"
+    }
+    "Menu player_speed"
+    {
+        "#format" "{1:.2f}"
+        "pl" "Prędkość: {1}x"
+    }
+    "Menu player_visibility"
+    {
+        "#format" "{1:i}"
+        "pl" "Widoczność: {1}%%"
+    }
+    "Menu player_respawn_percent"
+    {
+        "#format" "{1:i}"
+        "pl" "{1}%% Szansy na odrodzenie"
+    }
+    "Menu player_fall_damage_percent"
+    {
+        "#format" "{1:i}"
+        "pl" "-{1}%% Otrzymane obrażenia od upadku"
+    }
+    "Menu player_attack_damage"
+    {
+        "#format" "{1:i}"
+        "pl" "{1}x Zadawane obrażenia"
+    }
+    "Menu player_damage_resist"
+    {
+        "#format" "{1:i}"
+        "pl" "Otrzymane obrażenia zmniejszone o {1}%%"
+    }
+    "Menu player_unlimited_ammo"
+    {
+        "pl" "Nieskończoność amunicji"
+    }
+
+    "Menu spawn_bonus"
+    {
+        "#format" "{1:i}"
+        "pl" "+${1} przy odrodzeniu"
+    }
+    "Menu kill_bonus"
+    {
+        "#format" "{1:i}"
+        "pl" "+${1} za zabójstwo"
+    }
+    "Menu assist_bonus"
+    {
+        "#format" "{1:i}"
+        "pl" "+${1} za syste"
+    }
+    "Menu headshot_bonus"
+    {
+        "#format" "{1:i}"
+        "pl" "+${1} za Headshota"
+    }
+    "Menu knife_bonus"
+    {
+        "#format" "{1:i}"
+        "pl" "+${1} za zabójstwo nożem"
+    }
+    "Menu zeus_bonus"
+    {
+        "#format" "{1:i}"
+        "pl" "+${1} za zabicie zeusem"
+    }
+    "Menu grenade_bonus"
+    {
+        "#format" "{1:i}"
+        "pl" "+${1} za zabicie granatem"
+    }
+    "Menu mvp_bonus"
+    {
+        "#format" "{1:i}"
+        "pl" "+${1} za bycie MVP"
+    }
+    "Menu noscope_bonus"
+    {
+        "#format" "{1:i}"
+        "pl" "+${1} za zabicie z NoScope"
+    }
+    "Menu hostage_bonus"
+    {
+        "#format" "{1:i}"
+        "pl" "+${1} za Uratowanie Zakładnika"
+    }
+    "Menu bomb_planted_bonus"
+    {
+        "#format" "{1:i}"
+        "pl" "+${1} za Podłożenie Bomby"
+    }
+    "Menu bomb_defused_bonus"
+    {
+        "#format" "{1:i}"
+        "pl" "+${1} for Rozbrojenie Bomby"
+    }
+
+    "Menu kill_hp_bonus"
+    {
+        "#format" "{1:i}"
+        "pl" "+{1}HP za zabójstwo"
+    }
+    "Menu assist_hp_bonus"
+    {
+        "#format" "{1:i}"
+        "pl" "+{1}HP za asyste"
+    }
+    "Menu headshot_hp_bonus"
+    {
+        "#format" "{1:i}"
+        "pl" "+{1}HP za Headshota"
+    }
+    "Menu knife_hp_bonus"
+    {
+        "#format" "{1:i}"
+        "pl" "+{1}HP za zabicie nożem"
+    }
+    "Menu zeus_hp_bonus"
+    {
+        "#format" "{1:i}"
+        "pl" "+{1}HP za zabicie zeusem"
+    }
+    "Menu grenade_hp_bonus"
+    {
+        "#format" "{1:i}"
+        "pl" "+{1}HP za zabicie granatem"
+    }
+    "Menu noscope_hp_bonus"
+    {
+        "#format" "{1:i}"
+        "pl" "+{1}HP za zabicie z NoScope"
+    }
+
+    "Menu chat_join_msg_enable"
+    {
+        "pl" "Przywitanie na czacie"
+    }
+    "Menu chat_leave_msg_enable"
+    {
+        "pl" "Pożegnanie na czacie"
+    }
+    "Menu hud_join_msg_enable"
+    {
+        "pl" "Przywtanie w HUD"
+    }
+    "Menu hud_leave_msg_enable"
+    {
+        "pl" "Pożegnanie w HUD"
+    }
+
+    "Menu rifles_menu_enabled"
+    {
+        "#format" "{1:i}"
+        "pl" "Menu Karabinów od rundy: {1}"
+    }
+    "Menu pistols_menu_enabled"
+    {
+        "#format" "{1:i}"
+        "pl" "Menu Pistoletów od rundy: {1}"
     }
 
     "weapon_ak47"
