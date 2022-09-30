@@ -48,6 +48,10 @@
 #define MAX_SERVICE_NAME_SIZE 64
 #define EXTRAJUMP_DEFAULT_HEIGHT 250.0
 
+// How frequently to rescan all players for changes to admin cache.
+#define ADMCACHE_RESCAN_INTERVAL 8.0
+int g_AdminCacheFlags[MAXPLAYERS + 1];
+int g_AdminCacheGroupCount[MAXPLAYERS + 1];
 
 enum
 {
@@ -160,6 +164,8 @@ public void OnPluginStart()
     LoadConfig();
     HandleLateLoad();
 
+    CreateTimer(ADMCACHE_RESCAN_INTERVAL, Timer_RescanServices, _, TIMER_REPEAT);
+
     g_HudMessages = CreateHudSynchronizer();
 }
 
@@ -213,6 +219,7 @@ public void OnClientPostAdminCheck(int client)
 {
     // Service must always be null if none is owned
     g_ClientService[client] = FindClientService(client);
+    UpdateClientAdminCache(client);
 
     SDKHook(client, SDKHook_OnTakeDamage, Hook_OnTakeDamage);
 
@@ -227,7 +234,32 @@ public void OnClientDisconnect(int client)
 
     g_ClientService[client] = null;
 
+    g_AdminCacheFlags[client] = 0;
+    g_AdminCacheGroupCount[client] = 0;
+
     WeaponMenu_ResetPreviousWeapons(client);
+}
+
+public Action Timer_RescanServices(Handle timer)
+{
+    /**
+     * NOTE: Because of VIP plugins granting access via database, the admin
+     * permissions aren't ready during OnClientPostAdminCheck.
+     * As of 1.11, there's no forward for when a client's admin permisisons change.
+     *
+     * So we must manually recheck it constantly.
+     */
+
+    for (int i = 1; i <= MaxClients; ++i)
+    {
+        if (!IsClientInGame(i) || !IsClientAuthorized(i) || IsFakeClient(i))
+            continue;
+
+        if (UpdateClientAdminCache(i))
+            g_ClientService[i] = FindClientService(i);
+    }
+
+    return Plugin_Continue;
 }
 
 public Action Command_OnlineList(int client, int args)
@@ -310,6 +342,19 @@ int GetRoundOfCurrentHalf()
 int IsRoundAllowed(int round)
 {
     return g_RoundCount >= round && round > 0;
+}
+
+bool UpdateClientAdminCache(int client)
+{
+    // See Timer_RescanServices
+
+    int oldFlags = g_AdminCacheFlags[client];
+    int oldCount = g_AdminCacheGroupCount[client];
+
+    g_AdminCacheFlags[client] = GetUserFlagBits(client);
+    g_AdminCacheGroupCount[client] = GetClientAdminGroupCount(client);
+
+    return oldFlags != g_AdminCacheFlags[client] || oldCount != g_AdminCacheGroupCount[client];
 }
 
 Service GetClientService(int client)
