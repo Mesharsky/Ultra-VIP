@@ -2,7 +2,8 @@
 
 **Ultra VIP** is advanced system that allows you to create multiple VIP Services.
 
-It is a complete remake and rewrite of [this](https://forums.alliedmods.net/showthread.php?t=320113 "this") plugin.) 
+It is a complete remake and rewrite of [this](https://forums.alliedmods.net/showthread.php?t=320113 "this") plugin) 
+
 It has tons of more features and its **free of limitations** previous release had.
 
 | Supported Game | Minimum SourceMod Version |
