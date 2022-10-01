@@ -217,6 +217,8 @@ public void OnClientCookiesCached(int client)
 
 public void OnClientPostAdminCheck(int client)
 {
+    // NOTE: This function must be callable from Timer_RescanServices without issues!
+
     // Service must always be null if none is owned
     g_ClientService[client] = FindClientService(client);
     UpdateClientAdminCache(client);
@@ -256,7 +258,7 @@ public Action Timer_RescanServices(Handle timer)
             continue;
 
         if (UpdateClientAdminCache(i))
-            g_ClientService[i] = FindClientService(i);
+            OnClientPostAdminCheck(i);
     }
 
     return Plugin_Continue;
