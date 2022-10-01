@@ -8,7 +8,7 @@ It has tons of more features and its **free of limitations** previous release ha
 
 | Supported Game | Minimum SourceMod Version |
 | ------------ | ------------ |
-|  CS:GO | SM 1.10+ |
+|  CS:GO | SM 1.11+ |
 
 *Unfortunately it is hard to support other games with that amount of features.
 If there will be posibility it will be added*
