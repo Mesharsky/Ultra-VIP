@@ -226,7 +226,7 @@ void ServiceBonusesList(int client, Service svc, char[] serviceName)
     }
     if (svc.BonusPlayerVisibility < 255)
     {
-        int percent = (svc.BonusPlayerVisibility / 255) * 100;
+        int percent = RoundToCeil((float(svc.BonusPlayerVisibility) / 255.0) * 100.0);
 
         ADDSVCDETAIL("Menu player_visibility", percent)
     }
