@@ -265,7 +265,10 @@ public Action Timer_RescanServices(Handle timer)
 public Action Command_OnlineList(int client, int args)
 {
     if (!g_UseOnlineList)
+    {
+        CReplyToCommand(client, "%t", "Vip Online List Disabled");
         return Plugin_Handled;
+    }
 
     if (!IsClientInGame(client) || IsFakeClient(client))
         return Plugin_Handled;
@@ -279,6 +282,12 @@ public Action Command_VipBonuses(int client, int args)
 {
     if (!IsClientInGame(client) || IsFakeClient(client))
         return Plugin_Handled;
+
+    if (!g_UseBonusesList)
+    {
+        CReplyToCommand(client, "%t", "Vip Bonuses Disabled");
+        return Plugin_Handled;
+    }
 
     ShowServiceBonuses(client);
     return Plugin_Handled;    
