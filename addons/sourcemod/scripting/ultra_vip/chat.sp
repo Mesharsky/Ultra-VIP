@@ -49,7 +49,6 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
     if (g_UseBonusesList && g_BonusesListCommands != null && g_BonusesListCommands.ContainsKey(filtered))
     {
-        PrintToServer("REEEEEEEEEEEEEEEEEEE");
         ShowServiceBonuses(client);
         return Plugin_Handled;
     }
