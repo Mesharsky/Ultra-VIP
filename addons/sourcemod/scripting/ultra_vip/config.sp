@@ -199,7 +199,7 @@ static bool GetGlobalConfiguration(KeyValues kv, bool fatalError)
 
     kv.GetString("bonuses_list_commands", buffer, sizeof(buffer));
     if (strlen(buffer) >= ONLINE_CMD_STRING_MAXLENGTH)
-        return HandleError(kv, fatalError, "\"online_list_commands\" is too long (Max %i characters).", ONLINE_CMD_STRING_MAXLENGTH);
+        return HandleError(kv, fatalError, "\"bonuses_list_commands\" is too long (Max %i characters).", ONLINE_CMD_STRING_MAXLENGTH);
 
     SplitIntoStringMap(g_BonusesListCommands, buffer, ONLINE_CMD_SEPARATOR);    
 

@@ -41,14 +41,15 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
     if (!filtered[0])
         return Plugin_Continue;
 
-    if (!g_UseOnlineList && g_OnlineListCommands != null && g_OnlineListCommands.ContainsKey(filtered))
+    if (g_UseOnlineList && g_OnlineListCommands != null && g_OnlineListCommands.ContainsKey(filtered))
     {
         ShowOnlineList(client);
         return Plugin_Handled;
     }
 
-    if (!g_UseBonusesList && g_BonusesListCommands != null && g_BonusesListCommands.ContainsKey(filtered))
+    if (g_UseBonusesList && g_BonusesListCommands != null && g_BonusesListCommands.ContainsKey(filtered))
     {
+        PrintToServer("REEEEEEEEEEEEEEEEEEE");
         ShowServiceBonuses(client);
         return Plugin_Handled;
     }
