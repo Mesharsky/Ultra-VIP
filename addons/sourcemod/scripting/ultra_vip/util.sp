@@ -136,6 +136,10 @@ bool CanGiveDefuser(int client)
     return true;
 }
 
+/**
+ * Set a player's opacity/alpha.
+ * sv_disable_immunity_alpha 1 is required for this to work.
+ */
 void SetPlayerVisibility(int client, int alpha)
 {
     if (alpha >= 255)
@@ -421,4 +425,9 @@ int GetClientAdminGroupCount(int client)
         return 0;
 
     return GetAdminGroupCount(id);
+}
+
+any _MAX(any a, any b)
+{
+    return a > b ? a : b;
 }

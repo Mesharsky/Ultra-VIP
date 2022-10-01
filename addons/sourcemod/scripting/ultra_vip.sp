@@ -202,6 +202,11 @@ public void OnMapStart()
     g_RoundCount = INVALID_ROUND;
 }
 
+public void OnConfigsExecuted()
+{
+    Config_FixCvars();
+}
+
 public void OnMapEnd()
 {
     Events_OnMapEnd();

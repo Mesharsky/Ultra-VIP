@@ -25,6 +25,8 @@ enum RootServiceMode
     Mode_Specified      // Root gets a specific service.
 }
 
+bool g_FixRequiredCvars;
+bool g_FixGrenadeLimits;
 char g_ChatTag[64];
 bool g_UseOnlineList;
 StringMap g_OnlineListCommands;
@@ -195,6 +197,10 @@ static bool GetGlobalConfiguration(KeyValues kv, bool fatalError)
     if (!GetRootService(kv))
         return HandleError(kv, fatalError, "An error occurred while processing the \"root_service\".");
 
+    g_FixRequiredCvars = view_as<bool>(kv.GetNum("fix_cvars", 1));
+    g_FixGrenadeLimits = view_as<bool>(kv.GetNum("fix_grenade_limits", 0));
+    // Config_FixCvars must be called in OnConfigsExecuted
+
     return true;
 }
 
@@ -228,6 +234,93 @@ static bool GetRootService(KeyValues kv)
     }
 
     g_RootServiceMode = Mode_Specified;
+    return true;
+}
+
+bool Config_FixCvars()
+{
+    Service svc;
+    int len = g_Services.Length;
+
+    if (g_FixGrenadeLimits)
+    {
+        int he;
+        int flash;
+        int smoke;
+        int decoy;
+        int molotov;
+        int healthshot;
+        int tag;
+        int snowball;
+
+        for (int i = 0; i < len; ++i)
+        {
+            svc = g_Services.Get(i);
+
+            he = _MAX(svc.BonusHEGrenades, he);
+            flash = _MAX(svc.BonusFlashGrenades, flash);
+            smoke = _MAX(svc.BonusSmokeGrenades, smoke);
+            decoy = _MAX(svc.BonusDecoyGrenades, decoy);
+            molotov = _MAX(svc.BonusMolotovGrenades, molotov);
+            healthshot = _MAX(svc.BonusHealthshotGrenades, healthshot);
+            tag = _MAX(svc.BonusTacticalGrenades, tag);
+            snowball = _MAX(svc.BonusSnowballGrenades, snowball);
+        }
+
+        if (!_SetCvarIfHigher("ammo_grenade_limit_total", he + flash + smoke + decoy + molotov + tag))
+            return false;
+
+        int max = he;
+        max = _MAX(smoke, max);
+        max = _MAX(decoy, max);
+        max = _MAX(molotov, max);
+        max = _MAX(tag, max);
+
+        if (!_SetCvarIfHigher("ammo_grenade_limit_default", max))
+            return false;
+
+        if (!_SetCvarIfHigher("ammo_grenade_limit_flashbang", flash))
+            return false;
+        if (!_SetCvarIfHigher("ammo_grenade_limit_snowballs", snowball))
+            return false;
+        if (!_SetCvarIfHigher("ammo_item_limit_healthshot", healthshot))
+            return false;
+    }
+
+
+    if (!g_FixRequiredCvars)
+        return true;
+
+    for (int i = 0; i < len; ++i)
+    {
+        svc = g_Services.Get(i);
+
+        // Only modify cvars if actually required
+        if (svc.BonusPlayerVisibility < 255)
+        {
+            // "player_visibility" requires this for SetPlayerVisibility
+            _SetCvarIfHigher("sv_disable_immunity_alpha", 1);
+        }
+    }
+    return true;
+}
+
+static bool _SetCvarIfHigher(const char[] cvarName, int amount)
+{
+    ConVar cvar = FindConVar(cvarName);
+    if (cvar == null)
+    {
+        LogError("Missing hardcoded ConVar %s", cvarName);
+        return false;
+    }
+
+    if (amount < 0)
+        amount = 0;
+
+    int current = cvar.IntValue;
+
+    if (amount > current)
+        cvar.IntValue = amount;
     return true;
 }
 
