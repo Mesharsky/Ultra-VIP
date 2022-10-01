@@ -29,7 +29,9 @@ bool g_FixRequiredCvars;
 bool g_FixGrenadeLimits;
 char g_ChatTag[64];
 bool g_UseOnlineList;
+bool g_UseBonusesList;
 StringMap g_OnlineListCommands;
+StringMap g_BonusesListCommands;
 bool g_IsDeathmatchMode;
 bool g_BotsGrantBonuses;
 
@@ -179,12 +181,15 @@ static bool GetGlobalConfiguration(KeyValues kv, bool fatalError)
     if (!g_ChatTag[0])
         return HandleError(kv, fatalError, "Missing \"chat_tag\" setting in config file.");
 
-    g_UseOnlineList = view_as<bool>(kv.GetNum("online_list", 0));
+    g_UseOnlineList = view_as<bool>(kv.GetNum("online_list", 1));
+    g_UseBonusesList = view_as<bool>(kv.GetNum("bonuses_list", 1));
     g_IsDeathmatchMode = view_as<bool>(kv.GetNum("deathmatch_mode", 0));
     g_BotsGrantBonuses = view_as<bool>(kv.GetNum("bots_grant_bonuses", 0));
 
     delete g_OnlineListCommands;
+    delete g_BonusesListCommands;
     g_OnlineListCommands = new StringMap();
+    g_BonusesListCommands = new StringMap();
 
     // Allow an extra char to catch misuse
     char buffer[ONLINE_CMD_STRING_MAXLENGTH + 2];
@@ -193,6 +198,12 @@ static bool GetGlobalConfiguration(KeyValues kv, bool fatalError)
         return HandleError(kv, fatalError, "\"online_list_commands\" is too long (Max %i characters).", ONLINE_CMD_STRING_MAXLENGTH);
 
     SplitIntoStringMap(g_OnlineListCommands, buffer, ONLINE_CMD_SEPARATOR);
+
+    kv.GetString("bonuses_list_commands", buffer, sizeof(buffer));
+    if (strlen(buffer) >= ONLINE_CMD_STRING_MAXLENGTH)
+        return HandleError(kv, fatalError, "\"bonuses_list_commands\" is too long (Max %i characters).", ONLINE_CMD_STRING_MAXLENGTH);
+
+    SplitIntoStringMap(g_BonusesListCommands, buffer, ONLINE_CMD_SEPARATOR);    
 
     if (!GetRootService(kv))
         return HandleError(kv, fatalError, "An error occurred while processing the \"root_service\".");

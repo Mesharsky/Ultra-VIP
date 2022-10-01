@@ -54,6 +54,15 @@
         "pl"    "Właśnie {green}WŁĄCZYŁEŚ{default} MultiJump. Użyj ponownie tej komendy by je {lightred}Wyłączyć"
     }
 
+    "Vip Online List Disabled"
+    {
+        "pl"    "{green}Lista Usług Graczy Online{default} jest aktualnie {darkred}wyłączona{default} przez Administratora serwera."
+    }
+    "Vip Bonuses Disabled"
+    {
+        "pl"    "{green}Lista Bonusów Usług{default} jest aktualnie {darkred}wyłączona{default} przez Administratora serwera."
+    }
+
     "Bonus Spawn Money"
     {
         "#format"    "{1:i}"

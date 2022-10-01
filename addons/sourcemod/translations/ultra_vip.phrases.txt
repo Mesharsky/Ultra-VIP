@@ -54,6 +54,15 @@
         "en"    "You turned {green}ON {default}MultiJumps. Use command again to {lightred}Disable"
     }
 
+    "Vip Online List Disabled"
+    {
+        "en"    "{green}Online List{default} is currently {darkred}disabled{default} by server Administrator."
+    }
+    "Vip Bonuses Disabled"
+    {
+        "en"    "{green}Bonuses List{default} is currently {darkred}disabled{default} by server Administrator."
+    }
+
     "Bonus Spawn Money"
     {
         "#format"    "{1:i}"
