@@ -18,7 +18,7 @@
 #pragma newdecls required
 #pragma semicolon 1
 
-Service FindServiceByName(const char[] name)
+Service FindServiceByName(const char[] name, bool caseSensitive=true)
 {
     char buffer[MAX_SERVICE_NAME_SIZE];
 
@@ -28,7 +28,7 @@ Service FindServiceByName(const char[] name)
         Service svc = g_Services.Get(i);
         svc.GetName(buffer, sizeof(buffer));
 
-        if (StrEqual(name, buffer))
+        if (StrEqual(name, buffer, caseSensitive))
             return svc;
     }
 

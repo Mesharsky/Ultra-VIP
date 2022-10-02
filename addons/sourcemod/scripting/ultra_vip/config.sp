@@ -63,7 +63,7 @@ static void ResetAllServices()
     for(int i = 0; i < len; ++i)
     {
         Service svc = g_Services.Get(i);
-        delete svc;
+        Service_Delete(svc);
     }
 }
 
