@@ -418,7 +418,9 @@ bool SettingType_RGBHex(const char[] value, int &result)
     if (len != 6 && (len != 7 && hasHash))
         return false;
 
-    return StringToIntStrict(hasHash ? value[1] : value, result, 16);
+    if (hasHash)
+        return StringToIntStrict(value[1], result, 16);
+    return StringToIntStrict(value, result, 16);
 }
 
 bool SettingType_RGBAHex(const char[] value, int &result)
@@ -432,5 +434,7 @@ bool SettingType_RGBAHex(const char[] value, int &result)
     if (len != 8 && (len != 9 && hasHash))
         return false;
 
-    return StringToIntStrict(hasHash ? value[1] : value, result, 16);
+    if (hasHash)
+        return StringToIntStrict(value[1], result, 16);
+    return StringToIntStrict(value, result, 16);
 }
