@@ -36,6 +36,8 @@
     #define MAXLENGTH_MESSAGE 128
 #endif
 
+#include <ultra_vip>
+
 
 #pragma newdecls required
 #pragma semicolon 1
@@ -68,8 +70,16 @@ static ConVar s_Cvar_MaxRounds;
 
 bool g_IsLateLoad;
 Handle g_HudMessages;
+bool g_IsInOnStartForward;
 ArrayList g_Services;
 ArrayList g_SortedServiceFlags;
+
+GlobalForward g_Fwd_OnStart;
+GlobalForward g_Fwd_OnReady;
+GlobalForward g_Fwd_OnPostAdminCheck;
+GlobalForward g_Fwd_OnDisconnect;
+GlobalForward g_Fwd_OnSpawn;
+GlobalForward g_Fwd_OnSpawnWithService;
 
 Cookie g_Cookie_PrevWeapons;
 
@@ -158,15 +168,33 @@ public void OnPluginStart()
     RegConsoleCmd("sm_endround", Command_EndRound);
 #endif
 
+    g_Fwd_OnStart = new GlobalForward("UVIP_OnStart", ET_Ignore);
+    g_Fwd_OnReady = new GlobalForward("UVIP_OnReady", ET_Ignore);
+    g_Fwd_OnPostAdminCheck = new GlobalForward("UVIP_OnClientPostAdminCheck", ET_Ignore, Param_Cell, Param_Cell);
+    g_Fwd_OnDisconnect = new GlobalForward("UVIP_OnClientDisconnected", ET_Ignore, Param_Cell, Param_Cell);
+    g_Fwd_OnSpawn = new GlobalForward("UVIP_OnSpawn", ET_Ignore, Param_Cell, Param_Cell);
+    g_Fwd_OnSpawnWithService = new GlobalForward("UVIP_OnSpawnWithService", ET_Ignore, Param_Cell, Param_Cell);
+
 	//g_Cvar_ArenaMode = CreateConVar("arena_mode", "0", "Should arena mode (splewis) be enabled?\nRemeber that plugin will use arena configuration file instead if enabled");
 
     g_Cookie_PrevWeapons = new Cookie("ultra_vip_weapons", "Previously Selected Weapons", CookieAccess_Private);
+
+    g_IsInOnStartForward = true;
+    Call_StartForward(g_Fwd_OnStart);
+    if (Call_Finish() != SP_ERROR_NONE)
+        LogError("Failed to call UVIP_OnStart");
+    g_IsInOnStartForward = false;
+
     LoadConfig();
     HandleLateLoad();
 
     CreateTimer(ADMCACHE_RESCAN_INTERVAL, Timer_RescanServices, _, TIMER_REPEAT);
 
     g_HudMessages = CreateHudSynchronizer();
+
+    Call_StartForward(g_Fwd_OnReady);
+    if (Call_Finish() != SP_ERROR_NONE)
+        LogError("Failed to call UVIP_OnReady");
 }
 
 static void HandleLateLoad()
@@ -231,6 +259,8 @@ public void OnClientPostAdminCheck(int client)
     SDKHook(client, SDKHook_OnTakeDamage, Hook_OnTakeDamage);
 
     ExtraJump_OnClientPostAdminCheck(client, g_ClientService[client]);
+
+    CallServiceForward(g_Fwd_OnPostAdminCheck, client, g_ClientService[client]);
 }
 
 public void OnClientDisconnect(int client)
@@ -238,6 +268,9 @@ public void OnClientDisconnect(int client)
     Bonus_LeaveMessage(client);
 
     ExtraJump_OnClientDisconect(client);
+
+    // Call before unsetting g_ClientService
+    CallServiceForward(g_Fwd_OnDisconnect, client, g_ClientService[client]);
 
     g_ClientService[client] = null;
 
@@ -479,6 +512,15 @@ Service FindServiceByOverrideAccess(int client)
     }
 
     return null;
+}
+
+void CallServiceForward(GlobalForward fwd, int client, Service svc)
+{
+    Call_StartForward(fwd);
+    Call_PushCell(client);
+    Call_PushCell(svc);
+    if (Call_Finish() != SP_ERROR_NONE)
+        LogError("Failed to call forward.");
 }
 
 public void OnAllPluginsLoaded()

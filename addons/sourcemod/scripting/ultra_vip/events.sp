@@ -98,12 +98,15 @@ public Action Timer_SpawnBonuses(Handle tmr, DataPack pack)
 
     // This must run for every spawn, even without a service
     ExtraJump_OnPlayerSpawn(client, svc);
+    CallServiceForward(g_Fwd_OnSpawn, client, svc);
 
     if (svc == null)
     {
         s_SpawnTimers[client] = null;
         return Plugin_Handled;
     }
+
+    CallServiceForward(g_Fwd_OnSpawnWithService, client, svc);
 
     Bonus_SetPlayerScoreBoardTag(client, svc);
     Bonus_SetPlayerHealth(client, svc);
