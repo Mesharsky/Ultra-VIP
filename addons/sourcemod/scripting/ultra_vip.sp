@@ -48,6 +48,9 @@
 #define INVALID_ROUND 0
 #define MAX_WEAPON_CLASSNAME_SIZE 24 // https://wiki.alliedmods.net/Counter-Strike:_Global_Offensive_Weapons
 #define MAX_SERVICE_NAME_SIZE 64
+#define MAX_SETTING_NAME_SIZE 64
+#define MAX_SETTING_VALUE_SIZE 256
+
 #define EXTRAJUMP_DEFAULT_HEIGHT 250.0
 
 // How frequently to rescan all players for changes to admin cache.
@@ -73,6 +76,7 @@ Handle g_HudMessages;
 bool g_IsInOnStartForward;
 ArrayList g_Services;
 ArrayList g_SortedServiceFlags;
+StringMap g_ModuleSettings;
 
 GlobalForward g_Fwd_OnStart;
 GlobalForward g_Fwd_OnReady;
@@ -114,6 +118,9 @@ int g_RoundCount;
 
 Service g_ClientService[MAXPLAYERS +1];
 
+#include "ultra_vip/natives.sp" // After g_ClientService
+
+
 public Plugin myinfo =
 {
     name = "Ultra VIP",
@@ -131,6 +138,17 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
         return APLRes_Failure;
     }
 
+    CreateNative("_UVIP_IsCoreCompatible", Native_IsCoreCompatible);
+    CreateNative("UVIP_RegisterSetting", Native_RegisterSetting);
+    CreateNative("UVIP_OverrideFeature", Native_OverrideFeature);
+    CreateNative("UVIP_GetClientService", Native_GetClientService);
+
+    CreateNative("UVIPService.Get", Native_UVIPService_Get);
+    CreateNative("UVIPService.GetInt", Native_UVIPService_GetInt);
+    CreateNative("UVIPService.GetFloat", Native_UVIPService_GetFloat);
+    CreateNative("UVIPService.GetCell", Native_UVIPService_GetCell);
+    RegPluginLibrary("ultra_vip");
+
     g_IsLateLoad = late;
     return APLRes_Success;
 }
@@ -139,6 +157,8 @@ public void OnPluginStart()
 {
     g_Services = new ArrayList();
     g_SortedServiceFlags = new ArrayList();
+
+    Natives_OnPluginStart();
 
     LoadTranslations("ultra_vip.phrases.txt");
 

@@ -431,3 +431,44 @@ any _MAX(any a, any b)
 {
     return a > b ? a : b;
 }
+
+void NormaliseString(char[] str)
+{
+    TrimString(str);
+    for (int i = 0; str[i] != '\0'; ++i)
+        str[i] = CharToLower(str[i]);
+}
+
+/**
+ * StringToIntEx(), but the entire string must be a valid integer.
+ * Input string must contain no whitespace.
+ *
+ * StringToIntEx wont return 0 for invalid numbers like "90a4",
+ * it will instead output the value "90".
+ */
+stock bool StringToIntStrict(const char[] str, int &result, int nBase=10)
+{
+    int temp;
+    int len = strlen(str);
+    if (StringToIntEx(str, temp, nBase) != len)
+        return false;
+    result = temp;
+    return true;
+}
+
+/**
+ * StringToFloatEx(), but the entire string must be a valid float.
+ * Input string must contain no whitespace.
+ *
+ * StringToFloatEx wont return 0 for invalid numbers like "9.0a4",
+ * it will instead output the value "9.0".
+ */
+stock bool StringToFloatStrict(const char[] str, float &result)
+{
+    float temp;
+    int len = strlen(str);
+    if (StringToFloatEx(str, temp) != len)
+        return false;
+    result = temp;
+    return true;
+}
