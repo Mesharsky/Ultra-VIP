@@ -32,6 +32,10 @@ enum struct FeatureOverrideInfo
     bool isOverridden;
     FeatureOverrideMode mode;
 
+#if defined COMPILER_IS_OLDER_THAN_SM1_11
+    Handle plugin;
+#endif
+
     void Reset()
     {
         this.pluginName[0] = '\0';
@@ -41,7 +45,7 @@ enum struct FeatureOverrideInfo
 }
 
 
-#if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 11
+#if defined COMPILER_IS_SM1_11
 static_assert(view_as<int>(Feature_LAST_ITEM) == 310, "Feature was added to UVIPFeature without feature-override array being resized");
 #endif
 static FeatureOverrideInfo s_FeatureOverrides[20];
@@ -53,6 +57,8 @@ void Natives_OnPluginStart()
     g_ModuleSettings = new StringMap();
 }
 
+
+#if defined COMPILER_IS_SM1_11
 void Natives_OnPluginUnloaded(Handle plugin)
 {
     char name[sizeof(FeatureOverrideInfo::pluginName)];
@@ -69,6 +75,24 @@ void Natives_OnPluginUnloaded(Handle plugin)
             s_FeatureOverrides[i].Reset();
     }
 }
+#elseif defined COMPILER_IS_OLDER_THAN_SM1_11
+static void CleanAllUnusedOverrides()
+{
+    for (int i = 0; i < sizeof(s_FeatureOverrides); ++i)
+    {
+        if (!s_FeatureOverrides[i].isOverridden)
+            continue;
+
+        if (IsPluginLoaded(s_FeatureOverrides[i].plugin))
+            continue;
+
+        // Plugin unloaded on overriden feature, mimic Natives_OnPluginUnloaded
+        if (s_FeatureOverrides[i].mode == Override_Optional)
+            s_FeatureOverrides[i].Reset();
+    }
+}
+#endif
+
 
 bool IsFeatureAvailable(UVIPFeature feature)
 {
@@ -144,11 +168,23 @@ public any Native_OverrideFeature(Handle plugin, int numParams)
     s_FeatureOverrides[index].pluginName = pluginName;
     s_FeatureOverrides[index].isOverridden = true;
     s_FeatureOverrides[index].mode = GetNativeCell(2);
+
+#if defined COMPILER_IS_OLDER_THAN_SM1_11
+    s_FeatureOverrides[index].plugin = plugin;
+#endif
+
     return true;
 }
 
 static bool CanOverrideFeature(int featureIndex, const char[] pluginName)
 {
+    // < 1.11 only: Clear all unloaded overrides in case module plugins
+    // were unloaded.
+    // 1.11+ handles this automatically.
+#if defined COMPILER_IS_OLDER_THAN_SM1_11
+    CleanAllUnusedOverrides();
+#endif
+
     if (!s_FeatureOverrides[featureIndex].isOverridden)
         return true;
 
@@ -169,7 +205,7 @@ public any Native_GetClientService(Handle plugin, int numParams)
 }
 
 
-#if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 11
+#if defined COMPILER_IS_SM1_11
 static_assert(view_as<int>(SettingType_TOTAL) == 7, "SettingType was added without being handled in Get/GetInt/GetFloat/GetCell");
 #endif
 
@@ -271,7 +307,7 @@ static any GetServiceCell(Service svc, const char[] settingName)
 }
 
 
-#if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 11
+#if defined COMPILER_IS_SM1_11
 static_assert(view_as<int>(Feature_LAST_ITEM) == 310, "Feature was added to UVIPFeature without being handled in IsFeatureAvailable");
 #endif
 static int GetFeatureIndex(UVIPFeature feature)

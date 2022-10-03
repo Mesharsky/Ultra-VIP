@@ -45,6 +45,14 @@
 #define PLUGIN_VERSION "0.1"
 //#define DEBUG
 
+
+#if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 11
+    #define COMPILER_IS_SM1_11
+#else
+    #define COMPILE_IS_OLDER_THAN_SM1_11
+#endif
+
+
 #define INVALID_ROUND 0
 #define MAX_WEAPON_CLASSNAME_SIZE 24 // https://wiki.alliedmods.net/Counter-Strike:_Global_Offensive_Weapons
 #define MAX_SERVICE_NAME_SIZE 64
@@ -322,6 +330,13 @@ public Action Timer_RescanServices(Handle timer)
     return Plugin_Continue;
 }
 
+#if defined COMPILER_IS_SM1_11
+public void OnNotifyPluginUnloaded(Handle plugin)
+{
+    Natives_OnPluginUnloaded(plugin);
+}
+#endif
+
 public Action Command_OnlineList(int client, int args)
 {
     if (!g_UseOnlineList)
@@ -476,6 +491,8 @@ Service FindHighestPriorityService(int adminFlags)
 {
     if (!adminFlags)
         return null;
+
+#warning Override access has no priority. Fix before release.
 
     // TODO / BUG: Does not correctly support priority searching for services without flags
     // You'll probably need to change how they're stored and replace g_SortedServiceFlags

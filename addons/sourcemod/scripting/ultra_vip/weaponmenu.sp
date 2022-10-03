@@ -493,7 +493,7 @@ public int WeaponMenu_SelectionHandler(Menu menu, MenuAction action, int param1,
 // Used to filter out weapons to display the 'next' menu when
 // redisplaying the selection list.
 //--------------------------------------------------------------
-#if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 11
+#if defined COMPILER_IS_SM1_11
 static_assert(Weapon_Invalid < Weapon_Rifle);
 static_assert(Weapon_Rifle < Weapon_Pistol);
 #endif

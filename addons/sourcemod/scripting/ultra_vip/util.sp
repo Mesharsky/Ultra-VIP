@@ -472,3 +472,23 @@ stock bool StringToFloatStrict(const char[] str, float &result)
     result = temp;
     return true;
 }
+
+
+/**
+ * Used for SM 1.10 compatibility instead of using OnNotifyPluginUnloaded
+ */
+stock bool IsPluginLoaded(Handle plugin)
+{
+    PluginIterator it = new PluginIterator();
+    while (it.Next())
+    {
+        if (it.Plugin == plugin)
+        {
+            delete it;
+            return true;
+        }
+    }
+
+    delete it;
+    return false;
+}
