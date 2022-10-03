@@ -18,6 +18,8 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+#include "modulecfg.sp"
+
 enum RootServiceMode
 {
     Mode_None = 0,      // Root does not get a service.
@@ -163,7 +165,7 @@ bool LoadConfig(bool fatalError = true)
 
     delete kv;
 
-    if (!BuildSortedFlagList())
+    if (!BuildSortedFlagList() || !LoadModuleConfig(fatalError))
     {
         ResetAllServices();
         return false;

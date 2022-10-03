@@ -49,7 +49,7 @@
 #if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 11
     #define COMPILER_IS_SM1_11
 #else
-    #define COMPILE_IS_OLDER_THAN_SM1_11
+    #define COMPILER_IS_OLDER_THAN_SM1_11
 #endif
 
 

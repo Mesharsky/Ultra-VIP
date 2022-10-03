@@ -808,3 +808,61 @@ static any Service_GetCell(Service svc, const char[] field)
     return value;
 }
 
+
+#if defined COMPILER_IS_SM1_11
+static_assert(view_as<int>(SettingType_TOTAL) == 7, "SettingType was added without being handled in Service_AddModuleSetting");
+#endif
+void Service_AddModuleSetting(
+    Service svc,
+    SettingType type,
+    const char[] settingName,
+    const char[] value)
+{
+    if (type == Type_String)
+    {
+        svc.SetString(settingName, value);
+        return;
+    }
+
+    any result;
+
+    switch (type)
+    {
+        case Type_Byte:
+        {
+            if (!SettingType_Byte(value, result))
+                return;
+        }
+        case Type_UnsignedByte:
+        {
+            if (!SettingType_UnsignedByte(value, result))
+                return;
+        }
+        case Type_Integer:
+        {
+            if (!SettingType_Integer(value, result))
+                return;
+        }
+        case Type_Bool:
+        {
+            if (!SettingType_Bool(value, result))
+                return;
+        }
+        case Type_Hex:
+        {
+            if (!SettingType_Hex(value, result))
+                return;
+        }
+        case Type_Float:
+        {
+            if (!SettingType_Float(value, result))
+                return;
+        }
+
+        default:
+        {
+            ThrowError("Unknown SettingType %i", type);
+        }
+    }
+    svc.SetValue(settingName, result);
+}
