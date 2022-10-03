@@ -1,5 +1,7 @@
 /**
- * Copyright (C) Mesharsky
+ * The file is a part of Ultra-VIP.
+ *
+ * Copyright (C) Mesharsky & SirDigbot
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -365,7 +367,7 @@ public Action Command_VipBonuses(int client, int args)
     }
 
     ShowServiceBonuses(client);
-    return Plugin_Handled;    
+    return Plugin_Handled;
 }
 
 #if defined DEBUG

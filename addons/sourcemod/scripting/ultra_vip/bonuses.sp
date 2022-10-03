@@ -1,4 +1,6 @@
 /**
+ * The file is a part of Ultra-VIP.
+ *
  * Copyright (C) Mesharsky
  *
  * This program is free software: you can redistribute it and/or modify
@@ -224,7 +226,7 @@ void Bonus_HostageRescuedMoney(int client, Service svc)
     if (!IsRoundAllowed(svc.BonusHostageMoneyRound))
         return;
 
-    _SetMoney(client, svc.BonusHostageMoney, svc.BonusHostageMoneyNotify, "Bonus Hostage Rescue Money");    
+    _SetMoney(client, svc.BonusHostageMoney, svc.BonusHostageMoneyNotify, "Bonus Hostage Rescue Money");
 }
 
 //////////////////////////////////

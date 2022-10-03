@@ -1,4 +1,6 @@
 /**
+ * The file is a part of Ultra-VIP.
+ *
  * Copyright (C) Mesharsky
  *
  * This program is free software: you can redistribute it and/or modify
@@ -327,7 +329,7 @@ void ServiceBonusesList(int client, Service svc, char[] serviceName)
     {
         ADDSVCDETAIL("Menu bomb_defused_bonus", svc.BonusBombDefusedMoney)
     }
-    
+
     menu.Display(client, MENU_TIME_FOREVER);
 }
 

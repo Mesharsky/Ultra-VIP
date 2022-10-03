@@ -1,4 +1,6 @@
 /**
+ * The file is a part of Ultra-VIP.
+ *
  * Copyright (C) Mesharsky
  *
  * This program is free software: you can redistribute it and/or modify
@@ -205,7 +207,7 @@ static bool GetGlobalConfiguration(KeyValues kv, bool fatalError)
     if (strlen(buffer) >= ONLINE_CMD_STRING_MAXLENGTH)
         return HandleError(kv, fatalError, "\"bonuses_list_commands\" is too long (Max %i characters).", ONLINE_CMD_STRING_MAXLENGTH);
 
-    SplitIntoStringMap(g_BonusesListCommands, buffer, ONLINE_CMD_SEPARATOR);    
+    SplitIntoStringMap(g_BonusesListCommands, buffer, ONLINE_CMD_SEPARATOR);
 
     if (!GetRootService(kv))
         return HandleError(kv, fatalError, "An error occurred while processing the \"root_service\".");

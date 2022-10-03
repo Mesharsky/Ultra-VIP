@@ -1,4 +1,6 @@
 /**
+ * The file is a part of Ultra-VIP.
+ *
  * Copyright (C) SirDigbot & Mesharsky
  *
  * This program is free software: you can redistribute it and/or modify
@@ -200,7 +202,7 @@ static SMCResult ModuleConfig_KeyValue(
 {
     if (!s_IsParsingValidService)
         return SMCParse_Continue;
-    
+
     char normalised[MAX_SETTING_NAME_SIZE];
     strcopy(normalised, sizeof(normalised), key);
     NormaliseString(normalised);
