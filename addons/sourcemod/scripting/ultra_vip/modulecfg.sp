@@ -329,7 +329,7 @@ static void RemoveSetting(StringMap map, const char[] serviceName, const char[] 
 
 
 #if defined COMPILER_IS_SM1_11
-static_assert(view_as<int>(SettingType_TOTAL) == 7, "SettingType was added without being handled in Get/GetInt/GetFloat/GetCell");
+static_assert(view_as<int>(SettingType_TOTAL) == 9, "SettingType was added without being handled in Get/GetInt/GetFloat/GetCell");
 #endif
 static bool DoesTypeMatch(const char[] key, const char[] value, char[] error, int errSize)
 {
@@ -388,6 +388,22 @@ static bool DoesTypeMatch(const char[] key, const char[] value, char[] error, in
             if (!SettingType_Float(value, result))
             {
                 Format(error, errSize, "Value '%s' is not a valid float value (e.g. \"3.1415\").", value);
+                return false;
+            }
+        }
+        case Type_RGBHex:
+        {
+            if (!SettingType_RGBHex(value, result))
+            {
+                Format(error, errSize, "Value '%s' is not an RGB hexadecimal color. Must be 6 characters (0 to 9, A to F). e.g. 0099FF or #0099FF)", value);
+                return false;
+            }
+        }
+        case Type_RGBAHex:
+        {
+            if (!SettingType_RGBAHex(value, result))
+            {
+                Format(error, errSize, "Value '%s' is not an RGBA hexadecimal color. Must be 8 characters (0 to 9, A to F). e.g. 0055AAFF or #0055AAFF)", value);
                 return false;
             }
         }

@@ -43,17 +43,18 @@ enum FeatureOverrideMode
 
 enum SettingType
 {
-    Type_String = 0,
-    Type_Byte,
-    Type_UnsignedByte,
-    Type_Integer,
-    Type_Bool,
-    Type_Hex,
-    Type_Float,
+    Type_String = 0,    // Text (or custom type).
+    Type_Byte,          // Integer between -128 and 127 (inclusive).
+    Type_UnsignedByte,  // Integer between 0 and 255 (inclusive).
+    Type_Integer,       // Integer between -2147483648 and 2147483647 (inclusive).
+    Type_Bool,          // True/False (or 1/0). Case-insensitive.
+    Type_Hex,           // Type_Integer but using hexadecimal digits (0-9, A-F). Case-insensitive.
+    Type_Float,         // Real number (anything with a decimal point).
 
     // TODO: Vec2d/3d/4d + float variant
-    // TODO: RGB Hex + RGBA Hex
 
+    Type_RGBHex,                // Type_Hex that must be 6 characters long, with optional # prefix (e.g. 00AAFF or #00AAFF).
+    Type_RGBAHex,               // Type_Hex that must be 8 characters long, with optional # prefix (e.g. 0055AAFF or #0055AAFF).
     SettingType_TOTAL
 }
 

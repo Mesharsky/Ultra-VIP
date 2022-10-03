@@ -208,7 +208,7 @@ public any Native_GetClientService(Handle plugin, int numParams)
 
 
 #if defined COMPILER_IS_SM1_11
-static_assert(view_as<int>(SettingType_TOTAL) == 7, "SettingType was added without being handled in Get/GetInt/GetFloat/GetCell");
+static_assert(view_as<int>(SettingType_TOTAL) == 9, "SettingType was added without being handled in Get/GetInt/GetFloat/GetCell");
 #endif
 
 
@@ -226,6 +226,7 @@ public any Native_UVIPService_Get(Handle plugin, int numParams)
     if (!g_ModuleSettings.GetArray(settingName, info, sizeof(info)))
         return ThrowNativeError(SP_ERROR_NATIVE, "\"%s\" is not a registered setting name.", settingName);
 
+    // Even though values are always set with a string, they can be stored as cell
     if (info.type != Type_String)
         return ThrowNativeError(SP_ERROR_NATIVE, "Cannot use UVIPService.Get on non-string setting \"%s\"", settingName);
 
@@ -249,7 +250,8 @@ public any Native_UVIPService_GetInt(Handle plugin, int numParams)
 
     switch (info.type)
     {
-        case Type_Byte, Type_UnsignedByte, Type_Integer, Type_Bool, Type_Hex:
+        case Type_Byte, Type_UnsignedByte, Type_Integer, Type_Bool, Type_Hex,
+            Type_RGBHex, Type_RGBAHex:
         {
             return GetServiceCell(GetNativeCell(1), settingName);
         }
@@ -286,7 +288,8 @@ public any Native_UVIPService_GetCell(Handle plugin, int numParams)
 
     switch (info.type)
     {
-        case Type_Byte, Type_UnsignedByte, Type_Integer, Type_Bool, Type_Hex, Type_Float:
+        case Type_Byte, Type_UnsignedByte, Type_Integer, Type_Bool, Type_Hex,
+            Type_Float, Type_RGBHex, Type_RGBAHex:
         {
             return GetServiceCell(GetNativeCell(1), settingName);
         }
@@ -402,4 +405,32 @@ bool SettingType_Hex(const char[] value, int &result)
 bool SettingType_Float(const char[] value, float &result)
 {
     return StringToFloatStrict(value, result);
+}
+
+bool SettingType_RGBHex(const char[] value, int &result)
+{
+    // 0099FF or #0099FF
+    int len = strlen(value);
+    if (len < 6)
+        return false;
+
+    bool hasHash = value[0] == '#';
+    if (len != 6 || (len != 7 && hasHash))
+        return false;
+
+    return StringToIntStrict(hasHash ? value[1] : value, result, 16);
+}
+
+bool SettingType_RGBAHex(const char[] value, int &result)
+{
+    // 005599FF or #005599FF
+    int len = strlen(value);
+    if (len < 8)
+        return false;
+
+    bool hasHash = value[0] == '#';
+    if (len != 8 || (len != 9 && hasHash))
+        return false;
+
+    return StringToIntStrict(hasHash ? value[1] : value, result, 16);
 }

@@ -812,7 +812,7 @@ static any Service_GetCell(Service svc, const char[] field)
 
 
 #if defined COMPILER_IS_SM1_11
-static_assert(view_as<int>(SettingType_TOTAL) == 7, "SettingType was added without being handled in Service_AddModuleSetting");
+static_assert(view_as<int>(SettingType_TOTAL) == 9, "SettingType was added without being handled in Service_AddModuleSetting");
 #endif
 void Service_AddModuleSetting(
     Service svc,
@@ -860,11 +860,22 @@ void Service_AddModuleSetting(
             if (!SettingType_Float(value, result))
                 return;
         }
+        case Type_RGBHex:
+        {
+            if (!SettingType_RGBHex(value, result))
+                return;
+        }
+        case Type_RGBAHex:
+        {
+            if (!SettingType_RGBAHex(value, result))
+                return;
+        }
 
         default:
         {
             ThrowError("Unknown SettingType %i", type);
         }
     }
+
     svc.SetValue(settingName, result);
 }
