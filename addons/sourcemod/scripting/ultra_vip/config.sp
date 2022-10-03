@@ -371,24 +371,19 @@ static bool ProcessMainConfiguration(KeyValues kv, Service svc, bool fatalError,
     svc.Priority = kv.GetNum("priority", 0);
 
     kv.GetString("override", buffer, sizeof(buffer));
-    if (buffer[0])
-        svc.SetOverride(buffer);
+    svc.SetOverride(buffer);
 
     kv.GetString("chat_tag", buffer, sizeof(buffer));
-    if (buffer[0])
-        svc.SetChatTag(buffer);
+    svc.SetChatTag(buffer);
 
     kv.GetString("chat_name_color", buffer, sizeof(buffer));
-    if (buffer[0])
-        svc.SetChatNameColor(buffer);
+    svc.SetChatNameColor(buffer);
 
     kv.GetString("chat_message_color", buffer, sizeof(buffer));
-    if (buffer[0])
-        svc.SetChatMsgColor(buffer);
+    svc.SetChatMsgColor(buffer);
 
     kv.GetString("scoreboard_tag", buffer, sizeof(buffer));
-    if (buffer[0])
-        svc.SetScoreboardTag(buffer);
+    svc.SetScoreboardTag(buffer);
 
     if (!Config_ProcessSteamIDAccess(kv, svc, fatalError, serviceName))
     {
@@ -669,14 +664,12 @@ static bool ProcessChatWelcomeLeaveMessages(KeyValues kv, Service svc, bool fata
     svc.ChatWelcomeMessage = view_as<bool>(kv.GetNum("chat_join_msg_enable", 1));
 
     kv.GetString("chat_join_msg", buffer, sizeof(buffer));
-    if (buffer[0])
-        svc.SetChatWelcomeMessage(buffer);
+    svc.SetChatWelcomeMessage(buffer);
 
     svc.ChatLeaveMessage = view_as<bool>(kv.GetNum("chat_leave_msg_enable", 1));
 
     kv.GetString("chat_leave_msg", buffer, sizeof(buffer));
-    if (buffer[0])
-        svc.SetChatLeaveMessage(buffer);
+    svc.SetChatLeaveMessage(buffer);
 
     kv.GoBack(); // Welcome and Leave Messages
     kv.GoBack(); // Service Name
@@ -696,14 +689,12 @@ static bool ProcessHudWelcomeLeaveMessages(KeyValues kv, Service svc, bool fatal
     svc.HudWelcomeMessage = view_as<bool>(kv.GetNum("hud_leave_msg_enable", 0));
 
     kv.GetString("hud_join_msg", buffer, sizeof(buffer));
-    if (buffer[0])
-        svc.SetHudWelcomeMessage(buffer);
+    svc.SetHudWelcomeMessage(buffer);
 
     svc.HudLeaveMessage = view_as<bool>(kv.GetNum("hud_leave_msg_enable", 0));
 
     kv.GetString("hud_leave_msg", buffer, sizeof(buffer));
-    if (buffer[0])
-        svc.SetHudLeaveMessage(buffer);
+    svc.SetHudLeaveMessage(buffer);
 
     svc.HudPositionX = kv.GetFloat("hud_position_x", -1.0);
     svc.HudPositionY = kv.GetFloat("hud_position_y", -0.7);
