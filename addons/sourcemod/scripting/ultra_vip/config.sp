@@ -44,21 +44,25 @@ RootServiceMode g_RootServiceMode;
 StringMap g_SteamIDServices;    // Maps SteamID2 to Service handle (g_Services)
 
 static int s_UsedServiceFlags;
+static StringMap s_UsedServiceOverrides;
 
 #define ONLINE_CMD_SEPARATOR ";"
 #define ONLINE_CMD_STRING_MAXLENGTH 512
 
-// Struct used purely for sorting purposes in BuildFlagsList()
-enum struct FlagPriority
+// Struct used purely for sorting purposes in BuildSortedLists()
+enum struct ServicePriorityData
 {
     int flag;
     int priority;
+    char override[MAX_SERVICE_OVERRIDE_SIZE];
 }
 
 static void ResetAllServices()
 {
     g_SortedServiceFlags.Clear();
+    g_SortedServiceOverrides.Clear();
     s_UsedServiceFlags = 0;
+    delete s_UsedServiceOverrides;
 
     delete g_SteamIDServices;
     g_SteamIDServices = new StringMap();
@@ -114,13 +118,15 @@ bool LoadConfig(bool fatalError = true)
 
     ResetAllServices();
 
+    s_UsedServiceOverrides = new StringMap();
+
     if (!kv.JumpToKey("Services"))
         return HandleError(kv, fatalError, "Missing \"Services\" section in config file.");
 
     if (!kv.GotoFirstSubKey())
         return HandleError(kv, fatalError, "There are no valid services in the config.");
 
-    char serviceName[MAX_SERVICE_NAME_SIZE];
+    char serviceName[MAX_SERVICE_NAME_SIZE|MAX_SERVICE_OVERRIDE_SIZE]; // Cheeky MAX()
     do
     {
         kv.GetSectionName(serviceName, sizeof(serviceName));
@@ -153,9 +159,16 @@ bool LoadConfig(bool fatalError = true)
             continue;
 
         g_Services.Push(svc);
+
         s_UsedServiceFlags |= svc.Flag;
+
+        svc.GetOverride(serviceName, sizeof(serviceName));
+        if (serviceName[0])
+            s_UsedServiceOverrides.SetValue(serviceName, 0);
     }
     while (kv.GotoNextKey());
+
+    delete s_UsedServiceOverrides;
 
     // Get global config *after* getting services so it's not set unless all
     // services are valid, which is both safer and required for "root_service"
@@ -167,7 +180,7 @@ bool LoadConfig(bool fatalError = true)
 
     delete kv;
 
-    if (!BuildSortedFlagList() || !LoadModuleConfig(fatalError))
+    if (!BuildSortedLists() || !LoadModuleConfig(fatalError))
     {
         ResetAllServices();
         return false;
@@ -354,23 +367,29 @@ static bool ProcessMainConfiguration(KeyValues kv, Service svc, bool fatalError,
     if (!kv.JumpToKey("Main Configuration"))
         return HandleError(svc, fatalError, "Service \"%s\" is missing section \"Main Configuration\".", serviceName);
 
-    char buffer[128];
+    char buffer[MAX_SERVICE_OVERRIDE_SIZE + 64];
 
+    // Flags MUST be unique per service or FindServiceByFlagAccess wont work
     kv.GetString("flag", buffer, sizeof(buffer));
     int flag = ReadFlagString(buffer);
     if (!HasOnlySingleBit(flag))
         return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is not allowed to have multiple admin flags.", serviceName);
     if (s_UsedServiceFlags & flag)
-        return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is using an already-assigned admin flag '%s'", serviceName, buffer);
+        return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is using admin flag '%s' which is in use by another service.", serviceName, buffer);
     if (flag & ADMFLAG_ROOT)
         return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is not allowed to have the ROOT flag (z). Use \"root_service\" instead.", serviceName);
 
     svc.Flag = flag;
-    // s_UsedServiceFlags is updated when the service is pushed to g_Services
+
+    // s_UsedServiceFlags and s_UsedServiceOverrides are updated when
+    // the service is pushed to g_Services
 
     svc.Priority = kv.GetNum("priority", 0);
 
+    // Overrides must be unique per service or FindServiceByOverrideAccess wont work
     kv.GetString("override", buffer, sizeof(buffer));
+    if (buffer[0] && s_UsedServiceOverrides.ContainsKey(buffer))
+        return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is using admin override '%s' which is in use by another service.", serviceName, buffer);
     svc.SetOverride(buffer);
 
     kv.GetString("chat_tag", buffer, sizeof(buffer));
@@ -750,49 +769,58 @@ static bool ProcessWeapons(KeyValues kv, Service svc, bool fatalError, const cha
 }
 
 /**
- * Set g_SortedServiceFlags to a list of each Service flag (from g_Services)
- * sorted by the Service priority.
+ * Process g_Services to create 2 sorted lists ordered by Service::Priority:
+ * g_SortedServiceFlags -- A sorted list of each service flag
+ * g_SortedServiceOverrides -- A sorted list of each service override
+ *
+ * Both flags and overrides are optional so we need to make both lists
+ * separately.
+ *
+ * @note This func must be called after loading g_Services.
  */
-static bool BuildSortedFlagList()
+static bool BuildSortedLists()
 {
-    // This func must be called after loading g_Services
-
     int len = g_Services.Length;
-
-    ArrayList list = new ArrayList(sizeof(FlagPriority), len);
-
-    Service svc;
-    FlagPriority data;
+    ArrayList list = new ArrayList(sizeof(ServicePriorityData), len);
 
     for (int i = 0; i < len; ++i)
     {
-        svc = g_Services.Get(i);
+        ServicePriorityData data; // Zero out each loop!
+
+        Service svc = g_Services.Get(i);
 
         data.flag = svc.Flag;
         data.priority = svc.Priority;
+        svc.GetOverride(data.override, sizeof(ServicePriorityData::override));
 
         list.SetArray(i, data, sizeof(data));
     }
 
-    list.SortCustom(SortHighestFlagPriority);
+    list.SortCustom(SortHighestPriority);
 
-    delete g_SortedServiceFlags;
-    g_SortedServiceFlags = new ArrayList(1, len);
+    g_SortedServiceFlags.Clear();
+    g_SortedServiceOverrides.Clear();
 
+    ServicePriorityData data;
     for (int i = 0; i < len; ++i)
     {
         list.GetArray(i, data, sizeof(data));
-        g_SortedServiceFlags.Set(i, data.flag);
+
+        // Both flag and override are independently optional
+        if (data.flag != 0)
+            g_SortedServiceFlags.Push(data.flag);
+        if (data.override[0])
+            g_SortedServiceOverrides.PushString(data.override);
     }
 
     delete list;
     return true;
 }
 
-int SortHighestFlagPriority(int index1, int index2, ArrayList array, Handle hndl)
+int SortHighestPriority(int index1, int index2, ArrayList array, Handle hndl)
 {
-    FlagPriority data1;
-    FlagPriority data2;
+    ServicePriorityData data1;
+    ServicePriorityData data2;
 
     array.GetArray(index1, data1, sizeof(data1));
     array.GetArray(index2, data2, sizeof(data2));

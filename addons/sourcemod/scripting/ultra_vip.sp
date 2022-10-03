@@ -58,6 +58,7 @@
 #define INVALID_ROUND 0
 #define MAX_WEAPON_CLASSNAME_SIZE 24 // https://wiki.alliedmods.net/Counter-Strike:_Global_Offensive_Weapons
 #define MAX_SERVICE_NAME_SIZE 64
+#define MAX_SERVICE_OVERRIDE_SIZE 64
 #define MAX_SETTING_NAME_SIZE 64
 #define MAX_SETTING_VALUE_SIZE 256
 
@@ -86,6 +87,7 @@ Handle g_HudMessages;
 bool g_IsInOnStartForward;
 ArrayList g_Services;
 ArrayList g_SortedServiceFlags;
+ArrayList g_SortedServiceOverrides;
 StringMap g_ModuleSettings;
 
 GlobalForward g_Fwd_OnStart;
@@ -167,6 +169,7 @@ public void OnPluginStart()
 {
     g_Services = new ArrayList();
     g_SortedServiceFlags = new ArrayList();
+    g_SortedServiceOverrides = new ArrayList(ByteCountToCells(MAX_SERVICE_OVERRIDE_SIZE));
 
     Natives_OnPluginStart();
 
@@ -467,8 +470,8 @@ Service FindClientService(int client)
         // Mode_Auto handled below
     }
 
-    // Search using admin flags
-    Service svc = FindHighestPriorityService(flags);
+    // Search using admin flags/overrides
+    Service svc = FindHighestPriorityService(client, flags);
     if (svc != null)
         return svc;
 
@@ -483,24 +486,24 @@ Service FindClientService(int client)
             return svc;
     }
 
-    // Search using overrides
-    svc = FindServiceByOverrideAccess(client);
+    return null;
+}
+
+Service FindHighestPriorityService(int client, int adminFlags)
+{
+    Service svc;
+    if (adminFlags)
+        svc = FindServiceByFlagAccess(adminFlags);
+
+    if (svc == null)
+        svc = FindServiceByOverrideAccess(client);
 
     return svc;
 }
 
-Service FindHighestPriorityService(int adminFlags)
+static Service FindServiceByFlagAccess(int adminFlags)
 {
-    if (!adminFlags)
-        return null;
-
-#warning Override access has no priority. Fix before release.
-
-    // TODO / BUG: Does not correctly support priority searching for services without flags
-    // You'll probably need to change how they're stored and replace g_SortedServiceFlags
-    // with just a sorted list of the service handles.
-
-    // Find highest priority flag in param that matches a service
+    // Find highest priority service flag that client has access to
     int len = g_SortedServiceFlags.Length;
     int foundFlag;
     for (int i = 0; i < len; ++i)
@@ -517,11 +520,10 @@ Service FindHighestPriorityService(int adminFlags)
         return null;
 
     // Find the matching service
-    Service svc;
     len = g_Services.Length;
     for (int i = 0; i < len; ++i)
     {
-        svc = g_Services.Get(i);
+        Service svc = g_Services.Get(i);
         if (svc.Flag == foundFlag)
             return svc;
     }
@@ -530,26 +532,43 @@ Service FindHighestPriorityService(int adminFlags)
     return null;
 }
 
-Service FindServiceByOverrideAccess(int client)
+static Service FindServiceByOverrideAccess(int client)
 {
-    // TODO / BUG: Finding overrides ignores priority.
-
-    Service svc;
-    char buffer[64];
-    int len = g_Services.Length;
+    // Find highest priority service override that client has access to
+    char override[MAX_SERVICE_OVERRIDE_SIZE];
+    int len = g_SortedServiceOverrides.Length;
 
     for (int i = 0; i < len; ++i)
     {
-        svc = g_Services.Get(i);
-        svc.GetOverride(buffer, sizeof(buffer));
+        g_SortedServiceOverrides.GetString(i, override, sizeof(override));
 
-        if (!buffer[0])
+        if (!override[0])
             continue;
 
-        if (CheckCommandAccess(client, buffer, ADMFLAG_ROOT, false))
+        if (CheckCommandAccess(client, override, ADMFLAG_ROOT, false))
+            break;
+
+        override[0] = '\0';
+    }
+
+    if (!override[0])
+        return null;
+
+    // Find the matching service
+    len = g_Services.Length;
+    char svcOverride[MAX_SERVICE_OVERRIDE_SIZE];
+
+    for (int i = 0; i < len; ++i)
+    {
+        Service svc = g_Services.Get(i);
+
+        svc.GetOverride(svcOverride, sizeof(svcOverride));
+
+        if (StrEqual(svcOverride, override, false))
             return svc;
     }
 
+    LogError("Somehow failed to find g_Services override that was in g_SortedServiceOverrides");
     return null;
 }
 
