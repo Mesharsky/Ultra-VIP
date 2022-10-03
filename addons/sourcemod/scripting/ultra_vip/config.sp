@@ -706,6 +706,7 @@ static bool ProcessHudWelcomeLeaveMessages(KeyValues kv, Service svc, bool fatal
     svc.HudColorRed = kv.GetNum("hud_color_red", 243);
     svc.HudColorGreen = kv.GetNum("hud_color_green", 200);
     svc.HudColorBlue = kv.GetNum("hud_color_blue", 36);
+    svc.HudColorAlpha = 255;
 
     kv.GoBack(); // Welcome and Leave Messages
     kv.GoBack(); // Service Name
