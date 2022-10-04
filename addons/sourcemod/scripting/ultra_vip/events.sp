@@ -319,9 +319,10 @@ public void Hook_OnClientThink(int client)
 
     if (activeWeapon != -1 && IsValidEdict(activeWeapon))
     {
-            SetEntPropFloat(activeWeapon, Prop_Send, "m_fAccuracyPenalty", -5000000.0);
-            SetEntPropVector(client, Prop_Send, "m_viewPunchAngle", view_as<float>({0.0, 0.0, 0.0}));
-            SetEntPropVector(client, Prop_Send, "m_aimPunchAngle", view_as<float>({0.0, 0.0, 0.0}));
-            SetEntPropVector(client, Prop_Send, "m_aimPunchAngleVel", view_as<float>({0.0, 0.0, 0.0}));
+        SetEntPropFloat(activeWeapon, Prop_Send, "m_fAccuracyPenalty", -5000000.0);
+        
+        SetEntPropVector(client, Prop_Send, "m_viewPunchAngle", view_as<float>({0.0, 0.0, 0.0}));
+        SetEntPropVector(client, Prop_Send, "m_aimPunchAngle", view_as<float>({0.0, 0.0, 0.0}));
+        SetEntPropVector(client, Prop_Send, "m_aimPunchAngleVel", view_as<float>({0.0, 0.0, 0.0}));
     }
 }
