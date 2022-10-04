@@ -59,6 +59,14 @@ public void Event_RoundStart(Event event, const char[] name, bool bDontBroadcast
         GameRules_GetProp("m_totalRoundsPlayed"),
         GameRules_GetProp("m_gamePhase"));
 #endif
+
+    g_HasRoundEnded = false;
+
+}
+
+public void Event_RoundEnd(Event event, const char[] name, bool bDontBroadcast)
+{
+    g_HasRoundEnded = true;
 }
 
 public void Event_PlayerSpawn(Event event, const char[] name, bool bDontBroadcast)

@@ -89,6 +89,7 @@ ArrayList g_Services;
 ArrayList g_SortedServiceFlags;
 ArrayList g_SortedServiceOverrides;
 StringMap g_ModuleSettings;
+bool g_HasRoundEnded;
 
 GlobalForward g_Fwd_OnStart;
 GlobalForward g_Fwd_OnReady;
@@ -194,6 +195,7 @@ public void OnPluginStart()
     HookEvent("round_mvp", Event_RoundMvp);
     HookEvent("hostage_rescued", Event_HostageRescued);
     HookEvent("round_start", Event_RoundStart);
+    HookEvent("round_end", Event_RoundEnd);
     HookEvent("weapon_fire", Event_WeaponFire);
     HookEvent("player_connect_full", Event_PlayerConnectFull);
 

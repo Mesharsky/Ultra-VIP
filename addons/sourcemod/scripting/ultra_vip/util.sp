@@ -404,6 +404,25 @@ int GetAccountFromSteamID(const char[] steamId)
     return 0;
 }
 
+int GetTeamPlayers(int team, bool includeBots=true, bool aliveOnly=false)
+{
+    int count = 0;
+
+    for (int i = 1; i <= MaxClients; ++i)
+    {
+        if (!IsClientInGame(i))
+            continue;
+        if (!includeBots && (!IsClientAuthorized(i) || IsFakeClient(i)))
+            continue;
+        if (aliveOnly && !IsPlayerAlive(i))
+            continue;
+        if (GetClientTeam(i) == team)
+            ++count;
+    }
+
+    return count;
+}
+
 bool IsOnPlayingTeam(int client)
 {
     int team = GetClientTeam(client);
