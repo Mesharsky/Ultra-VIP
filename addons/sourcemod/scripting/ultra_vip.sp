@@ -263,6 +263,7 @@ static void HandleLateLoad()
 public void OnMapStart()
 {
     g_RoundCount = INVALID_ROUND;
+    Bonus_OnMapStart();
 }
 
 public void OnConfigsExecuted()
@@ -588,17 +589,17 @@ public void OnAllPluginsLoaded()
     if (LibraryExists("scp"))
     {
         g_ChatTagPlugin.processor = Processor_SCP;
-        PrintToServer("[Ultra VIP] Successfuly loaded: %s", g_ChatTagPlugin.name);
+        PrintToServer("[Ultra VIP] %T", "Chat Processor Loaded", LANG_SERVER, g_ChatTagPlugin.name);
     }
     else if (LibraryExists("chat-processor"))
     {
         g_ChatTagPlugin.processor = Processor_ChatProcessor;
-        PrintToServer("[Ultra VIP] Successfuly loaded: %s", g_ChatTagPlugin.name);
+        PrintToServer("[Ultra VIP] %T", "Chat Processor Loaded", LANG_SERVER, g_ChatTagPlugin.name);
     }
     else
     {
         g_ChatTagPlugin.processor = Processor_Null;
-        PrintToServer("[Ultra VIP] Chat Processor not loaded");
+        PrintToServer("[Ultra VIP] %T", "Chat Processor Not Found", LANG_SERVER);
     }
 }
 

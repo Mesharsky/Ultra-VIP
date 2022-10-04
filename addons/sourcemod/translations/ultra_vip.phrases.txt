@@ -1,5 +1,21 @@
 ﻿"Phrases"
 {
+    "Services Loaded"
+    {
+        "#format"   "{1:i}"
+        "en"    "Loaded {1} services"
+    }
+    
+    "Chat Processor Loaded"
+    {
+        "#format"   "{1:s}"
+        "en"    "Chat Processor Loaded: {1}"
+    }
+    "Chat Processor Not Found"
+    {
+        "en"    "Failed to load any Chat Processor (Not found)"
+    }
+
     "Late load warning"
     {
         "en"    "Warning: Don't late-load Ultra-VIP. The plugin may not work correctly if loaded while the server is running. Some things will work on the next round."

@@ -186,6 +186,8 @@ bool LoadConfig(bool fatalError = true)
         return false;
     }
 
+    PrintToServer("[Ultra VIP] %T", "Services Loaded", LANG_SERVER, g_Services.Length);
+
     return true;
 }
 

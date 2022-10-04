@@ -1,5 +1,21 @@
 ﻿"Phrases"
 {
+    "Services Loaded"
+    {
+        "#format"   "{1:i}"
+        "pl"    "Załadowano: {1} usług"
+    }
+
+    "Chat Processor Loaded"
+    {
+        "#format"   "{1:s}"
+        "pl"    "Chat Processor został załadowany: {1}"
+    }
+    "Chat Processor Not Found"
+    {
+        "pl"    "Nie załadowano żadnego Chat Processora (Żaden nie został wykryty)."
+    }
+
     "Late load warning"
     {
         "pl"    "Ostrzeżenie: Przeładowanie/Ładowanie Ultra-Vip'a może spowodować, że plugin nie będzie działał poprawnie. Jeżeli zostanie załadowany podczas gdy serwer już działa. Niektóre rzeczy/funkcjonalności zaczną działać dopiero od następnej rundy."
