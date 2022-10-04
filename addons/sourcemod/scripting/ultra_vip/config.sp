@@ -566,6 +566,9 @@ static bool ProcessSpecialBonuses(KeyValues kv, Service svc, bool fatalError, co
     svc.BonusUnlimitedAmmo = view_as<bool>(kv.GetNum("player_unlimited_ammo", 0));
     svc.BonusUnlimitedAmmoRound = kv.GetNum("player_unlimited_ammo_round", 1);
 
+    svc.BonusNoRecoil = view_as<bool>(kv.GetNum("player_no_recoil", 0));
+    svc.BonusNoRecoilRound = kv.GetNum("player_no_recoil_round", 1);
+
     kv.GoBack(); // Service name
     return true;
 }

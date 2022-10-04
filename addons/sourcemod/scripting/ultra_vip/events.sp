@@ -301,3 +301,27 @@ public Action Hook_OnTakeDamage(int client, int &attacker, int &inflictor, float
 
     return state;
 }
+
+public void Hook_OnClientThink(int client)
+{
+    if (!IsPlayerAlive(client))
+        return;
+
+    Service svc = GetClientService(client);
+
+    if (svc == null)
+        return;
+
+    if (!svc.BonusNoRecoil && !IsRoundAllowed(svc.BonusNoRecoilRound))
+        return;
+
+    int activeWeapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");    
+
+    if (activeWeapon != -1 && IsValidEdict(activeWeapon))
+    {
+            SetEntPropFloat(activeWeapon, Prop_Send, "m_fAccuracyPenalty", -5000000.0);
+            SetEntPropVector(client, Prop_Send, "m_viewPunchAngle", view_as<float>({0.0, 0.0, 0.0}));
+            SetEntPropVector(client, Prop_Send, "m_aimPunchAngle", view_as<float>({0.0, 0.0, 0.0}));
+            SetEntPropVector(client, Prop_Send, "m_aimPunchAngleVel", view_as<float>({0.0, 0.0, 0.0}));
+    }
+}

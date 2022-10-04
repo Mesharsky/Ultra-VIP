@@ -48,7 +48,7 @@ enum struct FeatureOverrideInfo
 
 
 #if defined COMPILER_IS_SM1_11
-static_assert(view_as<int>(Feature_LAST_ITEM) == 310, "Feature was added to UVIPFeature without feature-override array being resized");
+static_assert(view_as<int>(Feature_LAST_ITEM) == 311, "Feature was added to UVIPFeature without feature-override array being resized");
 #endif
 static FeatureOverrideInfo s_FeatureOverrides[20];
 
@@ -313,7 +313,7 @@ static any GetServiceCell(Service svc, const char[] settingName)
 
 
 #if defined COMPILER_IS_SM1_11
-static_assert(view_as<int>(Feature_LAST_ITEM) == 310, "Feature was added to UVIPFeature without being handled in IsFeatureAvailable");
+static_assert(view_as<int>(Feature_LAST_ITEM) == 311, "Feature was added to UVIPFeature without being handled in IsFeatureAvailable");
 #endif
 static int GetFeatureIndex(UVIPFeature feature)
 {

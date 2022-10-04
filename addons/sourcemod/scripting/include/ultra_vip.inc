@@ -90,6 +90,7 @@ enum UVIPFeature
     Feature_AttackDamage,
     Feature_DamageResist,
     Feature_UnlimitedAmmo,
+    Feature_NoRecoil,
 
     Feature_LAST_ITEM       // Internal use only. Similar to a TOTAL, but not the correct number.
 }
