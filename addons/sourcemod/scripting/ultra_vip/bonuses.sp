@@ -117,6 +117,8 @@ void Bonus_GivePlayerShield(int client, Service svc)
     if(!svc.BonusPlayerShield || !IsRoundAllowed(svc.BonusPlayerShieldRound))
         return;
 
+        
+
     if (GetPlayerWeapon(client, CSWeapon_SHIELD) != -1)
         GivePlayerItem(client, "weapon_shield");
 }
@@ -313,6 +315,9 @@ void Bonus_RespawnPlayer(int client)
     if (!IsRoundAllowed(svc.BonusPlayerRespawnPercentRound))
         return;
 
+    if (!CanRespawn())
+        return;
+
     if (svc.BonusPlayerRespawnPercent >= GetRandomInt(1, 100))
     {
         DataPack pack;
@@ -334,11 +339,27 @@ public Action Timer_RespawnPlayer(Handle tmr, DataPack pack)
     if (IsPlayerAlive(client))
         return Plugin_Handled;
 
+    if (!CanRespawn())
+        return Plugin_Handled;
+
     CS_RespawnPlayer(client);
     if (svc.BonusPlayerRespawnPercentNotify)
         CPrintToChat(client, "%s %t", g_ChatTag, "Bonus Player Respawn");
 
     return Plugin_Handled;
+}
+
+static bool CanRespawn()
+{
+    if (g_HasRoundEnded)
+        return false;
+
+    if (GameRules_GetProp("m_bBombPlanted"))
+    {
+        if (GetTeamPlayers(CS_TEAM_CT, .aliveOnly = true) >= 1 && GetTeamPlayers(CS_TEAM_T, .aliveOnly = true) == 0)
+            return false;
+    }
+    return true;
 }
 
 void Bonus_WelcomeMessage(Service svc, const char[] clientName, const char[] serviceName)
