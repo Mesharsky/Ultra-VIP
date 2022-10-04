@@ -207,11 +207,15 @@ static SMCResult ModuleConfig_KeyValue(
     strcopy(normalised, sizeof(normalised), key);
     NormaliseString(normalised);
 
-    char error[256];
+    // If setting key has no known type it's not a valid setting. Skip it.
+    SettingType type;
+    if (!s_SettingTypes.GetValue(normalised, type))
+        return SMCParse_Continue;
 
-    if (!DoesTypeMatch(normalised, value, error, sizeof(error)))
+    char error[256];
+    if (!DoesTypeMatch(type, value, error, sizeof(error)))
     {
-        LogError(error);
+        LogError("Module setting error for \"%s\" (\"%s\"): %s", key, s_ParsingServiceName, error);
         return SMCParse_Continue;
     }
 
@@ -331,23 +335,22 @@ static void RemoveSetting(StringMap map, const char[] serviceName, const char[] 
 #if defined COMPILER_IS_SM1_11
 static_assert(view_as<int>(SettingType_TOTAL) == 9, "SettingType was added without being handled in Get/GetInt/GetFloat/GetCell");
 #endif
-static bool DoesTypeMatch(const char[] key, const char[] value, char[] error, int errSize)
+static bool DoesTypeMatch(SettingType type, const char[] value, char[] error, int errSize)
 {
-    SettingType type;
-    if (!s_SettingTypes.GetValue(key, type))
-        return false;
-
     any result;
     error[0] = '\0';
 
     switch (type)
     {
-        case Type_String: return true;
+        case Type_String:
+        {
+            return true;
+        }
         case Type_Byte:
         {
             if (!SettingType_Byte(value, result))
             {
-                Format(error, errSize, "Value '%s' is not a valid byte (-128 to 127).", value);
+                FormatEx(error, errSize, "Value '%s' is not a valid byte (-128 to 127).", value);
                 return false;
             }
         }
@@ -355,7 +358,7 @@ static bool DoesTypeMatch(const char[] key, const char[] value, char[] error, in
         {
             if (!SettingType_UnsignedByte(value, result))
             {
-                Format(error, errSize, "Value '%s' is not a valid unsigned byte (0 to 255).", value);
+                FormatEx(error, errSize, "Value '%s' is not a valid unsigned byte (0 to 255).", value);
                 return false;
             }
         }
@@ -363,7 +366,7 @@ static bool DoesTypeMatch(const char[] key, const char[] value, char[] error, in
         {
             if (!SettingType_Integer(value, result))
             {
-                Format(error, errSize, "Value '%s' is not a valid integer.", value);
+                FormatEx(error, errSize, "Value '%s' is not a valid integer.", value);
                 return false;
             }
         }
@@ -371,7 +374,7 @@ static bool DoesTypeMatch(const char[] key, const char[] value, char[] error, in
         {
             if (!SettingType_Bool(value, result))
             {
-                Format(error, errSize, "Value '%s' is not a valid boolean (true/false/0/1).", value);
+                FormatEx(error, errSize, "Value '%s' is not a valid boolean (true/false/0/1).", value);
                 return false;
             }
         }
@@ -379,7 +382,7 @@ static bool DoesTypeMatch(const char[] key, const char[] value, char[] error, in
         {
             if (!SettingType_Hex(value, result))
             {
-                Format(error, errSize, "Value '%s' is not a valid hexadecimal value (Chars must be 0 to 9, A to F).", value);
+                FormatEx(error, errSize, "Value '%s' is not a valid hexadecimal value (Chars must be 0 to 9, A to F).", value);
                 return false;
             }
         }
@@ -387,7 +390,7 @@ static bool DoesTypeMatch(const char[] key, const char[] value, char[] error, in
         {
             if (!SettingType_Float(value, result))
             {
-                Format(error, errSize, "Value '%s' is not a valid float value (e.g. \"3.1415\").", value);
+                FormatEx(error, errSize, "Value '%s' is not a valid float value (e.g. \"3.1415\").", value);
                 return false;
             }
         }
@@ -395,7 +398,7 @@ static bool DoesTypeMatch(const char[] key, const char[] value, char[] error, in
         {
             if (!SettingType_RGBHex(value, result))
             {
-                Format(error, errSize, "Value '%s' is not an RGB hexadecimal color. Must be 6 characters (0 to 9, A to F). e.g. 0099FF or #0099FF)", value);
+                FormatEx(error, errSize, "Value '%s' is not an RGB hexadecimal color. Must be 6 characters (0 to 9, A to F). e.g. 0099FF or #0099FF)", value);
                 return false;
             }
         }
@@ -403,7 +406,7 @@ static bool DoesTypeMatch(const char[] key, const char[] value, char[] error, in
         {
             if (!SettingType_RGBAHex(value, result))
             {
-                Format(error, errSize, "Value '%s' is not an RGBA hexadecimal color. Must be 8 characters (0 to 9, A to F). e.g. 0055AAFF or #0055AAFF)", value);
+                FormatEx(error, errSize, "Value '%s' is not an RGBA hexadecimal color. Must be 8 characters (0 to 9, A to F). e.g. 0055AAFF or #0055AAFF)", value);
                 return false;
             }
         }
