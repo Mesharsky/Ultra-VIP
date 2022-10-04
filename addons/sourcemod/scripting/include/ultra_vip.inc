@@ -51,10 +51,9 @@ enum SettingType
     Type_Hex,           // Type_Integer but using hexadecimal digits (0-9, A-F). Case-insensitive.
     Type_Float,         // Real number (anything with a decimal point).
 
-    // TODO: Vec2d/3d/4d + float variant
+    Type_RGBHex,        // Type_Hex that must be 6 characters long, with optional # prefix (e.g. 00AAFF or #00AAFF).
+    Type_RGBAHex,       // Type_Hex that must be 8 characters long, with optional # prefix (e.g. 0055AAFF or #0055AAFF).
 
-    Type_RGBHex,                // Type_Hex that must be 6 characters long, with optional # prefix (e.g. 00AAFF or #00AAFF).
-    Type_RGBAHex,               // Type_Hex that must be 8 characters long, with optional # prefix (e.g. 0055AAFF or #0055AAFF).
     SettingType_TOTAL
 }
 
