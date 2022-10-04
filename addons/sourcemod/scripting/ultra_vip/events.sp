@@ -156,17 +156,19 @@ public void Event_PlayerDeath(Event event, const char[] name, bool bDontBroadcas
     Service svcAttacker = GetClientService(attacker);
     Service svcAssister = GetClientService(assister); // Assister allowed to be invalid
 
-    if (svcAttacker == null)
+    if (attacker == 0 || attacker == victim)
         return;
 
-    if (attacker == 0 || attacker == victim)
+    Bonus_RespawnPlayer(victim);
+
+    if (svcAttacker == null)
         return;
 
     if (!g_BotsGrantBonuses && (victim == 0 || IsFakeClient(victim)))
         return;
 
-    if(ClientsAreTeammates(attacker, victim))
-        return;
+    if (ClientsAreTeammates(attacker, victim))
+        return;   
 
     // Award Money Bonuses
     Bonus_KillMoney(attacker, svcAttacker);
@@ -185,8 +187,6 @@ public void Event_PlayerDeath(Event event, const char[] name, bool bDontBroadcas
     Bonus_ZeusHP(attacker, weapon, svcAttacker);
     Bonus_GrenadeKillHP(attacker, weapon, svcAttacker);
     Bonus_NoScopeHP(attacker, noscope, svcAttacker);
-
-    Bonus_RespawnPlayer(victim);
 }
 
 public void Event_RoundMvp(Event event, const char[] name, bool bDontBroadcast)

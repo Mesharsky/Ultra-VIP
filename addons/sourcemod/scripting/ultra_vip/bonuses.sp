@@ -23,6 +23,23 @@
 #define MAX_SERVICE_MESSAGE_LENGTH 128
 #define HUD_MESSAGE_TIME 5.0
 
+/**
+ * Hacky hack to make Bonus_GivePlayerShield work.
+ * Currently, as of 2022/10/4, shields can only be given on hostage mode.
+ *
+ * We can fake it with this garbage.
+ */
+void Bonus_OnMapStart()
+{
+    int entity = -1;
+    if ((entity = FindEntityByClassname(entity, "func_hostage_rescue")) == -1) 
+    {
+        entity = CreateEntityByName("func_hostage_rescue");
+        DispatchKeyValue(entity, "targetname", "fake_hostage_rescue");
+        DispatchKeyValue(entity, "origin", "-3141 -5926 -5358");
+        DispatchSpawn(entity);
+    }
+}
 
 //////////////////////////////////
 /*        SPAWN BONUSES         */
@@ -117,9 +134,7 @@ void Bonus_GivePlayerShield(int client, Service svc)
     if(!svc.BonusPlayerShield || !IsRoundAllowed(svc.BonusPlayerShieldRound))
         return;
 
-        
-
-    if (GetPlayerWeapon(client, CSWeapon_SHIELD) != -1)
+    if (GetPlayerWeapon(client, CSWeapon_SHIELD) == -1)
         GivePlayerItem(client, "weapon_shield");
 }
 
@@ -313,9 +328,9 @@ void Bonus_RespawnPlayer(int client)
         return;
 
     if (!IsRoundAllowed(svc.BonusPlayerRespawnPercentRound))
-        return;
-
-    if (!CanRespawn())
+        return;  
+    
+    if (!CanRespawn(client))
         return;
 
     if (svc.BonusPlayerRespawnPercent >= GetRandomInt(1, 100))
@@ -339,7 +354,7 @@ public Action Timer_RespawnPlayer(Handle tmr, DataPack pack)
     if (IsPlayerAlive(client))
         return Plugin_Handled;
 
-    if (!CanRespawn())
+    if (!CanRespawn(client))
         return Plugin_Handled;
 
     CS_RespawnPlayer(client);
@@ -349,10 +364,13 @@ public Action Timer_RespawnPlayer(Handle tmr, DataPack pack)
     return Plugin_Handled;
 }
 
-static bool CanRespawn()
+static bool CanRespawn(int client)
 {
     if (g_HasRoundEnded)
         return false;
+
+    if (GetEntProp(client, Prop_Send, "m_bIsControllingBot"))
+        return false;   
 
     if (GameRules_GetProp("m_bBombPlanted"))
     {
