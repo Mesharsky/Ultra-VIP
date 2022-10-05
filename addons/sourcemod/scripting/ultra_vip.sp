@@ -199,10 +199,6 @@ public void OnPluginStart()
     HookEvent("weapon_fire", Event_WeaponFire);
     HookEvent("player_connect_full", Event_PlayerConnectFull);
 
-#if defined DEBUG
-    RegConsoleCmd("sm_endround", Command_EndRound);
-#endif
-
     g_Fwd_OnStart = new GlobalForward("UVIP_OnStart", ET_Ignore);
     g_Fwd_OnReady = new GlobalForward("UVIP_OnReady", ET_Ignore);
     g_Fwd_OnPostAdminCheck = new GlobalForward("UVIP_OnClientPostAdminCheck", ET_Ignore, Param_Cell, Param_Cell);
@@ -376,29 +372,6 @@ public Action Command_VipBonuses(int client, int args)
     ShowServiceBonuses(client);
     return Plugin_Handled;
 }
-
-#if defined DEBUG
-public Action Command_EndRound(int client, int args)
-{
-    if (args != 1)
-    {
-        ReplyToCommand(client, "sm_endround <CT/T or anything else for draw>");
-        return Plugin_Handled;
-    }
-
-    char arg1[3];
-    GetCmdArg(1, arg1, sizeof(arg1));
-
-    CSRoundEndReason reason = CSRoundEnd_Draw;
-    if (StrEqual(arg1, "ct", false))
-        reason = CSRoundEnd_CTWin;
-    else if (StrEqual(arg1, "t", false))
-        reason = CSRoundEnd_TerroristWin;
-
-    CS_TerminateRound(5.0, reason);
-    return Plugin_Handled;
-}
-#endif
 
 public Action Command_ReloadServices(int client, int args)
 {
