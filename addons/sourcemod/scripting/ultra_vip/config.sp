@@ -398,6 +398,7 @@ static bool ProcessMainConfiguration(KeyValues kv, Service svc, bool fatalError,
     svc.SetChatTag(buffer);
 
     kv.GetString("chat_name_color", buffer, sizeof(buffer));
+    ReplaceString(buffer, sizeof(buffer), "{teamcolor}", "\x03");
     svc.SetChatNameColor(buffer);
 
     kv.GetString("chat_message_color", buffer, sizeof(buffer));
