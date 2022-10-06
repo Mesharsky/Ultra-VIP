@@ -207,22 +207,23 @@ static SMCResult ModuleConfig_KeyValue(
     strcopy(normalised, sizeof(normalised), key);
     NormaliseString(normalised);
 
-    // If setting key has no known type it's not a valid setting. Skip it.
+    // If setting key has no known type it's not a valid setting; Skip it.
     SettingType type;
     if (!s_SettingTypes.GetValue(normalised, type))
         return SMCParse_Continue;
 
     char error[256];
-    if (!DoesTypeMatch(type, value, error, sizeof(error)))
-    {
+    if (!DoesSettingTypeMatch(type, value, error, sizeof(error)))
         LogError("Module setting error for \"%s\" (\"%s\"): %s", key, s_ParsingServiceName, error);
-        return SMCParse_Continue;
+    else
+    {
+        // Update/replace the default value in s_Settings
+        SetSetting(s_Settings, s_ParsingServiceName, normalised, value);
     }
 
-    // Update the default value in s_Settings
-    SetSetting(s_Settings, s_ParsingServiceName, normalised, value);
-
     // Remove the setting from s_RequiredSettings since it exists in the config
+    // Even if we use a default value because the config's value type mismatched.
+    // This is fine because Native_RegisterSetting forces default values to be be valid.
     RemoveSetting(s_RequiredSettings, s_ParsingServiceName, normalised);
 
     return SMCParse_Continue;
@@ -328,94 +329,4 @@ static void RemoveSetting(StringMap map, const char[] serviceName, const char[] 
     FormatEx(key, sizeof(key), "%s\x01%s", serviceName, settingName);
 
     map.Remove(key);
-}
-
-
-
-#if defined COMPILER_IS_SM1_11
-static_assert(view_as<int>(SettingType_TOTAL) == 9, "SettingType was added without being handled in Get/GetInt/GetFloat/GetCell");
-#endif
-static bool DoesTypeMatch(SettingType type, const char[] value, char[] error, int errSize)
-{
-    any result;
-    error[0] = '\0';
-
-    switch (type)
-    {
-        case Type_String:
-        {
-            return true;
-        }
-        case Type_Byte:
-        {
-            if (!SettingType_Byte(value, result))
-            {
-                FormatEx(error, errSize, "Value '%s' is not a valid byte (-128 to 127).", value);
-                return false;
-            }
-        }
-        case Type_UnsignedByte:
-        {
-            if (!SettingType_UnsignedByte(value, result))
-            {
-                FormatEx(error, errSize, "Value '%s' is not a valid unsigned byte (0 to 255).", value);
-                return false;
-            }
-        }
-        case Type_Integer:
-        {
-            if (!SettingType_Integer(value, result))
-            {
-                FormatEx(error, errSize, "Value '%s' is not a valid integer.", value);
-                return false;
-            }
-        }
-        case Type_Bool:
-        {
-            if (!SettingType_Bool(value, result))
-            {
-                FormatEx(error, errSize, "Value '%s' is not a valid boolean (true/false/0/1).", value);
-                return false;
-            }
-        }
-        case Type_Hex:
-        {
-            if (!SettingType_Hex(value, result))
-            {
-                FormatEx(error, errSize, "Value '%s' is not a valid hexadecimal value (Chars must be 0 to 9, A to F).", value);
-                return false;
-            }
-        }
-        case Type_Float:
-        {
-            if (!SettingType_Float(value, result))
-            {
-                FormatEx(error, errSize, "Value '%s' is not a valid float value (e.g. \"3.1415\").", value);
-                return false;
-            }
-        }
-        case Type_RGBHex:
-        {
-            if (!SettingType_RGBHex(value, result))
-            {
-                FormatEx(error, errSize, "Value '%s' is not an RGB hexadecimal color. Must be 6 characters (0 to 9, A to F). e.g. 0099FF or #0099FF)", value);
-                return false;
-            }
-        }
-        case Type_RGBAHex:
-        {
-            if (!SettingType_RGBAHex(value, result))
-            {
-                FormatEx(error, errSize, "Value '%s' is not an RGBA hexadecimal color. Must be 8 characters (0 to 9, A to F). e.g. 0055AAFF or #0055AAFF)", value);
-                return false;
-            }
-        }
-
-        default:
-        {
-            ThrowError("Unknown SettingType %i", type);
-        }
-    }
-
-    return true;
 }

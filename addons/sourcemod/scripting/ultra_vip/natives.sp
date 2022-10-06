@@ -136,10 +136,16 @@ public any Native_RegisterSetting(Handle plugin, int numParams)
     if (!IsSettingNameAllowed(name))
         return ThrowNativeError(SP_ERROR_NATIVE, "Setting names cannot be empty or start with \"%c\"", SERVICE_INTERNAL_PREFIX);
 
+    // Verify setting default value (required by modulecfg.sp)
+    SettingType type = GetNativeCell(3);
+    char error[256];
+    if (!DoesSettingTypeMatch(type, defaultVal, error, sizeof(error)))
+        return ThrowNativeError(SP_ERROR_NATIVE, "Default value does not match type: %s", error);
+
     // Copy data
     strcopy(info.name, sizeof(ModuleSettingInfo::name), name);
     strcopy(info.defaultValue, sizeof(ModuleSettingInfo::defaultValue), defaultVal);
-    info.type = GetNativeCell(3);
+    info.type = type;
     info.mode = GetNativeCell(4);
 
     // Store setting (false = Check for duplicates)
@@ -344,6 +350,95 @@ bool IsSettingNameAllowed(const char[] name)
         if (name[i] < 32)
             return false;
     }
+    return true;
+}
+
+
+#if defined COMPILER_IS_SM1_11
+static_assert(view_as<int>(SettingType_TOTAL) == 9, "SettingType was added without being handled in DoesSettingTypeMatch");
+#endif
+bool DoesSettingTypeMatch(SettingType type, const char[] value, char[] error, int errSize)
+{
+    any result;
+    error[0] = '\0';
+
+    switch (type)
+    {
+        case Type_String:
+        {
+            return true;
+        }
+        case Type_Byte:
+        {
+            if (!SettingType_Byte(value, result))
+            {
+                FormatEx(error, errSize, "Value '%s' is not a valid byte (-128 to 127).", value);
+                return false;
+            }
+        }
+        case Type_UnsignedByte:
+        {
+            if (!SettingType_UnsignedByte(value, result))
+            {
+                FormatEx(error, errSize, "Value '%s' is not a valid unsigned byte (0 to 255).", value);
+                return false;
+            }
+        }
+        case Type_Integer:
+        {
+            if (!SettingType_Integer(value, result))
+            {
+                FormatEx(error, errSize, "Value '%s' is not a valid integer.", value);
+                return false;
+            }
+        }
+        case Type_Bool:
+        {
+            if (!SettingType_Bool(value, result))
+            {
+                FormatEx(error, errSize, "Value '%s' is not a valid boolean (true/false/0/1).", value);
+                return false;
+            }
+        }
+        case Type_Hex:
+        {
+            if (!SettingType_Hex(value, result))
+            {
+                FormatEx(error, errSize, "Value '%s' is not a valid hexadecimal value (Chars must be 0 to 9, A to F).", value);
+                return false;
+            }
+        }
+        case Type_Float:
+        {
+            if (!SettingType_Float(value, result))
+            {
+                FormatEx(error, errSize, "Value '%s' is not a valid float value (e.g. \"3.1415\").", value);
+                return false;
+            }
+        }
+        case Type_RGBHex:
+        {
+            if (!SettingType_RGBHex(value, result))
+            {
+                FormatEx(error, errSize, "Value '%s' is not an RGB hexadecimal color. Must be 6 characters (0 to 9, A to F). e.g. 0099FF or #0099FF)", value);
+                return false;
+            }
+        }
+        case Type_RGBAHex:
+        {
+            if (!SettingType_RGBAHex(value, result))
+            {
+                FormatEx(error, errSize, "Value '%s' is not an RGBA hexadecimal color. Must be 8 characters (0 to 9, A to F). e.g. 0055AAFF or #0055AAFF)", value);
+                return false;
+            }
+        }
+
+        default:
+        {
+            ThrowError("Unknown SettingType %i", type);
+        }
+    }
+
     return true;
 }
 
