@@ -73,6 +73,8 @@ static void ResetAllServices()
         Service svc = g_Services.Get(i);
         Service_Delete(svc);
     }
+
+    g_Services.Clear();
 }
 
 static bool HandleError(Handle &hndl, bool isFatal, const char[] fmt, any ...)
