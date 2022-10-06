@@ -289,10 +289,6 @@ static void AddConsumableAmmo(int client, CSItemType type, int targetAmount)
                 return;
             targetAmount = _MIN(targetAmount, GIVE_BREACH_CHARGE_LIMIT);
 
-            // Conflicts with bump mine
-            if (GetPlayerWeapon(client, CSWeapon_BUMPMINE) != -1)
-                return;
-
             RemoveC4GiveItem(
                 client,
                 CSWeapon_BREACHCHARGE,
@@ -305,10 +301,6 @@ static void AddConsumableAmmo(int client, CSItemType type, int targetAmount)
             if (targetAmount <= 0)
                 return;
             targetAmount = _MIN(targetAmount, GIVE_BUMP_MINE_LIMIT);
-
-            // Conflicts with breach charge
-            if (GetPlayerWeapon(client, CSWeapon_BREACHCHARGE) != -1)
-                return;
 
             RemoveC4GiveItem(
                 client,
@@ -504,7 +496,15 @@ static void RemoveC4GiveItem(int client, CSWeaponID id, const char[] classname, 
 
     int weapon = GetPlayerWeapon(client, id);
     if (weapon == -1)
-        weapon = GivePlayerItem(client, classname);
+    {
+        // Use this instead of GivePlayerItem to allow breach charge + bump mines
+        weapon = CreateEntityByName(classname);
+        if (weapon != -1)
+        {
+            DispatchSpawn(weapon);
+            EquipPlayerWeapon(client, weapon);
+        }
+    }
 
     if (weapon != -1)
         SetEntProp(weapon, Prop_Send, "m_iClip1", amount);
