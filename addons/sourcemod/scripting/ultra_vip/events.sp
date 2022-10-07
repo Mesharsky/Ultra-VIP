@@ -238,6 +238,9 @@ public void Event_HostageRescued(Event event, const char[] name, bool bDontBroad
 
 public void Event_WeaponFire(Event event, const char[] name, bool bDontBroadcast)
 {
+    if (!IsFeatureAvailable(Feature_UnlimitedAmmo))
+        return;
+        
     int client = GetClientOfUserId(event.GetInt("userid"));
     int weapon = GetEntPropEnt(client, Prop_Data, "m_hActiveWeapon");
 
@@ -264,11 +267,11 @@ public Action Hook_OnTakeDamage(int client, int &attacker, int &inflictor, float
     // Increase damage first before implementing resistance
     if (attackerSvc != null && IsRoundAllowed(attackerSvc.BonusPlayerAttackDamageRound))
     {
-        if (!IsFeatureAvailable(Feature_AttackDamage))
-            return state;
-
-        damage *= attackerSvc.BonusPlayerAttackDamage * 0.01;
-        state = Plugin_Changed;
+        if (IsFeatureAvailable(Feature_AttackDamage))
+        {
+            damage *= attackerSvc.BonusPlayerAttackDamage * 0.01;
+            state = Plugin_Changed;
+        }
     }
 
     if (clientSvc == null)
@@ -284,21 +287,15 @@ public Action Hook_OnTakeDamage(int client, int &attacker, int &inflictor, float
 
         // TODO: I think technically if multiple damage types exist the scaling
         // should be different, but eh.
-        else if (IsRoundAllowed(clientSvc.BonusPlayerFallDamagePercentRound))
+        else if (IsFeatureAvailable(Feature_FallDamage) && IsRoundAllowed(clientSvc.BonusPlayerFallDamagePercentRound))
         {
-            if (!IsFeatureAvailable(Feature_FallDamage))
-                return state;
-
             damage *= clientSvc.BonusPlayerFallDamagePercent * 0.01;
             state = Plugin_Changed;
         }
     }
     else
     {
-        if (!IsFeatureAvailable(Feature_DamageResist))
-            return state;
-        // Fall damage should never be included in this resistance
-        if (IsRoundAllowed(clientSvc.BonusPlayerDamageResistRound))
+        if (IsFeatureAvailable(Feature_DamageResist) && IsRoundAllowed(clientSvc.BonusPlayerDamageResistRound))
         {
             damage -= damage * clientSvc.BonusPlayerDamageResist * 0.01;
             if (damage < 0.0)
@@ -312,7 +309,8 @@ public Action Hook_OnTakeDamage(int client, int &attacker, int &inflictor, float
 
 public void Hook_OnClientThink(int client)
 {
-    if (!IsPlayerAlive(client))
+    // TODO: OPTIMISE / REWRITE
+    if (IsFeatureAvailable(Feature_NoRecoil) && !IsPlayerAlive(client))
         return;
 
     Service svc = GetClientService(client);

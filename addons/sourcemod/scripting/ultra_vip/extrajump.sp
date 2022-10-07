@@ -119,10 +119,10 @@ void ExtraJump_OnClientPostAdminCheck(int client, Service svc)
 
 void ExtraJump_OnPlayerSpawn(int client, Service svc)
 {
+    s_AllowedToMultiJump[client] = false;
+
     if (!IsFeatureAvailable(Feature_ExtraJumps))
         return;
-
-    s_AllowedToMultiJump[client] = false;
 
     if (svc == null)
         return;

@@ -287,9 +287,7 @@ public void OnClientPostAdminCheck(int client)
     UpdateClientAdminCache(client);
 
     SDKHook(client, SDKHook_OnTakeDamage, Hook_OnTakeDamage);
-    
-    if (IsFeatureAvailable(Feature_NoRecoil))
-        SDKHook(client, SDKHook_PreThink, Hook_OnClientThink);
+    SDKHook(client, SDKHook_PreThink, Hook_OnClientThink);
 
     ExtraJump_OnClientPostAdminCheck(client, g_ClientService[client]);
 
