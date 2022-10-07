@@ -46,11 +46,17 @@ void Bonus_OnMapStart()
 //////////////////////////////////
 void Bonus_SetPlayerScoreBoardTag(int client, Service svc)
 {
+    if (!IsFeatureAvailable(Feature_ScoreboardTag))
+        return;
+
     SetPlayerScoreBoardTag(client, svc);
 }
 
 void Bonus_SetPlayerHealth(int client, Service svc)
 {
+    if (!IsFeatureAvailable(Feature_PlayerHP))
+        return;
+
     if (!IsRoundAllowed(svc.BonusPlayerHealthRound))
         return;
 
@@ -59,6 +65,9 @@ void Bonus_SetPlayerHealth(int client, Service svc)
 
 void Bonus_GivePlayerHelmet(int client, Service svc)
 {
+    if (!IsFeatureAvailable(Feature_Helmet))
+        return;
+
     if(!svc.BonusHelmetEnabled || !IsRoundAllowed(svc.BonusHelmetRound))
         return;
 
@@ -67,6 +76,9 @@ void Bonus_GivePlayerHelmet(int client, Service svc)
 
 void Bonus_GivePlayerArmor(int client, Service svc)
 {
+    if (!IsFeatureAvailable(Feature_Armor))
+        return;
+
     if(!svc.BonusArmorEnabled || !IsRoundAllowed(svc.BonusArmorRound))
         return;
 
@@ -75,6 +87,9 @@ void Bonus_GivePlayerArmor(int client, Service svc)
 
 void Bonus_GivePlayerDefuser(int client, Service svc)
 {
+    if (!IsFeatureAvailable(Feature_Defuser))
+        return;
+
     if (!svc.BonusDefuserEnabled || !IsRoundAllowed(svc.BonusDefuserRound) || !CanGiveDefuser(client))
         return;
 
@@ -83,6 +98,9 @@ void Bonus_GivePlayerDefuser(int client, Service svc)
 
 void Bonus_SetPlayerGravity(int client, Service svc)
 {
+    if (!IsFeatureAvailable(Feature_Gravity))
+        return;
+
     if (!IsRoundAllowed(svc.BonusPlayerGravityRound))
         return;
 
@@ -95,6 +113,8 @@ void Bonus_SetPlayerGravity(int client, Service svc)
 
 void Bonus_SetPlayerSpeed(int client, Service svc)
 {
+    if (!IsFeatureAvailable(Feature_SpeedModifier))
+        return;
     if (!IsRoundAllowed(svc.BonusPlayerSpeedRound))
         return;
 
@@ -107,6 +127,9 @@ void Bonus_SetPlayerSpeed(int client, Service svc)
 
 void Bonus_SetPlayerVisibility(int client, Service svc)
 {
+    if (!IsFeatureAvailable(Feature_Visibility))
+        return;
+
     if (!IsRoundAllowed(svc.BonusPlayerVisibilityRound))
         return;
 
@@ -131,6 +154,9 @@ void Bonus_GivePlayerSpawnMoney(int client, Service svc)
 
 void Bonus_GivePlayerShield(int client, Service svc)
 {
+    if (!IsFeatureAvailable(Feature_Shield))
+        return;
+
     if(!svc.BonusPlayerShield || !IsRoundAllowed(svc.BonusPlayerShieldRound))
         return;
 
@@ -140,6 +166,9 @@ void Bonus_GivePlayerShield(int client, Service svc)
 
 void Bonus_GiveGrenades(int client, Service svc)
 {
+    if (!IsFeatureAvailable(Feature_Grenades))
+        return;
+
     ConsumableItems items;
     items.SetFromClientService(client, svc);
     GivePlayerConsumables(client, items, svc.ShouldStripConsumables);
@@ -320,6 +349,9 @@ void Bonus_NoScopeHP(int attacker, bool noscope, Service svc)
 //////////////////////////////////
 void Bonus_RespawnPlayer(int client)
 {
+    if (!IsFeatureAvailable(Feature_RespawnChance))
+        return;
+
     Service svc = GetClientService(client);
     if (svc == null)
         return;

@@ -264,6 +264,9 @@ public Action Hook_OnTakeDamage(int client, int &attacker, int &inflictor, float
     // Increase damage first before implementing resistance
     if (attackerSvc != null && IsRoundAllowed(attackerSvc.BonusPlayerAttackDamageRound))
     {
+        if (!IsFeatureAvailable(Feature_AttackDamage))
+            return state;
+
         damage *= attackerSvc.BonusPlayerAttackDamage * 0.01;
         state = Plugin_Changed;
     }
@@ -283,12 +286,17 @@ public Action Hook_OnTakeDamage(int client, int &attacker, int &inflictor, float
         // should be different, but eh.
         else if (IsRoundAllowed(clientSvc.BonusPlayerFallDamagePercentRound))
         {
+            if (!IsFeatureAvailable(Feature_FallDamage))
+                return state;
+
             damage *= clientSvc.BonusPlayerFallDamagePercent * 0.01;
             state = Plugin_Changed;
         }
     }
     else
     {
+        if (!IsFeatureAvailable(Feature_DamageResist))
+            return state;
         // Fall damage should never be included in this resistance
         if (IsRoundAllowed(clientSvc.BonusPlayerDamageResistRound))
         {
@@ -315,7 +323,7 @@ public void Hook_OnClientThink(int client)
     if (!svc.BonusNoRecoil && !IsRoundAllowed(svc.BonusNoRecoilRound))
         return;
 
-    int activeWeapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");    
+    int activeWeapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 
     if (activeWeapon != -1 && IsValidEdict(activeWeapon))
     {

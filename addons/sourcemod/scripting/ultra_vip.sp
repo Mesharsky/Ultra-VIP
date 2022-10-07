@@ -181,10 +181,8 @@ public void OnPluginStart()
         SetFailState("Game is somehow missing the required \"mp_maxrounds\" ConVar.");
 
     RegConsoleCmd("sm_jumps", Command_ToggleJumps);
-
     RegConsoleCmd("sm_vips", Command_OnlineList);
     RegConsoleCmd("sm_vipbonus", Command_VipBonuses);
-
 
     RegAdminCmd("sm_reloadservices", Command_ReloadServices, ADMFLAG_ROOT, "Reloads configuration file");
 
@@ -289,7 +287,9 @@ public void OnClientPostAdminCheck(int client)
     UpdateClientAdminCache(client);
 
     SDKHook(client, SDKHook_OnTakeDamage, Hook_OnTakeDamage);
-    SDKHook(client, SDKHook_PreThink, Hook_OnClientThink);
+    
+    if (IsFeatureAvailable(Feature_NoRecoil))
+        SDKHook(client, SDKHook_PreThink, Hook_OnClientThink);
 
     ExtraJump_OnClientPostAdminCheck(client, g_ClientService[client]);
 

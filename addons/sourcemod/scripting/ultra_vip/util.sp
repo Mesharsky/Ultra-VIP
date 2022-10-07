@@ -252,6 +252,9 @@ CSWeaponID GetWeaponEntityID(int weapon)
 
 void GivePlayerUnlimitedAmmo(int client, int weapon)
 {
+    if (!IsFeatureAvailable(Feature_UnlimitedAmmo))
+        return;
+
     char classname[32];
     GetEdictClassname(weapon, classname, sizeof(classname));
 
