@@ -120,7 +120,10 @@ methodmap UVIPService < Handle
 // otherwise it will occur after LoadConfig, which is blocked.
 forward void UVIP_OnStart();
 
-// -- post config load
+// -- Called after config is loaded (after OnStart)
+// -- Not safe to use registered settings until this is called
+// -- If module is lateloaded, this is called after OnStart
+//    once the config has been reloaded.
 forward void UVIP_OnReady();
 
 // --  Must be after service is actually applied to client
@@ -140,13 +143,13 @@ forward void UVIP_OnSpawnWithService(int client, UVIPService service);
 //--------------------------------------------------------------
 // Natives
 //--------------------------------------------------------------
-stock void UVIP_CheckCoreCompatible()
+stock void UVIP_SetupModule()
 {
     if (!_UVIP_IsCoreCompatible())
         SetFailState("This plugin is not compatible with the installed version of Ultra-VIP (Compiled for version: '%s', Required API version: %i).", UVIP_VERSION, UVIP_API_VERSION);
-}
 
-native bool _UVIP_IsCoreCompatible(int pluginVersion=UVIP_API_VERSION);
+    _UVIP_HandleLateLoad();
+}
 
 native void UVIP_RegisterSetting(
     const char[] name,
@@ -163,6 +166,17 @@ native bool UVIP_OverrideFeature(
  * Returns null if client does not have a service.
  */
 native UVIPService UVIP_GetClientService(int client);
+
+
+/**
+ * Do not use. Internal use only.
+ */
+native bool _UVIP_IsCoreCompatible(int pluginVersion=UVIP_API_VERSION);
+
+/**
+ * Do not use. Internal use only.
+ */
+native bool _UVIP_HandleLateLoad();
 
 
 /**
@@ -183,6 +197,8 @@ public SharedPlugin __pl_ultra_vip =
 public void __pl_ultra_vip_SetNTVOptional()
 {
     MarkNativeAsOptional("_UVIP_IsCoreCompatible");
+    MarkNativeAsOptional("_UVIP_HandleLateLoad");
+
     MarkNativeAsOptional("UVIP_RegisterSetting");
     MarkNativeAsOptional("UVIP_OverrideFeature");
     MarkNativeAsOptional("UVIP_GetClientService");

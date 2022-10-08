@@ -83,6 +83,7 @@ enum
 static ConVar s_Cvar_MaxRounds;
 
 bool g_IsLateLoad;
+bool g_HaveAllPluginsLoaded;    // Used to detect if natives are being called during a lateload
 Handle g_HudMessages;
 bool g_IsInOnStartForward;
 ArrayList g_Services;
@@ -138,7 +139,7 @@ public Plugin myinfo =
 {
     name = "Ultra VIP",
     author = "Mesharsky",
-    description = "Ultra VIP System that supports multimple services",
+    description = "Highly configurable VIP system with support for custom services",
     version = PLUGIN_VERSION,
     url = "https://github.com/Mesharsky/Ultra-VIP"
 };
@@ -152,6 +153,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     }
 
     CreateNative("_UVIP_IsCoreCompatible", Native_IsCoreCompatible);
+    CreateNative("_UVIP_HandleLateLoad", Native_HandleLateLoad);
+
     CreateNative("UVIP_RegisterSetting", Native_RegisterSetting);
     CreateNative("UVIP_OverrideFeature", Native_OverrideFeature);
     CreateNative("UVIP_GetClientService", Native_GetClientService);
@@ -219,24 +222,34 @@ public void OnAllPluginsLoaded()
         LogError("Failed to call UVIP_OnStart");
     g_IsInOnStartForward = false;
 
-    LoadConfig();
-    if (g_IsLateLoad)
-    {
-        HandleLateLoad();
-        PrintToServer("[Ultra VIP] %T", "Late load warning", LANG_SERVER);
-    }
+    ReloadConfig(true, g_IsLateLoad);
 
     CreateTimer(ADMCACHE_RESCAN_INTERVAL, Timer_RescanServices, _, TIMER_REPEAT);
 
     Call_StartForward(g_Fwd_OnReady);
     if (Call_Finish() != SP_ERROR_NONE)
         LogError("Failed to call UVIP_OnReady");
+
+    g_HaveAllPluginsLoaded = true; // Must set last. See comment at definition.
+}
+
+bool ReloadConfig(bool fatalError, bool notifyLateLoad)
+{
+    if (Config_Load(fatalError))
+    {
+        HandleLateLoad();
+        if (notifyLateLoad)
+            PrintToServer("[Ultra VIP] %t", "Late load warning");
+        return true;
+    }
+
+    return false;
 }
 
 static void HandleLateLoad()
 {
     /**
-     * NOTE / TODO: Lateloading is not properly supported.
+     * NOTE / TODO: Lateloading is not fully supported.
      * It doesn't handle Event_PlayerSpawn so players will not get bonuses until the next round.
      * Some other things may behave incorrectly or be completely broken.
      *
@@ -254,6 +267,13 @@ static void HandleLateLoad()
                 OnClientCookiesCached(i);
         }
     }
+}
+
+// For config.sp because of include ordering
+void ResetAllClientServices()
+{
+    for (int i = 0; i < sizeof(g_ClientService); ++i)
+        g_ClientService[i] = null;
 }
 
 public void OnMapStart()
@@ -282,7 +302,8 @@ public void OnClientCookiesCached(int client)
 
 public void OnClientPostAdminCheck(int client)
 {
-    // NOTE: This function must be callable from Timer_RescanServices without issues!
+    // NOTE: This function must be callable from Timer_RescanServices
+    // and Command_ReloadServices without issues!
 
     // Service must always be null if none is owned
     g_ClientService[client] = FindClientService(client);
@@ -298,19 +319,15 @@ public void OnClientPostAdminCheck(int client)
 
 public void OnClientDisconnect(int client)
 {
-    Bonus_LeaveMessage(client);
-
-    ExtraJump_OnClientDisconect(client);
-
-    // Call before unsetting g_ClientService
     CallServiceForward(g_Fwd_OnDisconnect, client, g_ClientService[client]);
 
-    g_ClientService[client] = null;
+    Bonus_LeaveMessage(client);
+    ExtraJump_OnClientDisconect(client);
+    WeaponMenu_ResetPreviousWeapons(client);
 
+    g_ClientService[client] = null;
     g_AdminCacheFlags[client] = 0;
     g_AdminCacheGroupCount[client] = 0;
-
-    WeaponMenu_ResetPreviousWeapons(client);
 }
 
 public Action Timer_RescanServices(Handle timer)
@@ -318,7 +335,7 @@ public Action Timer_RescanServices(Handle timer)
     /**
      * NOTE: Because of VIP plugins granting access via database, the admin
      * permissions aren't ready during OnClientPostAdminCheck.
-     * As of 1.11, there's no forward for when a client's admin permisisons change.
+     * As of 1.11, there's no forward for when a client's admin permissions change.
      *
      * So we must manually recheck it constantly.
      */
@@ -375,8 +392,8 @@ public Action Command_VipBonuses(int client, int args)
 
 public Action Command_ReloadServices(int client, int args)
 {
-    if(LoadConfig(false))
-        CReplyToCommand(client, "%t", "Config Reloaded");
+    if (ReloadConfig(false, false))
+        CPrintToChatAll("%t", "Ultra VIP reloaded config");
     else
     {
         CReplyToCommand(client, "%t", "Config Reload Error");

@@ -107,6 +107,58 @@ public any Native_IsCoreCompatible(Handle plugin, int numParams)
     return GetNativeCell(1) == UVIP_API_VERSION;
 }
 
+public any Native_HandleLateLoad(Handle plugin, int numParams)
+{
+    // Not a lateload
+    if (!g_HaveAllPluginsLoaded)
+        return 0;
+
+    // If module doesn't have UVIP_OnStart it doesn't need us to handle
+    // lateload (RegisterSetting/OverrideFeature not used).
+    Function onStart = GetFunctionByName(plugin, "UVIP_OnStart");
+    if (onStart == INVALID_FUNCTION)
+        return 0;
+
+    // Set g_HaveAllPluginsLoaded to false temporarily so that
+    // RegisterSetting and Overridefeature can work.
+    bool previousState = g_HaveAllPluginsLoaded;
+    g_HaveAllPluginsLoaded = false;
+
+    // Manually call the module's UVIP_OnStart
+    Call_StartFunction(plugin, onStart);
+    int err = Call_Finish();
+
+    g_HaveAllPluginsLoaded = previousState;
+
+    char pluginName[64];
+    GetPluginFilename(plugin, pluginName, sizeof(pluginName));
+
+    if (err != SP_ERROR_NONE)
+    {
+        LogError("Error %i occurred while calling UVIP_OnStart for plugin '%s'", err, pluginName);
+        return 0;
+    }
+
+    // Reload the config so that the newly-registered settings/feature overrides
+    // are set in the services
+    if (!ReloadConfig(false, false))
+        SetFailState("Late-loading module failed. An error occurred while reloading the config. Ultra-VIP has stopped.");
+
+    // Manually call the module's UVIP_OnReady to tell it the config is done.
+    Function onReady = GetFunctionByName(plugin, "UVIP_OnReady");
+    if (onReady != INVALID_FUNCTION)
+    {
+        Call_StartFunction(plugin, onReady);
+        err = Call_Finish();
+        if (err != SP_ERROR_NONE)
+            LogError("Error %i occurred while calling UVIP_OnReady for plugin '%s'", err, pluginName);
+    }
+
+    PrintToServer("[Ultra VIP] %t", "Module triggered reload", pluginName);
+    CPrintToChatAll("%t", "Ultra VIP reloaded config");
+    return 0;
+}
+
 public any Native_RegisterSetting(Handle plugin, int numParams)
 {
     // The OnStart forward always happens before the config is processed, so we force

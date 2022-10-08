@@ -445,7 +445,7 @@ int GetClientAdminGroupCount(int client)
     if (id == INVALID_ADMIN_ID)
         return 0;
 
-    return GetAdminGroupCount(id);
+    return id.GroupCount;
 }
 
 any _MAX(any a, any b)

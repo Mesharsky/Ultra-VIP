@@ -20,13 +20,18 @@
     {
         "pl"    "Ostrzeżenie: Przeładowanie/Ładowanie Ultra-Vip'a może spowodować, że plugin nie będzie działał poprawnie. Jeżeli zostanie załadowany podczas gdy serwer już działa. Niektóre rzeczy/funkcjonalności zaczną działać dopiero od następnej rundy."
     }
-    "Config Reloaded"
-    {
-        "pl"    "Plik konfiguracyjny został {green}Pomyślnie przeładowany"
-    }
     "Config Reload Error"
     {
         "pl"    "Wystąpił problem z przeładowaniem pliku konfiguracyjnego. {darkred}Sprawdź Error Logi"
+    }
+    "Module triggered reload"
+    {
+        "#format" "{1:s}"
+        "pl"    "Plik konfiguracyjny został przeładowany ponieważ przeładowano/załadowano moduł '{1}'. W trakcie gry"
+    }
+    "Ultra VIP reloaded config"
+    {
+        "pl"    "{lightred}Ultra-VIP{default} został przeładowany. Bonusy dla graczy zaczną poprawnie działać od następnej rundy."
     }
 
     "Weapon Menu Title"

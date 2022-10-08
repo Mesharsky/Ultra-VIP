@@ -75,6 +75,8 @@ static void ResetAllServices()
     }
 
     g_Services.Clear();
+
+    ResetAllClientServices();
 }
 
 static bool HandleError(Handle &hndl, bool isFatal, const char[] fmt, any ...)
@@ -109,7 +111,7 @@ static bool HandleErrorAndGoBack(KeyValues kv, Service &hndl, bool isFatal, cons
     return false;
 }
 
-bool LoadConfig(bool fatalError = true)
+bool Config_Load(bool fatalError = true)
 {
     char path[PLATFORM_MAX_PATH];
     BuildPath(Path_SM, path, sizeof(path), "configs/ultra_vip_main.cfg");
