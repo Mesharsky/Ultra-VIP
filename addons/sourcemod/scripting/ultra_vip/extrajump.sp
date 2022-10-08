@@ -33,6 +33,9 @@ static float s_JumpHeight[MAXPLAYERS + 1];
 // Players with service can toggle multijumps on/off.
 public Action Command_ToggleJumps(int client, int args)
 {
+    if (!IsFeatureAvailable(Feature_ExtraJumps))
+        return Plugin_Handled;
+
     Service svc = GetClientService(client);
     if (svc == null)
     {
@@ -117,6 +120,9 @@ void ExtraJump_OnClientPostAdminCheck(int client, Service svc)
 void ExtraJump_OnPlayerSpawn(int client, Service svc)
 {
     s_AllowedToMultiJump[client] = false;
+
+    if (!IsFeatureAvailable(Feature_ExtraJumps))
+        return;
 
     if (svc == null)
         return;
