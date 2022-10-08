@@ -171,21 +171,29 @@ public void OnPluginStart()
     g_Services = new ArrayList();
     g_SortedServiceFlags = new ArrayList();
     g_SortedServiceOverrides = new ArrayList(ByteCountToCells(MAX_SERVICE_OVERRIDE_SIZE));
+    g_Cookie_PrevWeapons = new Cookie("ultra_vip_weapons", "Previously Selected Weapons", CookieAccess_Private);
+    g_HudMessages = CreateHudSynchronizer();
 
-    Natives_OnPluginStart();
-
-    LoadTranslations("ultra_vip.phrases.txt");
+    g_Fwd_OnStart = new GlobalForward("UVIP_OnStart", ET_Ignore);
+    g_Fwd_OnReady = new GlobalForward("UVIP_OnReady", ET_Ignore);
+    g_Fwd_OnPostAdminCheck = new GlobalForward("UVIP_OnClientPostAdminCheck", ET_Ignore, Param_Cell, Param_Cell);
+    g_Fwd_OnDisconnect = new GlobalForward("UVIP_OnClientDisconnected", ET_Ignore, Param_Cell, Param_Cell);
+    g_Fwd_OnSpawn = new GlobalForward("UVIP_OnSpawn", ET_Ignore, Param_Cell, Param_Cell);
+    g_Fwd_OnSpawnWithService = new GlobalForward("UVIP_OnSpawnWithService", ET_Ignore, Param_Cell, Param_Cell);
 
     s_Cvar_MaxRounds = FindConVar("mp_maxrounds");
     if (s_Cvar_MaxRounds == null)
         SetFailState("Game is somehow missing the required \"mp_maxrounds\" ConVar.");
 
-    RegConsoleCmd("sm_jumps", Command_ToggleJumps);
+    //g_Cvar_ArenaMode = CreateConVar("arena_mode", "0", "Should arena mode (splewis) be enabled?\nRemeber that plugin will use arena configuration file instead if enabled");
 
+    LoadTranslations("ultra_vip.phrases.txt");
+
+    Natives_OnPluginStart();
+
+    RegConsoleCmd("sm_jumps", Command_ToggleJumps);
     RegConsoleCmd("sm_vips", Command_OnlineList);
     RegConsoleCmd("sm_vipbonus", Command_VipBonuses);
-
-
     RegAdminCmd("sm_reloadservices", Command_ReloadServices, ADMFLAG_ROOT, "Reloads configuration file");
 
     HookEvent("player_spawn", Event_PlayerSpawn);
@@ -198,18 +206,13 @@ public void OnPluginStart()
     HookEvent("round_end", Event_RoundEnd);
     HookEvent("weapon_fire", Event_WeaponFire);
     HookEvent("player_connect_full", Event_PlayerConnectFull);
+}
 
-    g_Fwd_OnStart = new GlobalForward("UVIP_OnStart", ET_Ignore);
-    g_Fwd_OnReady = new GlobalForward("UVIP_OnReady", ET_Ignore);
-    g_Fwd_OnPostAdminCheck = new GlobalForward("UVIP_OnClientPostAdminCheck", ET_Ignore, Param_Cell, Param_Cell);
-    g_Fwd_OnDisconnect = new GlobalForward("UVIP_OnClientDisconnected", ET_Ignore, Param_Cell, Param_Cell);
-    g_Fwd_OnSpawn = new GlobalForward("UVIP_OnSpawn", ET_Ignore, Param_Cell, Param_Cell);
-    g_Fwd_OnSpawnWithService = new GlobalForward("UVIP_OnSpawnWithService", ET_Ignore, Param_Cell, Param_Cell);
+public void OnAllPluginsLoaded()
+{
+    FindChatProcessor();
 
-	//g_Cvar_ArenaMode = CreateConVar("arena_mode", "0", "Should arena mode (splewis) be enabled?\nRemeber that plugin will use arena configuration file instead if enabled");
-
-    g_Cookie_PrevWeapons = new Cookie("ultra_vip_weapons", "Previously Selected Weapons", CookieAccess_Private);
-
+    // Must call OnStart here so modules are all loaded
     g_IsInOnStartForward = true;
     Call_StartForward(g_Fwd_OnStart);
     if (Call_Finish() != SP_ERROR_NONE)
@@ -217,11 +220,13 @@ public void OnPluginStart()
     g_IsInOnStartForward = false;
 
     LoadConfig();
-    HandleLateLoad();
+    if (g_IsLateLoad)
+    {
+        HandleLateLoad();
+        PrintToServer("[Ultra VIP] %T", "Late load warning", LANG_SERVER);
+    }
 
     CreateTimer(ADMCACHE_RESCAN_INTERVAL, Timer_RescanServices, _, TIMER_REPEAT);
-
-    g_HudMessages = CreateHudSynchronizer();
 
     Call_StartForward(g_Fwd_OnReady);
     if (Call_Finish() != SP_ERROR_NONE)
@@ -237,11 +242,6 @@ static void HandleLateLoad()
      *
      * Otherwise, it does *try* to make sure the plugin will work correctly on the next round.
      */
-
-    if (!g_IsLateLoad)
-        return;
-
-    PrintToServer("[Ultra VIP] %T", "Late load warning", LANG_SERVER);
 
     for (int i = 1; i <= MaxClients; ++i)
     {
@@ -418,7 +418,7 @@ bool UpdateClientAdminCache(int client)
     int oldCount = g_AdminCacheGroupCount[client];
 
     g_AdminCacheFlags[client] = GetUserFlagBits(client);
-    g_AdminCacheGroupCount[client] = GetClientAdminGroupCount(client);
+    g_AdminCacheGroupCount[client] = GetClientAdminGroupCount(client); // TODO / BUG: DOESNT WORK IF YOU ONLY CHANGE OVERRIDES REEE
 
     return oldFlags != g_AdminCacheFlags[client] || oldCount != g_AdminCacheGroupCount[client];
 }
@@ -558,7 +558,7 @@ void CallServiceForward(GlobalForward fwd, int client, Service svc)
         LogError("Failed to call forward.");
 }
 
-public void OnAllPluginsLoaded()
+void FindChatProcessor()
 {
     if (LibraryExists("scp"))
     {
