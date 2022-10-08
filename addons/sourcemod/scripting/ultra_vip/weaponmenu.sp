@@ -663,5 +663,4 @@ static bool DecodeMenuInfo(const char[] info, WeaponMenuItem outputItem)
 
     return true;
 }
-
 // i really fucking hate this file
