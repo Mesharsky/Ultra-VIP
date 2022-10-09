@@ -29,33 +29,28 @@
 //--------------------------------------------------------------
 // Constants
 //--------------------------------------------------------------
-enum SettingRequiredMode
-{
-    Setting_Optional = 0,   // Setting will use the default value if a service is has no configured value.
-    Setting_Required        // An error will occur if the setting is missing from any service in the config.
-}
 
-enum FeatureOverrideMode
-{
-    Override_Optional = 0,  // The core feature will be re-enabled if the module plugin is unloaded.
-    Override_Required       // The core feature cannot be re-enabled even if the module plugin is unloaded.
-}
-
+/**
+ * Data types supported by UVIP_RegisterSetting().
+ */
 enum SettingType
 {
     Type_String = 0,    // Text (or custom type).
+
     Type_Byte,          // Integer between -128 and 127 (inclusive).
     Type_UnsignedByte,  // Integer between 0 and 255 (inclusive).
     Type_Integer,       // Integer between -2147483648 and 2147483647 (inclusive).
-    Type_Bool,          // True/False (or 1/0). Case-insensitive.
+    Type_Bool,          // Integer 1 or 0, or "True" or "False" (Case-insensitive).
     Type_Hex,           // Type_Integer but using hexadecimal digits (0-9, A-F). Case-insensitive.
-    Type_Float,         // Real number (anything with a decimal point).
+
+    Type_Float,         // Number with a decimal point.
 
     Type_RGBHex,        // Type_Hex that must be 6 characters long, with optional # prefix (e.g. 00AAFF or #00AAFF).
     Type_RGBAHex,       // Type_Hex that must be 8 characters long, with optional # prefix (e.g. 0055AAFF or #0055AAFF).
 
-    SettingType_TOTAL
+    SettingType_TOTAL   // Internal use only.
 }
+
 
 /**
  * The core features in Ultra-VIP that can be overridden
@@ -92,22 +87,91 @@ enum UVIPFeature
     Feature_UnlimitedAmmo,
     Feature_NoRecoil,
 
-    Feature_LAST_ITEM       // Internal use only. Similar to a TOTAL, but not the correct number.
+    Feature_LAST_ITEM       // Internal use only. Similar to a TOTAL, but value wrong/offset.
+}
+
+
+/**
+ * Whether not a setting (UVIP_RegisterSetting) is required to be in the config
+ * for each service.
+ */
+enum SettingRequiredMode
+{
+    Setting_Optional = 0,   // Setting will use the default value if a service is has no configured value.
+    Setting_Required        // An error will occur if the setting is missing from any service in the config.
+}
+
+
+/**
+ * Whether or not an overrided core feature (UVIP_OverrideFeature) must stay
+ * overridden if the module is unloaded.
+ */
+enum FeatureOverrideMode
+{
+    Override_Optional = 0,  // The core feature will be re-enabled if the module plugin is unloaded.
+    Override_Required       // The core feature cannot be re-enabled even if the module plugin is unloaded.
 }
 
 
 //--------------------------------------------------------------
 // UVIPService methodmap
 // A methodmap the represents the service owned by a player.
+// Used for getting the values of settings made with UVIP_RegisterSetting().
 //--------------------------------------------------------------
 methodmap UVIPService < Handle
 {
+    /**
+     * Get the value of a Type_String setting.
+     *
+     * @param settingName       Name of the setting.
+     * @param output            Output buffer.
+     * @param size              Max size of output buffer.
+     *
+     * @error   OnAllPluginsLoaded not called, Invalid UVIPService,
+     *          Setting does not exist or is not a Type_String.
+     */
     public native void Get(const char[] settingName, char[] output, int size);
 
+    /**
+     * Get the value of any integer or Type_Bool setting.
+     *
+     * @param settingName       Name of the setting.
+     * @param output            Output buffer.
+     * @param size              Max size of output buffer.
+     *
+     * @return                  Integer value.
+     *
+     * @error   OnAllPluginsLoaded not called, Invalid UVIPService,
+     *          Setting does not exist or is not an integer.
+     */
     public native int GetInt(const char[] settingName);
 
+    /**
+     * Get the value of a Type_Float setting.
+     *
+     * @param settingName       Name of the setting.
+     * @param output            Output buffer.
+     * @param size              Max size of output buffer.
+     *
+     * @return                  Float value.
+     *
+     * @error   OnAllPluginsLoaded not called, Invalid UVIPService,
+     *          Setting does not exist or is not a float.
+     */
     public native int GetFloat(const char[] settingName);
 
+    /**
+     * Get the value of any non-string setting (integer/float/bool).
+     *
+     * @param settingName       Name of the setting.
+     * @param output            Output buffer.
+     * @param size              Max size of output buffer.
+     *
+     * @return                  32-bit cell (any) value.
+     *
+     * @error   OnAllPluginsLoaded not called, Invalid UVIPService,
+     *          Setting does not exist or is not a cell type.
+     */
     public native any GetCell(const char[] settingName);
 }
 
@@ -116,33 +180,75 @@ methodmap UVIPService < Handle
 // Forwards
 //--------------------------------------------------------------
 
-// -- Must do RegisterSetting and OverrideFeature in here
-// otherwise it will occur after LoadConfig, which is blocked.
+/**
+ * Called when Ultra-VIP is starting.
+ *
+ * This is the only place you can call UVIP_RegisterSetting or
+ * UVIP_OverrideFeature.
+ *
+ * If the plugin is late-loaded this will be called automatically
+ * as long as UVIP_SetupModule is used in OnPluginStart().
+ */
 forward void UVIP_OnStart();
 
-// -- Called after config is loaded (after OnStart)
-// -- Not safe to use registered settings until this is called
-// -- If module is lateloaded, this is called after OnStart
-//    once the config has been reloaded.
+/**
+ * Called after the Ultra-VIP config has been processed, after UVIP_OnStart().
+ *
+ * It is not safe to use any settings created by UVIP_RegisterSetting until
+ * after this forward is called.
+ *
+ * If the plugin is late-loaded this will be called automatically
+ * as long as UVIP_SetupModule is used in OnPluginStart().
+ */
 forward void UVIP_OnReady();
 
-// --  Must be after service is actually applied to client
-// Also called shortly after clients admin permissions change
+/**
+ * OnClientPostAdminCheck after client is checked for a service.
+ *
+ * @param client        Client index.
+ * @param service       Client service, or null if none.
+ */
 forward void UVIP_OnClientPostAdminCheck(int client, UVIPService service);
 
-// --  Must be just before service is removed from client
-forward void UVIP_OnClientDisconnected(int client, UVIPService service);
+/**
+ * OnClientDisconnect before service (if any) is removed from client.
+ *
+ * @param client        Client index.
+ * @param service       Client service, or null if none.
+ */
+forward void UVIP_OnClientDisconnect(int client, UVIPService service);
 
-// --  After the timer/checks on Event_PlayerSpawn
+/**
+ * Called after a client spawns (spectators excluded).
+ *
+ * This occurs after the player_spawn event so that the client can be
+ * interacted with.
+ *
+ * @param client        Client index.
+ * @param service       Client service, or null if none.
+ */
 forward void UVIP_OnSpawn(int client, UVIPService service);
 
-// --  OnSpawn but it guarantees a valid Service handle
+/**
+ * Same as UVIP_OnSpawn but only called if a client has a valid
+ * (non-null) service.
+ *
+ * @param client        Client index.
+ * @param service       Client service.
+ */
 forward void UVIP_OnSpawnWithService(int client, UVIPService service);
 
 
 //--------------------------------------------------------------
 // Natives
 //--------------------------------------------------------------
+
+/**
+ * Prepare an Ultra-VIP module.
+ *
+ * This should be called in OnPluginStart() before any other Ultra-VIP code
+ * is used.
+ */
 stock void UVIP_SetupModule()
 {
     if (!_UVIP_IsCoreCompatible())
@@ -151,12 +257,52 @@ stock void UVIP_SetupModule()
     _UVIP_HandleLateLoad();
 }
 
+
+/**
+ * Create a new setting for every Ultra-VIP service.
+ *
+ * Settings are named values that can be configured in the ultra_vip_modules.cfg
+ * file with a different value for each service.
+ *
+ * To get the value of a setting (for a particular service) use the UVIPService
+ * methodmap.
+ * The UVIP forwards and UVIP_GetClientService can be used for that.
+ *
+ * @param name          Name of the setting (case insensitive).
+ * @param defaultValue  Value to use if setting is not set for a service.
+ * @param type          Data type of the setting.
+ * @param mode          Does the setting need to be set for every service.
+ *
+ *
+ * @error               Not called inside UVIP_OnStart(),
+ *                      Setting name or value too long or not allowed,
+ *                      Default value doesn't match type,
+ *                      or Setting already registered to another plugin.
+ */
 native void UVIP_RegisterSetting(
     const char[] name,
     const char[] defaultValue,
     SettingType type,
     SettingRequiredMode mode=Setting_Optional);
 
+
+/**
+ * Disabled (override) a core feature of Ultra-VIP.
+ *
+ * This is used if your module plugin intends to replace the feature with
+ * its own version.
+ *
+ * e.g. You might override Feature_ScoreboardTag so your module can implement
+ *      an animated scoreboard tag instead.
+ *
+ * @param feature       Feature being overridden/disabled.
+ * @param mode          Whether or not the feature should be re-enabled if the
+ *                      module plugin that disabled it is unloaded.
+ *
+ * @return              True if feature was successfully overridden.
+ *                      False if the feature is already overridden by another
+ *                      plugin.
+ */
 native bool UVIP_OverrideFeature(
     UVIPFeature feature,
     FeatureOverrideMode mode);
@@ -164,6 +310,9 @@ native bool UVIP_OverrideFeature(
 /**
  * Get the UVIPService owned by a client.
  * Returns null if client does not have a service.
+ *
+ * @param client    Client index.
+ * @return          The client's UVIPService or null if they have none.
  */
 native UVIPService UVIP_GetClientService(int client);
 

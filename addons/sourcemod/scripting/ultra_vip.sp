@@ -180,7 +180,7 @@ public void OnPluginStart()
     g_Fwd_OnStart = new GlobalForward("UVIP_OnStart", ET_Ignore);
     g_Fwd_OnReady = new GlobalForward("UVIP_OnReady", ET_Ignore);
     g_Fwd_OnPostAdminCheck = new GlobalForward("UVIP_OnClientPostAdminCheck", ET_Ignore, Param_Cell, Param_Cell);
-    g_Fwd_OnDisconnect = new GlobalForward("UVIP_OnClientDisconnected", ET_Ignore, Param_Cell, Param_Cell);
+    g_Fwd_OnDisconnect = new GlobalForward("UVIP_OnClientDisconnect", ET_Ignore, Param_Cell, Param_Cell);
     g_Fwd_OnSpawn = new GlobalForward("UVIP_OnSpawn", ET_Ignore, Param_Cell, Param_Cell);
     g_Fwd_OnSpawnWithService = new GlobalForward("UVIP_OnSpawnWithService", ET_Ignore, Param_Cell, Param_Cell);
 

@@ -272,6 +272,9 @@ static_assert(view_as<int>(SettingType_TOTAL) == 9, "SettingType was added witho
 
 public any Native_UVIPService_Get(Handle plugin, int numParams)
 {
+    if (!g_HaveAllPluginsLoaded)
+        return ThrowNativeError(SP_ERROR_NATIVE, "Cannot use UVIPService.Get until after OnAllPluginsLoaded");
+
     Service svc = GetNativeCell(1);
     if (svc == null)
         return ThrowNativeError(SP_ERROR_NATIVE, "Invalid UVIPService handle %x", svc);
@@ -298,6 +301,9 @@ public any Native_UVIPService_Get(Handle plugin, int numParams)
 
 public any Native_UVIPService_GetInt(Handle plugin, int numParams)
 {
+    if (!g_HaveAllPluginsLoaded)
+        return ThrowNativeError(SP_ERROR_NATIVE, "Cannot use UVIPService.GetInt until after OnAllPluginsLoaded");
+
     char settingName[MAX_SETTING_NAME_SIZE];
     GetNativeString(2, settingName, sizeof(settingName));
     NormaliseString(settingName);
@@ -320,6 +326,9 @@ public any Native_UVIPService_GetInt(Handle plugin, int numParams)
 
 public any Native_UVIPService_GetFloat(Handle plugin, int numParams)
 {
+    if (!g_HaveAllPluginsLoaded)
+        return ThrowNativeError(SP_ERROR_NATIVE, "Cannot use UVIPService.GetFloat until after OnAllPluginsLoaded");
+
     char settingName[MAX_SETTING_NAME_SIZE];
     GetNativeString(2, settingName, sizeof(settingName));
     NormaliseString(settingName);
@@ -336,6 +345,9 @@ public any Native_UVIPService_GetFloat(Handle plugin, int numParams)
 
 public any Native_UVIPService_GetCell(Handle plugin, int numParams)
 {
+    if (!g_HaveAllPluginsLoaded)
+        return ThrowNativeError(SP_ERROR_NATIVE, "Cannot use UVIPService.GetCell until after OnAllPluginsLoaded");
+
     char settingName[MAX_SETTING_NAME_SIZE];
     GetNativeString(2, settingName, sizeof(settingName));
     NormaliseString(settingName);
