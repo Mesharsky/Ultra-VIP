@@ -513,3 +513,14 @@ stock bool IsPluginLoaded(Handle plugin)
     delete it;
     return false;
 }
+
+bool KvContainsSubKey(KeyValues kv, const char[] key)
+{
+    if (kv.JumpToKey(key))
+    {
+        kv.GoBack();
+        return true;
+    }
+
+    return false;
+}
