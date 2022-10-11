@@ -115,11 +115,12 @@ bool Config_Load(bool fatalError = true)
             inheritSvcName[0] = '\0';
             kv.GetSectionName(serviceName, sizeof(serviceName));
 
+            // Inheriting services still need to set "service_enabled"
             if (!IsServiceEnabled(kv))
                 continue;
 
             // Only allow inheriting-services in the inherit pass, and vice versa
-            if (!(s_IsInheritOnlyPass ^ IsInheritingService(kv, inheritSvcName, sizeof(inheritSvcName))))
+            if (s_IsInheritOnlyPass != IsInheritingService(kv, inheritSvcName, sizeof(inheritSvcName)))
                 continue;
 
             // Create new service (blocking duplicates)
@@ -401,7 +402,7 @@ static bool ProcessMainConfiguration(KeyValues kv, Service svc, bool fatalError,
     {
         kv.GetString("flag", buffer, sizeof(buffer));
         int flag = ReadFlagString(buffer); // No flag is ignored by ifs below
-        if (!HasOnlySingleBit(flag))
+        if (flag && !HasOnlySingleBit(flag))
             return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is not allowed to have multiple admin flags.", serviceName);
         if (s_UsedServiceFlags & flag)
             return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is using admin flag '%s' which is in use by another service.", serviceName, buffer);
