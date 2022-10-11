@@ -32,6 +32,23 @@ void Service_Delete(Service &svc)
 }
 
 
+Service Service_CloneByName(const char[] newName, const char[] oldName, bool caseSensitive=false)
+{
+    Service svc = FindServiceByName(oldName, caseSensitive);
+    if (svc == null)
+        return null;
+
+    Service newSvc = view_as<Service>(svc.Clone());
+    newSvc.SetName(newName);
+
+    // Currently there is no way to clone menus so we just have to rebuild it.
+    newSvc.WeaponMenu = null;
+    newSvc.Weapons = null;
+
+    return newSvc;
+}
+
+
 methodmap Service < StringMap
 {
     public Service(const char[] name = "")

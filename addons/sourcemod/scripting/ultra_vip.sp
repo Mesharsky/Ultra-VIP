@@ -83,6 +83,7 @@ enum
 static ConVar s_Cvar_MaxRounds;
 
 bool g_IsLateLoad;
+bool g_HaveAllPluginsLoaded;    // Used to detect if natives are being called during a lateload
 Handle g_HudMessages;
 bool g_IsInOnStartForward;
 ArrayList g_Services;
@@ -138,7 +139,7 @@ public Plugin myinfo =
 {
     name = "Ultra VIP",
     author = "Mesharsky",
-    description = "Ultra VIP System that supports multimple services",
+    description = "Highly configurable VIP system with support for custom services",
     version = PLUGIN_VERSION,
     url = "https://github.com/Mesharsky/Ultra-VIP"
 };
@@ -152,6 +153,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     }
 
     CreateNative("_UVIP_IsCoreCompatible", Native_IsCoreCompatible);
+    CreateNative("_UVIP_HandleLateLoad", Native_HandleLateLoad);
+
     CreateNative("UVIP_RegisterSetting", Native_RegisterSetting);
     CreateNative("UVIP_OverrideFeature", Native_OverrideFeature);
     CreateNative("UVIP_GetClientService", Native_GetClientService);
@@ -171,19 +174,29 @@ public void OnPluginStart()
     g_Services = new ArrayList();
     g_SortedServiceFlags = new ArrayList();
     g_SortedServiceOverrides = new ArrayList(ByteCountToCells(MAX_SERVICE_OVERRIDE_SIZE));
+    g_Cookie_PrevWeapons = new Cookie("ultra_vip_weapons", "Previously Selected Weapons", CookieAccess_Private);
+    g_HudMessages = CreateHudSynchronizer();
 
-    Natives_OnPluginStart();
-
-    LoadTranslations("ultra_vip.phrases.txt");
+    g_Fwd_OnStart = new GlobalForward("UVIP_OnStart", ET_Ignore);
+    g_Fwd_OnReady = new GlobalForward("UVIP_OnReady", ET_Ignore);
+    g_Fwd_OnPostAdminCheck = new GlobalForward("UVIP_OnClientPostAdminCheck", ET_Ignore, Param_Cell, Param_Cell);
+    g_Fwd_OnDisconnect = new GlobalForward("UVIP_OnClientDisconnect", ET_Ignore, Param_Cell, Param_Cell);
+    g_Fwd_OnSpawn = new GlobalForward("UVIP_OnSpawn", ET_Ignore, Param_Cell, Param_Cell);
+    g_Fwd_OnSpawnWithService = new GlobalForward("UVIP_OnSpawnWithService", ET_Ignore, Param_Cell, Param_Cell);
 
     s_Cvar_MaxRounds = FindConVar("mp_maxrounds");
     if (s_Cvar_MaxRounds == null)
         SetFailState("Game is somehow missing the required \"mp_maxrounds\" ConVar.");
 
+    //g_Cvar_ArenaMode = CreateConVar("arena_mode", "0", "Should arena mode (splewis) be enabled?\nRemeber that plugin will use arena configuration file instead if enabled");
+
+    LoadTranslations("ultra_vip.phrases.txt");
+
+    Natives_OnPluginStart();
+
     RegConsoleCmd("sm_jumps", Command_ToggleJumps);
     RegConsoleCmd("sm_vips", Command_OnlineList);
     RegConsoleCmd("sm_vipbonus", Command_VipBonuses);
-
     RegAdminCmd("sm_reloadservices", Command_ReloadServices, ADMFLAG_ROOT, "Reloads configuration file");
 
     HookEvent("player_spawn", Event_PlayerSpawn);
@@ -196,50 +209,52 @@ public void OnPluginStart()
     HookEvent("round_end", Event_RoundEnd);
     HookEvent("weapon_fire", Event_WeaponFire);
     HookEvent("player_connect_full", Event_PlayerConnectFull);
+}
 
-    g_Fwd_OnStart = new GlobalForward("UVIP_OnStart", ET_Ignore);
-    g_Fwd_OnReady = new GlobalForward("UVIP_OnReady", ET_Ignore);
-    g_Fwd_OnPostAdminCheck = new GlobalForward("UVIP_OnClientPostAdminCheck", ET_Ignore, Param_Cell, Param_Cell);
-    g_Fwd_OnDisconnect = new GlobalForward("UVIP_OnClientDisconnected", ET_Ignore, Param_Cell, Param_Cell);
-    g_Fwd_OnSpawn = new GlobalForward("UVIP_OnSpawn", ET_Ignore, Param_Cell, Param_Cell);
-    g_Fwd_OnSpawnWithService = new GlobalForward("UVIP_OnSpawnWithService", ET_Ignore, Param_Cell, Param_Cell);
+public void OnAllPluginsLoaded()
+{
+    FindChatProcessor();
 
-	//g_Cvar_ArenaMode = CreateConVar("arena_mode", "0", "Should arena mode (splewis) be enabled?\nRemeber that plugin will use arena configuration file instead if enabled");
-
-    g_Cookie_PrevWeapons = new Cookie("ultra_vip_weapons", "Previously Selected Weapons", CookieAccess_Private);
-
+    // Must call OnStart here so modules are all loaded
     g_IsInOnStartForward = true;
     Call_StartForward(g_Fwd_OnStart);
     if (Call_Finish() != SP_ERROR_NONE)
         LogError("Failed to call UVIP_OnStart");
     g_IsInOnStartForward = false;
 
-    LoadConfig();
-    HandleLateLoad();
+    ReloadConfig(true, g_IsLateLoad);
 
     CreateTimer(ADMCACHE_RESCAN_INTERVAL, Timer_RescanServices, _, TIMER_REPEAT);
-
-    g_HudMessages = CreateHudSynchronizer();
 
     Call_StartForward(g_Fwd_OnReady);
     if (Call_Finish() != SP_ERROR_NONE)
         LogError("Failed to call UVIP_OnReady");
+
+    g_HaveAllPluginsLoaded = true; // Must set last. See comment at definition.
+}
+
+bool ReloadConfig(bool fatalError, bool notifyLateLoad)
+{
+    if (Config_Load(fatalError))
+    {
+        HandleLateLoad();
+        if (notifyLateLoad)
+            PrintToServer("[Ultra VIP] %t", "Late load warning");
+        return true;
+    }
+
+    return false;
 }
 
 static void HandleLateLoad()
 {
     /**
-     * NOTE / TODO: Lateloading is not properly supported.
+     * NOTE / TODO: Lateloading is not fully supported.
      * It doesn't handle Event_PlayerSpawn so players will not get bonuses until the next round.
      * Some other things may behave incorrectly or be completely broken.
      *
      * Otherwise, it does *try* to make sure the plugin will work correctly on the next round.
      */
-
-    if (!g_IsLateLoad)
-        return;
-
-    PrintToServer("[Ultra VIP] %T", "Late load warning", LANG_SERVER);
 
     for (int i = 1; i <= MaxClients; ++i)
     {
@@ -252,6 +267,13 @@ static void HandleLateLoad()
                 OnClientCookiesCached(i);
         }
     }
+}
+
+// For config.sp because of include ordering
+void ResetAllClientServices()
+{
+    for (int i = 0; i < sizeof(g_ClientService); ++i)
+        g_ClientService[i] = null;
 }
 
 public void OnMapStart()
@@ -280,7 +302,8 @@ public void OnClientCookiesCached(int client)
 
 public void OnClientPostAdminCheck(int client)
 {
-    // NOTE: This function must be callable from Timer_RescanServices without issues!
+    // NOTE: This function must be callable from Timer_RescanServices
+    // and Command_ReloadServices without issues!
 
     // Service must always be null if none is owned
     g_ClientService[client] = FindClientService(client);
@@ -296,19 +319,15 @@ public void OnClientPostAdminCheck(int client)
 
 public void OnClientDisconnect(int client)
 {
-    Bonus_LeaveMessage(client);
-
-    ExtraJump_OnClientDisconect(client);
-
-    // Call before unsetting g_ClientService
     CallServiceForward(g_Fwd_OnDisconnect, client, g_ClientService[client]);
 
-    g_ClientService[client] = null;
+    Bonus_LeaveMessage(client);
+    ExtraJump_OnClientDisconect(client);
+    WeaponMenu_ResetPreviousWeapons(client);
 
+    g_ClientService[client] = null;
     g_AdminCacheFlags[client] = 0;
     g_AdminCacheGroupCount[client] = 0;
-
-    WeaponMenu_ResetPreviousWeapons(client);
 }
 
 public Action Timer_RescanServices(Handle timer)
@@ -316,7 +335,7 @@ public Action Timer_RescanServices(Handle timer)
     /**
      * NOTE: Because of VIP plugins granting access via database, the admin
      * permissions aren't ready during OnClientPostAdminCheck.
-     * As of 1.11, there's no forward for when a client's admin permisisons change.
+     * As of 1.11, there's no forward for when a client's admin permissions change.
      *
      * So we must manually recheck it constantly.
      */
@@ -373,8 +392,8 @@ public Action Command_VipBonuses(int client, int args)
 
 public Action Command_ReloadServices(int client, int args)
 {
-    if(LoadConfig(false))
-        CReplyToCommand(client, "%t", "Config Reloaded");
+    if (ReloadConfig(false, false))
+        CPrintToChatAll("%t", "Ultra VIP reloaded config");
     else
     {
         CReplyToCommand(client, "%t", "Config Reload Error");
@@ -416,7 +435,7 @@ bool UpdateClientAdminCache(int client)
     int oldCount = g_AdminCacheGroupCount[client];
 
     g_AdminCacheFlags[client] = GetUserFlagBits(client);
-    g_AdminCacheGroupCount[client] = GetClientAdminGroupCount(client);
+    g_AdminCacheGroupCount[client] = GetClientAdminGroupCount(client); // TODO / BUG: DOESNT WORK IF YOU ONLY CHANGE OVERRIDES REEE
 
     return oldFlags != g_AdminCacheFlags[client] || oldCount != g_AdminCacheGroupCount[client];
 }
@@ -556,7 +575,7 @@ void CallServiceForward(GlobalForward fwd, int client, Service svc)
         LogError("Failed to call forward.");
 }
 
-public void OnAllPluginsLoaded()
+void FindChatProcessor()
 {
     if (LibraryExists("scp"))
     {

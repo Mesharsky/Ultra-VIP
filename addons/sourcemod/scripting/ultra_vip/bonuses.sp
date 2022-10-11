@@ -32,7 +32,7 @@
 void Bonus_OnMapStart()
 {
     int entity = -1;
-    if ((entity = FindEntityByClassname(entity, "func_hostage_rescue")) == -1) 
+    if ((entity = FindEntityByClassname(entity, "func_hostage_rescue")) == -1)
     {
         entity = CreateEntityByName("func_hostage_rescue");
         DispatchKeyValue(entity, "targetname", "fake_hostage_rescue");
@@ -360,8 +360,8 @@ void Bonus_RespawnPlayer(int client)
         return;
 
     if (!IsRoundAllowed(svc.BonusPlayerRespawnPercentRound))
-        return;  
-    
+        return;
+
     if (!CanRespawn(client))
         return;
 
@@ -402,7 +402,7 @@ static bool CanRespawn(int client)
         return false;
 
     if (GetEntProp(client, Prop_Send, "m_bIsControllingBot"))
-        return false;   
+        return false;
 
     if (GameRules_GetProp("m_bBombPlanted"))
     {

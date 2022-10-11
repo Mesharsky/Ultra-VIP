@@ -73,9 +73,6 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool bDontBroadcas
 {
     int client = GetClientOfUserId(event.GetInt("userid"));
 
-    if (!IsOnPlayingTeam(client))
-        return;
-
     // NOTE: Delay spawn events to force them to occur after round_start
     // TODO: Find better method?
     // stupid janky bastard engine
@@ -168,7 +165,7 @@ public void Event_PlayerDeath(Event event, const char[] name, bool bDontBroadcas
         return;
 
     if (ClientsAreTeammates(attacker, victim))
-        return;   
+        return;
 
     // Award Money Bonuses
     Bonus_KillMoney(attacker, svcAttacker);
@@ -240,7 +237,7 @@ public void Event_WeaponFire(Event event, const char[] name, bool bDontBroadcast
 {
     if (!IsFeatureAvailable(Feature_UnlimitedAmmo))
         return;
-        
+
     int client = GetClientOfUserId(event.GetInt("userid"));
     int weapon = GetEntPropEnt(client, Prop_Data, "m_hActiveWeapon");
 
@@ -326,7 +323,7 @@ public void Hook_OnClientThink(int client)
     if (activeWeapon != -1 && IsValidEdict(activeWeapon))
     {
         SetEntPropFloat(activeWeapon, Prop_Send, "m_fAccuracyPenalty", -5000000.0);
-        
+
         SetEntPropVector(client, Prop_Send, "m_viewPunchAngle", view_as<float>({0.0, 0.0, 0.0}));
         SetEntPropVector(client, Prop_Send, "m_aimPunchAngle", view_as<float>({0.0, 0.0, 0.0}));
         SetEntPropVector(client, Prop_Send, "m_aimPunchAngleVel", view_as<float>({0.0, 0.0, 0.0}));

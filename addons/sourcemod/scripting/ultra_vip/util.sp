@@ -450,7 +450,7 @@ int GetClientAdminGroupCount(int client)
     if (id == INVALID_ADMIN_ID)
         return 0;
 
-    return GetAdminGroupCount(id);
+    return id.GroupCount;
 }
 
 any _MAX(any a, any b)
@@ -516,5 +516,16 @@ stock bool IsPluginLoaded(Handle plugin)
     }
 
     delete it;
+    return false;
+}
+
+bool KvContainsSubKey(KeyValues kv, const char[] key)
+{
+    if (kv.JumpToKey(key))
+    {
+        kv.GoBack();
+        return true;
+    }
+
     return false;
 }

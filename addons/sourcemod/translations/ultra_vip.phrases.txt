@@ -5,7 +5,7 @@
         "#format"   "{1:i}"
         "en"    "Loaded {1} services"
     }
-    
+
     "Chat Processor Loaded"
     {
         "#format"   "{1:s}"
@@ -20,13 +20,18 @@
     {
         "en"    "Warning: Don't late-load Ultra-VIP. The plugin may not work correctly if loaded while the server is running. Some things will work on the next round."
     }
-    "Config Reloaded"
-    {
-        "en"    "Configuration file has been {green}Successfuly Reloaded"
-    }
     "Config Reload Error"
     {
-        "en"    "There is some problem with reloading configuration file. {darkred}Check for error logs"
+        "en"    "There was problem while reloading the config file. {darkred}Check the error logs."
+    }
+    "Module triggered reload"
+    {
+        "#format" "{1:s}"
+        "en"    "Config reloaded due to late-loaded module '{1}'."
+    }
+    "Ultra VIP reloaded config"
+    {
+        "en"    "{lightred}Ultra-VIP{default} has been reloaded. Bonuses will apply next round."
     }
 
     "Weapon Menu Title"

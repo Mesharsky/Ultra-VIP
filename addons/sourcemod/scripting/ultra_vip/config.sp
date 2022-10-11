@@ -47,7 +47,9 @@ StringMap g_SteamIDServices;    // Maps SteamID2 to Service handle (g_Services)
 
 static int s_UsedServiceFlags;
 static StringMap s_UsedServiceOverrides;
+static bool s_IsInheritOnlyPass;
 
+#define CONFIG_PATH "configs/ultra_vip_main.cfg"
 #define ONLINE_CMD_SEPARATOR ";"
 #define ONLINE_CMD_STRING_MAXLENGTH 512
 
@@ -77,44 +79,14 @@ static void ResetAllServices()
     }
 
     g_Services.Clear();
+
+    ResetAllClientServices();
 }
 
-static bool HandleError(Handle &hndl, bool isFatal, const char[] fmt, any ...)
-{
-    int len = strlen(fmt) + 512;
-    char[] formatted = new char[len];
-    VFormat(formatted, len, fmt, 4);
-
-    if (isFatal)
-        SetFailState(formatted);
-    else
-        LogError(formatted);
-
-    delete hndl;
-    return false;
-}
-
-static bool HandleErrorAndGoBack(KeyValues kv, Service &hndl, bool isFatal, const char[] fmt, any ...)
-{
-    int len = strlen(fmt) + 512;
-    char[] formatted = new char[len];
-    VFormat(formatted, len, fmt, 5);
-
-    if (isFatal)
-        SetFailState(formatted);
-    else
-        LogError(formatted);
-
-    Service_Delete(hndl);
-
-    kv.GoBack();
-    return false;
-}
-
-bool LoadConfig(bool fatalError = true)
+bool Config_Load(bool fatalError = true)
 {
     char path[PLATFORM_MAX_PATH];
-    BuildPath(Path_SM, path, sizeof(path), "configs/ultra_vip_main.cfg");
+    BuildPath(Path_SM, path, sizeof(path), CONFIG_PATH);
 
     KeyValues kv = new KeyValues("UltraVIP - Configuration");
     if (!kv.ImportFromFile(path))
@@ -130,47 +102,84 @@ bool LoadConfig(bool fatalError = true)
     if (!kv.GotoFirstSubKey())
         return HandleError(kv, fatalError, "There are no valid services in the config.");
 
+    // Add first service to traversal stack again so we can do a second pass
+    kv.SavePosition();
+
     char serviceName[MAX_SERVICE_NAME_SIZE|MAX_SERVICE_OVERRIDE_SIZE]; // Cheeky MAX()
-    do
+    char inheritSvcName[MAX_SERVICE_NAME_SIZE];
+
+    s_IsInheritOnlyPass = false;
+
+    for (int i = 0; i < 2; ++i)
     {
-        kv.GetSectionName(serviceName, sizeof(serviceName));
+        do
+        {
+            inheritSvcName[0] = '\0';
+            kv.GetSectionName(serviceName, sizeof(serviceName));
 
-        if (!IsServiceEnabled(kv))
-            continue;
+            // Inheriting services still need to set "service_enabled"
+            if (!IsServiceEnabled(kv))
+                continue;
 
-        Service svc = new Service(serviceName);
+            // Only allow inheriting-services in the inherit pass, and vice versa
+            if (s_IsInheritOnlyPass != IsInheritingService(kv, inheritSvcName, sizeof(inheritSvcName)))
+                continue;
 
-        // svc automatically deleted on fail
-        // kv is NOT because we need to process the next Service
-        if (!ProcessMainConfiguration(kv, svc, fatalError, serviceName))
-            continue;
-        if (!ProcessPlayerSpawnBonuses(kv, svc, fatalError, serviceName))
-            continue;
-        if (!ProcessPlayerGrenadesOnSpawn(kv, svc, fatalError, serviceName))
-            continue;
-        if (!ProcessSpecialBonuses(kv, svc, fatalError, serviceName))
-            continue;
-        if (!ProcessEventMoneyBonuses(kv, svc, fatalError, serviceName))
-            continue;
-        if (!ProcessEventHPBonuses(kv, svc, fatalError, serviceName))
-            continue;
-        if (!ProcessChatWelcomeLeaveMessages(kv, svc, fatalError, serviceName))
-            continue;
-        if (!ProcessHudWelcomeLeaveMessages(kv, svc, fatalError, serviceName))
-            continue;
+            // Create new service (blocking duplicates)
+            Service svc;
+            if (FindServiceByName(serviceName, false) != null)
+            {
+                HandleError(svc, fatalError, "Service \"%s\" already exists. Cannot re-use the same service name.", serviceName);
+                continue;
+            }
 
-        if (!ProcessWeapons(kv, svc, fatalError, serviceName))
-            continue;
+            if (s_IsInheritOnlyPass)
+                svc = Service_CloneByName(serviceName, inheritSvcName, false);
+            else
+                svc = new Service(serviceName);
 
-        g_Services.Push(svc);
+            if (svc == null)
+            {
+                HandleError(svc, fatalError, "Service \"%s\" could not inherit from unknown service \"%s\". Either the name is invalid, or the order in the config is incorrect.", serviceName, inheritSvcName);
+                continue;
+            }
 
-        s_UsedServiceFlags |= svc.Flag;
+            // svc automatically deleted on fail
+            // kv is NOT because we need to process the next Service
+            if (!ProcessMainConfiguration(kv, svc, fatalError, serviceName))
+                continue;
+            if (!ProcessPlayerSpawnBonuses(kv, svc, fatalError, serviceName))
+                continue;
+            if (!ProcessPlayerGrenadesOnSpawn(kv, svc, fatalError, serviceName))
+                continue;
+            if (!ProcessSpecialBonuses(kv, svc, fatalError, serviceName))
+                continue;
+            if (!ProcessEventMoneyBonuses(kv, svc, fatalError, serviceName))
+                continue;
+            if (!ProcessEventHPBonuses(kv, svc, fatalError, serviceName))
+                continue;
+            if (!ProcessChatWelcomeLeaveMessages(kv, svc, fatalError, serviceName))
+                continue;
+            if (!ProcessHudWelcomeLeaveMessages(kv, svc, fatalError, serviceName))
+                continue;
 
-        svc.GetOverride(serviceName, sizeof(serviceName));
-        if (serviceName[0])
-            s_UsedServiceOverrides.SetValue(serviceName, 0);
+            if (!ProcessWeapons(kv, svc, fatalError, serviceName))
+                continue;
+
+            g_Services.Push(svc);
+
+            s_UsedServiceFlags |= svc.Flag;
+
+            svc.GetOverride(serviceName, sizeof(serviceName));
+            if (serviceName[0])
+                s_UsedServiceOverrides.SetValue(serviceName, 0);
+        }
+        while (kv.GotoNextKey());
+
+        // Start second config pass
+        kv.GoBack(); // To first service
+        s_IsInheritOnlyPass = true;
     }
-    while (kv.GotoNextKey());
 
     delete s_UsedServiceOverrides;
 
@@ -358,6 +367,16 @@ static bool _SetCvarIfHigher(const char[] cvarName, int amount)
     return true;
 }
 
+static bool IsInheritingService(KeyValues kv, char[] serviceNameOut, int size)
+{
+    if (!kv.JumpToKey("Main Configuration"))
+        return false;
+
+    kv.GetString("inherit_from_service", serviceNameOut, size);
+    kv.GoBack();
+    return serviceNameOut[0] != '\0';
+}
+
 static bool IsServiceEnabled(KeyValues kv)
 {
     if (!kv.JumpToKey("Main Configuration"))
@@ -368,6 +387,11 @@ static bool IsServiceEnabled(KeyValues kv)
     return result;
 }
 
+static bool CanGetKey(KeyValues kv, const char[] key)
+{
+    return (!s_IsInheritOnlyPass || (s_IsInheritOnlyPass && KvContainsSubKey(kv, key)));
+}
+
 static bool ProcessMainConfiguration(KeyValues kv, Service svc, bool fatalError, const char[] serviceName)
 {
     if (!kv.JumpToKey("Main Configuration"))
@@ -376,40 +400,76 @@ static bool ProcessMainConfiguration(KeyValues kv, Service svc, bool fatalError,
     char buffer[MAX_SERVICE_OVERRIDE_SIZE + 64];
 
     // Flags MUST be unique per service or FindServiceByFlagAccess wont work
-    kv.GetString("flag", buffer, sizeof(buffer));
-    int flag = ReadFlagString(buffer);
-    if (!HasOnlySingleBit(flag))
-        return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is not allowed to have multiple admin flags.", serviceName);
-    if (s_UsedServiceFlags & flag)
-        return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is using admin flag '%s' which is in use by another service.", serviceName, buffer);
-    if (flag & ADMFLAG_ROOT)
-        return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is not allowed to have the ROOT flag (z). Use \"root_service\" instead.", serviceName);
+    if (CanGetKey(kv, "flag"))
+    {
+        kv.GetString("flag", buffer, sizeof(buffer));
+        int flag = ReadFlagString(buffer); // No flag is ignored by ifs below
+        if (flag && !HasOnlySingleBit(flag))
+            return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is not allowed to have multiple admin flags.", serviceName);
+        if (s_UsedServiceFlags & flag)
+            return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is using admin flag '%s' which is in use by another service.", serviceName, buffer);
+        if (flag & ADMFLAG_ROOT)
+            return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is not allowed to have the ROOT flag (z). Use \"root_service\" instead.", serviceName);
 
-    svc.Flag = flag;
+        svc.Flag = flag;
+    }
+    else if (s_IsInheritOnlyPass)
+    {
+        // Make sure we're not defaulting to an in-use flag when inheriting a service
+        int flag = svc.Flag;
+        if (flag & s_UsedServiceFlags || flag != 0)
+           return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" cannot use the same admin flag as the service it is inheriting from.", serviceName);
+    }
+
+
+    // Overrides must be unique per service or FindServiceByOverrideAccess wont work
+    if (CanGetKey(kv, "override"))
+    {
+        kv.GetString("override", buffer, sizeof(buffer));
+        if (buffer[0] && s_UsedServiceOverrides.ContainsKey(buffer))
+            return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is using admin override '%s' which is in use by another service.", serviceName, buffer);
+        svc.SetOverride(buffer);
+    }
+    else if (s_IsInheritOnlyPass)
+    {
+        // Make sure we're not defaulting to an in-use override when inheriting a service
+        svc.GetOverride(buffer, sizeof(buffer));
+        if (s_UsedServiceOverrides.ContainsKey(buffer) || buffer[0])
+            return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" cannot use the same override as the service it is inheriting from.", serviceName);
+    }
+
 
     // s_UsedServiceFlags and s_UsedServiceOverrides are updated when
     // the service is pushed to g_Services
 
-    svc.Priority = kv.GetNum("priority", 0);
 
-    // Overrides must be unique per service or FindServiceByOverrideAccess wont work
-    kv.GetString("override", buffer, sizeof(buffer));
-    if (buffer[0] && s_UsedServiceOverrides.ContainsKey(buffer))
-        return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is using admin override '%s' which is in use by another service.", serviceName, buffer);
-    svc.SetOverride(buffer);
+    if (CanGetKey(kv, "priority"))
+        svc.Priority = kv.GetNum("priority", 0);
 
-    kv.GetString("chat_tag", buffer, sizeof(buffer));
-    svc.SetChatTag(buffer);
+    if (CanGetKey(kv, "chat_tag"))
+    {
+        kv.GetString("chat_tag", buffer, sizeof(buffer));
+        svc.SetChatTag(buffer);
+    }
 
-    kv.GetString("chat_name_color", buffer, sizeof(buffer));
-    ReplaceString(buffer, sizeof(buffer), "{teamcolor}", "\x03");
-    svc.SetChatNameColor(buffer);
+    if (CanGetKey(kv, "chat_name_color"))
+    {
+        kv.GetString("chat_name_color", buffer, sizeof(buffer));
+        ReplaceString(buffer, sizeof(buffer), "{teamcolor}", "\x03");
+        svc.SetChatNameColor(buffer);
+    }
 
-    kv.GetString("chat_message_color", buffer, sizeof(buffer));
-    svc.SetChatMsgColor(buffer);
+    if (CanGetKey(kv, "chat_message_color"))
+    {
+        kv.GetString("chat_message_color", buffer, sizeof(buffer));
+        svc.SetChatMsgColor(buffer);
+    }
 
-    kv.GetString("scoreboard_tag", buffer, sizeof(buffer));
-    svc.SetScoreboardTag(buffer);
+    if (CanGetKey(kv, "scoreboard_tag"))
+    {
+        kv.GetString("scoreboard_tag", buffer, sizeof(buffer));
+        svc.SetScoreboardTag(buffer);
+    }
 
     if (!Config_ProcessSteamIDAccess(kv, svc, fatalError, serviceName))
     {
@@ -423,8 +483,10 @@ static bool ProcessMainConfiguration(KeyValues kv, Service svc, bool fatalError,
 
 static bool Config_ProcessSteamIDAccess(KeyValues kv, Service svc, bool fatalError, const char[] serviceName)
 {
+#warning This was HandleErrorAndGoBack before but i think thats wrong, so test it
+
     if (!kv.JumpToKey("SteamID Access"))
-        return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is missing secttion \"SteamID Access\".", serviceName);
+        return s_IsInheritOnlyPass ? true : HandleError(svc, fatalError, "Service \"%s\" is missing secttion \"SteamID Access\".", serviceName);
 
     if (!kv.GotoFirstSubKey(false))
     {
@@ -482,21 +544,31 @@ static void Config_RemoveSteamIDsForService(Service svc)
 static bool ProcessPlayerSpawnBonuses(KeyValues kv, Service svc, bool fatalError, const char[] serviceName)
 {
     if (!kv.JumpToKey("Player Spawn Bonuses"))
-        return HandleError(svc, fatalError, "Service \"%s\" is missing section \"Player Spawn Bonuses\".", serviceName);
+        return s_IsInheritOnlyPass ? true : HandleError(svc, fatalError, "Service \"%s\" is missing section \"Player Spawn Bonuses\".", serviceName);
 
-    svc.BonusPlayerHealth = kv.GetNum("player_hp", 105);
-    svc.BonusPlayerHealthRound = kv.GetNum("player_hp_round", 1);
-    svc.BonusMaxPlayerHealth = kv.GetNum("player_max_hp", 110);
+    if (CanGetKey(kv, "player_hp"))
+        svc.BonusPlayerHealth = kv.GetNum("player_hp", 105);
+    if (CanGetKey(kv, "player_hp_round"))
+        svc.BonusPlayerHealthRound = kv.GetNum("player_hp_round", 1);
+    if (CanGetKey(kv, "player_max_hp"))
+        svc.BonusMaxPlayerHealth = kv.GetNum("player_max_hp", 110);
 
-    svc.BonusArmorEnabled = view_as<bool>(kv.GetNum("player_vest", 1));
-    svc.BonusArmor = kv.GetNum("player_vest_value", 100);
-    svc.BonusArmorRound = kv.GetNum("player_vest_round", 2);
+    if (CanGetKey(kv, "player_vest"))
+        svc.BonusArmorEnabled = view_as<bool>(kv.GetNum("player_vest", 1));
+    if (CanGetKey(kv, "player_vest_value"))
+        svc.BonusArmor = kv.GetNum("player_vest_value", 100);
+    if (CanGetKey(kv, "player_vest_round"))
+        svc.BonusArmorRound = kv.GetNum("player_vest_round", 2);
 
-    svc.BonusHelmetEnabled = view_as<bool>(kv.GetNum("player_helmet", 1));
-    svc.BonusHelmetRound = kv.GetNum("player_helmet_round", 2);
+    if (CanGetKey(kv, "player_helmet"))
+        svc.BonusHelmetEnabled = view_as<bool>(kv.GetNum("player_helmet", 1));
+    if (CanGetKey(kv, "player_helmet_round"))
+        svc.BonusHelmetRound = kv.GetNum("player_helmet_round", 2);
 
-    svc.BonusDefuserEnabled = view_as<bool>(kv.GetNum("player_defuser", 1));
-    svc.BonusDefuserRound = kv.GetNum("player_defuser_round", 2);
+    if (CanGetKey(kv, "player_defuser"))
+        svc.BonusDefuserEnabled = view_as<bool>(kv.GetNum("player_defuser", 1));
+    if (CanGetKey(kv, "player_defuser_round"))
+        svc.BonusDefuserRound = kv.GetNum("player_defuser_round", 2);
 
     kv.GoBack(); // To service name
     return true;
@@ -505,29 +577,60 @@ static bool ProcessPlayerSpawnBonuses(KeyValues kv, Service svc, bool fatalError
 static bool ProcessPlayerGrenadesOnSpawn(KeyValues kv, Service svc, bool fatalError, const char[] serviceName)
 {
     if (!kv.JumpToKey("Grenades On Spawn"))
-        return HandleError(svc, fatalError, "Service \"%s\" is missing section \"Grenades On Spawn\".", serviceName);
+        return s_IsInheritOnlyPass ? true : HandleError(svc, fatalError, "Service \"%s\" is missing section \"Grenades On Spawn\".", serviceName);
 
-    svc.ShouldStripConsumables = view_as<bool>(kv.GetNum("strip_grenades", 0));
-    svc.BonusHEGrenades = kv.GetNum("he_amount", 1);
-    svc.BonusHEGrenadesRound = kv.GetNum("he_round", 1);
-    svc.BonusFlashGrenades = kv.GetNum("flash_amount", 1);
-    svc.BonusFlashGrenadesRound = kv.GetNum("flash_round", 1);
-    svc.BonusSmokeGrenades = kv.GetNum("smoke_amount", 1);
-    svc.BonusSmokeGrenadesRound = kv.GetNum("smoke_round", 1);
-    svc.BonusDecoyGrenades = kv.GetNum("decoy_amount", 0);
-    svc.BonusDecoyGrenadesRound = kv.GetNum("decoy_round", 1);
-    svc.BonusMolotovGrenades = kv.GetNum("molotov_amount", 0);
-    svc.BonusMolotovGrenadesRound = kv.GetNum("molotov_round", 1);
-    svc.BonusHealthshotGrenades = kv.GetNum("healthshot_amount", 0);
-    svc.BonusHealthshotGrenadesRound = kv.GetNum("healthshot_round", 3);
-    svc.BonusTacticalGrenades = kv.GetNum("tag_amount", 0);
-    svc.BonusTacticalGrenadesRound = kv.GetNum("tag_round", 1);
-    svc.BonusSnowballGrenades = kv.GetNum("snowball_amount", 0);
-    svc.BonusSnowballGrenadesRound = kv.GetNum("snowball_round", 1);
-    svc.BonusBreachchargeGrenades = kv.GetNum("breachcharge_amount", 0);
-    svc.BonusBreachchargeGrenadesRound = kv.GetNum("breachcharge_round", 1);
-    svc.BonusBumpmineGrenades = kv.GetNum("bumpmine_amount", 0);
-    svc.BonusBumpmineGrenadesRound = kv.GetNum("bumpmine_round", 1);
+    if (CanGetKey(kv, "strip_grenades"))
+        svc.ShouldStripConsumables = view_as<bool>(kv.GetNum("strip_grenades", 0));
+
+    if (CanGetKey(kv, "he_amount"))
+        svc.BonusHEGrenades = kv.GetNum("he_amount", 1);
+    if (CanGetKey(kv, "he_round"))
+        svc.BonusHEGrenadesRound = kv.GetNum("he_round", 1);
+
+    if (CanGetKey(kv, "flash_amount"))
+        svc.BonusFlashGrenades = kv.GetNum("flash_amount", 1);
+    if (CanGetKey(kv, "flash_round"))
+        svc.BonusFlashGrenadesRound = kv.GetNum("flash_round", 1);
+
+    if (CanGetKey(kv, "smoke_amount"))
+        svc.BonusSmokeGrenades = kv.GetNum("smoke_amount", 1);
+    if (CanGetKey(kv, "smoke_round"))
+        svc.BonusSmokeGrenadesRound = kv.GetNum("smoke_round", 1);
+
+    if (CanGetKey(kv, "decoy_amount"))
+        svc.BonusDecoyGrenades = kv.GetNum("decoy_amount", 0);
+    if (CanGetKey(kv, "decoy_round"))
+        svc.BonusDecoyGrenadesRound = kv.GetNum("decoy_round", 1);
+
+    if (CanGetKey(kv, "molotov_amount"))
+        svc.BonusMolotovGrenades = kv.GetNum("molotov_amount", 0);
+    if (CanGetKey(kv, "molotov_round"))
+        svc.BonusMolotovGrenadesRound = kv.GetNum("molotov_round", 1);
+
+    if (CanGetKey(kv, "healthshot_amount"))
+        svc.BonusHealthshotGrenades = kv.GetNum("healthshot_amount", 0);
+    if (CanGetKey(kv, "healthshot_round"))
+        svc.BonusHealthshotGrenadesRound = kv.GetNum("healthshot_round", 3);
+
+    if (CanGetKey(kv, "tag_amount"))
+        svc.BonusTacticalGrenades = kv.GetNum("tag_amount", 0);
+    if (CanGetKey(kv, "tag_round"))
+        svc.BonusTacticalGrenadesRound = kv.GetNum("tag_round", 1);
+
+    if (CanGetKey(kv, "snowball_amount"))
+        svc.BonusSnowballGrenades = kv.GetNum("snowball_amount", 0);
+    if (CanGetKey(kv, "snowball_round"))
+        svc.BonusSnowballGrenadesRound = kv.GetNum("snowball_round", 1);
+
+    if (CanGetKey(kv, "breachcharge_amount"))
+        svc.BonusBreachchargeGrenades = kv.GetNum("breachcharge_amount", 0);
+    if (CanGetKey(kv, "breachcharge_round"))
+        svc.BonusBreachchargeGrenadesRound = kv.GetNum("breachcharge_round", 1);
+
+    if (CanGetKey(kv, "bumpmine_amount"))
+        svc.BonusBumpmineGrenades = kv.GetNum("bumpmine_amount", 0);
+    if (CanGetKey(kv, "bumpmine_round"))
+        svc.BonusBumpmineGrenadesRound = kv.GetNum("bumpmine_round", 1);
 
     kv.GoBack(); // To service name
     return true;
@@ -536,43 +639,68 @@ static bool ProcessPlayerGrenadesOnSpawn(KeyValues kv, Service svc, bool fatalEr
 static bool ProcessSpecialBonuses(KeyValues kv, Service svc, bool fatalError, const char[] serviceName)
 {
     if (!kv.JumpToKey("Special Bonuses"))
-        return HandleError(svc, fatalError, "Service \"%s\" is missing section \"Special Bonuses\".", serviceName);
+        return s_IsInheritOnlyPass ? true : HandleError(svc, fatalError, "Service \"%s\" is missing section \"Special Bonuses\".", serviceName);
 
-    svc.BonusExtraJumps = kv.GetNum("player_extra_jumps", 1);
-    svc.BonusJumpHeight = kv.GetFloat("player_extra_jump_height", EXTRAJUMP_DEFAULT_HEIGHT);
-    svc.BonusExtraJumpsRound = kv.GetNum("player_extra_jumps_round", 1);
-    svc.BonusExtraJumpsTakeFallDamage = view_as<bool>(kv.GetNum("player_extra_jumps_falldamage", 1));
+    if (CanGetKey(kv, "player_extra_jumps"))
+        svc.BonusExtraJumps = kv.GetNum("player_extra_jumps", 1);
+    if (CanGetKey(kv, "player_extra_jump_height"))
+        svc.BonusJumpHeight = kv.GetFloat("player_extra_jump_height", EXTRAJUMP_DEFAULT_HEIGHT);
+    if (CanGetKey(kv, "player_extra_jumps_round"))
+        svc.BonusExtraJumpsRound = kv.GetNum("player_extra_jumps_round", 1);
+    if (CanGetKey(kv, "player_extra_jumps_falldamage"))
+        svc.BonusExtraJumpsTakeFallDamage = view_as<bool>(kv.GetNum("player_extra_jumps_falldamage", 1));
 
-    svc.BonusPlayerShield = view_as<bool>(kv.GetNum("player_shield", 0));
-    svc.BonusPlayerShieldRound = kv.GetNum("player_shield_round", 1);
+    if (CanGetKey(kv, "player_shield"))
+        svc.BonusPlayerShield = view_as<bool>(kv.GetNum("player_shield", 0));
+    if (CanGetKey(kv, "player_shield_round"))
+        svc.BonusPlayerShieldRound = kv.GetNum("player_shield_round", 1);
 
-    svc.BonusPlayerGravity = kv.GetFloat("player_gravity", 1.0);
-    svc.BonusPlayerGravityRound = kv.GetNum("player_gravity_round", 1);
+    if (CanGetKey(kv, "player_gravity"))
+        svc.BonusPlayerGravity = kv.GetFloat("player_gravity", 1.0);
+    if (CanGetKey(kv, "player_gravity_round"))
+        svc.BonusPlayerGravityRound = kv.GetNum("player_gravity_round", 1);
 
-    svc.BonusPlayerSpeed = kv.GetFloat("player_speed", 1.0);
-    svc.BonusPlayerSpeedRound = kv.GetNum("player_speed_round", 1);
+    if (CanGetKey(kv, "player_speed"))
+        svc.BonusPlayerSpeed = kv.GetFloat("player_speed", 1.0);
+    if (CanGetKey(kv, "player_speed_round"))
+        svc.BonusPlayerSpeedRound = kv.GetNum("player_speed_round", 1);
 
-    svc.BonusPlayerVisibility = kv.GetNum("player_visibility", 255);
-    svc.BonusPlayerVisibilityRound = kv.GetNum("player_visibility_round", 1);
+    if (CanGetKey(kv, "player_visibility"))
+        svc.BonusPlayerVisibility = kv.GetNum("player_visibility", 255);
+    if (CanGetKey(kv, "player_visibility_round"))
+        svc.BonusPlayerVisibilityRound = kv.GetNum("player_visibility_round", 1);
 
-    svc.BonusPlayerRespawnPercent = kv.GetNum("player_respawn_percent", 0);
-    svc.BonusPlayerRespawnPercentRound = kv.GetNum("player_respawn_round", 3);
-    svc.BonusPlayerRespawnPercentNotify = view_as<bool>(kv.GetNum("player_respawn_notify", 0));
+    if (CanGetKey(kv, "player_respawn_percent"))
+        svc.BonusPlayerRespawnPercent = kv.GetNum("player_respawn_percent", 0);
+    if (CanGetKey(kv, "player_respawn_round"))
+        svc.BonusPlayerRespawnPercentRound = kv.GetNum("player_respawn_round", 3);
+    if (CanGetKey(kv, "player_respawn_notify"))
+        svc.BonusPlayerRespawnPercentNotify = view_as<bool>(kv.GetNum("player_respawn_notify", 0));
 
-    svc.BonusPlayerFallDamagePercent = kv.GetNum("player_fall_damage_percent", 100);
-    svc.BonusPlayerFallDamagePercentRound = kv.GetNum("player_fall_damage_round", 1);
+    if (CanGetKey(kv, "player_fall_damage_percent"))
+        svc.BonusPlayerFallDamagePercent = kv.GetNum("player_fall_damage_percent", 100);
+    if (CanGetKey(kv, "player_fall_damage_round"))
+        svc.BonusPlayerFallDamagePercentRound = kv.GetNum("player_fall_damage_round", 1);
 
-    svc.BonusPlayerAttackDamage = kv.GetNum("player_attack_damage", 100);
-    svc.BonusPlayerAttackDamageRound = kv.GetNum("player_attack_damage_round", 3);
+    if (CanGetKey(kv, "player_attack_damage"))
+        svc.BonusPlayerAttackDamage = kv.GetNum("player_attack_damage", 100);
+    if (CanGetKey(kv, "player_attack_damage_round"))
+        svc.BonusPlayerAttackDamageRound = kv.GetNum("player_attack_damage_round", 3);
 
-    svc.BonusPlayerDamageResist = kv.GetNum("player_damage_resist", 0);
-    svc.BonusPlayerDamageResistRound = kv.GetNum("player_damage_resist_round", 3);
+    if (CanGetKey(kv, "player_damage_resist"))
+        svc.BonusPlayerDamageResist = kv.GetNum("player_damage_resist", 0);
+    if (CanGetKey(kv, "player_damage_resist_round"))
+        svc.BonusPlayerDamageResistRound = kv.GetNum("player_damage_resist_round", 3);
 
-    svc.BonusUnlimitedAmmo = view_as<bool>(kv.GetNum("player_unlimited_ammo", 0));
-    svc.BonusUnlimitedAmmoRound = kv.GetNum("player_unlimited_ammo_round", 1);
+    if (CanGetKey(kv, "player_unlimited_ammo"))
+        svc.BonusUnlimitedAmmo = view_as<bool>(kv.GetNum("player_unlimited_ammo", 0));
+    if (CanGetKey(kv, "player_unlimited_ammo_round"))
+        svc.BonusUnlimitedAmmoRound = kv.GetNum("player_unlimited_ammo_round", 1);
 
-    svc.BonusNoRecoil = view_as<bool>(kv.GetNum("player_no_recoil", 0));
-    svc.BonusNoRecoilRound = kv.GetNum("player_no_recoil_round", 1);
+    if (CanGetKey(kv, "player_no_recoil"))
+        svc.BonusNoRecoil = view_as<bool>(kv.GetNum("player_no_recoil", 0));
+    if (CanGetKey(kv, "player_no_recoil_round"))
+        svc.BonusNoRecoilRound = kv.GetNum("player_no_recoil_round", 1);
 
     kv.GoBack(); // Service name
     return true;
@@ -581,58 +709,94 @@ static bool ProcessSpecialBonuses(KeyValues kv, Service svc, bool fatalError, co
 static bool ProcessEventMoneyBonuses(KeyValues kv, Service svc, bool fatalError, const char[] serviceName)
 {
     if (!kv.JumpToKey("Events Bonuses"))
-        return HandleError(svc, fatalError, "Service \"%s\" is missing section \"Events Bonuses\".", serviceName);
+        return s_IsInheritOnlyPass ? true : HandleError(svc, fatalError, "Service \"%s\" is missing section \"Events Bonuses\".", serviceName);
 
     if (!kv.JumpToKey("Money"))
-        return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is missing section \"Money\".", serviceName);
+        return s_IsInheritOnlyPass ? GoBackReturnTrue(kv) : HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is missing section \"Money\".", serviceName);
 
-    svc.BonusSpawnMoney = kv.GetNum("spawn_bonus", 0);
-    svc.BonusSpawnMoneyRound = kv.GetNum("spawn_bonus_round", 1);
-    svc.BonusSpawnMoneyNotify = view_as<bool>(kv.GetNum("spawn_bonus_chat", 0));
+    if (CanGetKey(kv, "spawn_bonus"))
+        svc.BonusSpawnMoney = kv.GetNum("spawn_bonus", 0);
+    if (CanGetKey(kv, "spawn_bonus_round"))
+        svc.BonusSpawnMoneyRound = kv.GetNum("spawn_bonus_round", 1);
+    if (CanGetKey(kv, "spawn_bonus_chat"))
+        svc.BonusSpawnMoneyNotify = view_as<bool>(kv.GetNum("spawn_bonus_chat", 0));
 
-    svc.BonusKillMoney = kv.GetNum("kill_bonus", 0);
-    svc.BonusKillMoneyRound = kv.GetNum("kill_bonus_round", 1);
-    svc.BonusKillMoneyNotify = view_as<bool>(kv.GetNum("kill_bonus_chat", 0));
+    if (CanGetKey(kv, "kill_bonus"))
+        svc.BonusKillMoney = kv.GetNum("kill_bonus", 0);
+    if (CanGetKey(kv, "kill_bonus_round"))
+        svc.BonusKillMoneyRound = kv.GetNum("kill_bonus_round", 1);
+    if (CanGetKey(kv, "kill_bonus_chat"))
+        svc.BonusKillMoneyNotify = view_as<bool>(kv.GetNum("kill_bonus_chat", 0));
 
-    svc.BonusAssistMoney = kv.GetNum("assist_bonus", 0);
-    svc.BonusAssistMoneyRound = kv.GetNum("assist_bonus_round", 1);
-    svc.BonusAssistMoneyNotify = view_as<bool>(kv.GetNum("assist_bonus_chat", 0));
+    if (CanGetKey(kv, "assist_bonus"))
+        svc.BonusAssistMoney = kv.GetNum("assist_bonus", 0);
+    if (CanGetKey(kv, "assist_bonus_round"))
+        svc.BonusAssistMoneyRound = kv.GetNum("assist_bonus_round", 1);
+    if (CanGetKey(kv, "assist_bonus_chat"))
+        svc.BonusAssistMoneyNotify = view_as<bool>(kv.GetNum("assist_bonus_chat", 0));
 
-    svc.BonusHeadshotMoney = kv.GetNum("headshot_bonus", 0);
-    svc.BonusHeadshotMoneyRound = kv.GetNum("headshot_bonus_round", 1);
-    svc.BonusHeadshotMoneyNotify = view_as<bool>(kv.GetNum("headshot_bonus_chat", 0));
+    if (CanGetKey(kv, "headshot_bonus"))
+        svc.BonusHeadshotMoney = kv.GetNum("headshot_bonus", 0);
+    if (CanGetKey(kv, "headshot_bonus_round"))
+        svc.BonusHeadshotMoneyRound = kv.GetNum("headshot_bonus_round", 1);
+    if (CanGetKey(kv, "headshot_bonus_chat"))
+        svc.BonusHeadshotMoneyNotify = view_as<bool>(kv.GetNum("headshot_bonus_chat", 0));
 
-    svc.BonusKnifeMoney = kv.GetNum("knife_bonus", 0);
-    svc.BonusKnifeMoneyRound = kv.GetNum("knife_bonus_round", 1);
-    svc.BonusKnifeMoneyNotify = view_as<bool>(kv.GetNum("knife_bonus_chat", 0));
+    if (CanGetKey(kv, "knife_bonus"))
+        svc.BonusKnifeMoney = kv.GetNum("knife_bonus", 0);
+    if (CanGetKey(kv, "knife_bonus_round"))
+        svc.BonusKnifeMoneyRound = kv.GetNum("knife_bonus_round", 1);
+    if (CanGetKey(kv, "knife_bonus_chat"))
+        svc.BonusKnifeMoneyNotify = view_as<bool>(kv.GetNum("knife_bonus_chat", 0));
 
-    svc.BonusZeusMoney = kv.GetNum("zeus_bonus", 0);
-    svc.BonusZeusMoneyRound = kv.GetNum("zeus_bonus_round", 1);
-    svc.BonusZeusMoneyNotify = view_as<bool>(kv.GetNum("zeus_bonus_chat", 0));
+    if (CanGetKey(kv, "zeus_bonus"))
+        svc.BonusZeusMoney = kv.GetNum("zeus_bonus", 0);
+    if (CanGetKey(kv, "zeus_bonus_round"))
+        svc.BonusZeusMoneyRound = kv.GetNum("zeus_bonus_round", 1);
+    if (CanGetKey(kv, "zeus_bonus_chat"))
+        svc.BonusZeusMoneyNotify = view_as<bool>(kv.GetNum("zeus_bonus_chat", 0));
 
-    svc.BonusGrenadeMoney = kv.GetNum("grenade_bonus", 0);
-    svc.BonusGrenadeMoneyRound = kv.GetNum("grenade_bonus_round", 1);
-    svc.BonusGrenadeMoneyNotify = view_as<bool>(kv.GetNum("grenade_bonus_chat", 0));
+    if (CanGetKey(kv, "grenade_bonus"))
+        svc.BonusGrenadeMoney = kv.GetNum("grenade_bonus", 0);
+    if (CanGetKey(kv, "grenade_bonus_round"))
+        svc.BonusGrenadeMoneyRound = kv.GetNum("grenade_bonus_round", 1);
+    if (CanGetKey(kv, "grenade_bonus_chat"))
+        svc.BonusGrenadeMoneyNotify = view_as<bool>(kv.GetNum("grenade_bonus_chat", 0));
 
-    svc.BonusMvpMoney = kv.GetNum("mvp_bonus", 0);
-    svc.BonusMvpMoneyRound = kv.GetNum("mvp_bonus_round", 1);
-    svc.BonusMvpMoneyNotify = view_as<bool>(kv.GetNum("mvp_bonus_chat", 0));
+    if (CanGetKey(kv, "mvp_bonus"))
+        svc.BonusMvpMoney = kv.GetNum("mvp_bonus", 0);
+    if (CanGetKey(kv, "mvp_bonus_round"))
+        svc.BonusMvpMoneyRound = kv.GetNum("mvp_bonus_round", 1);
+    if (CanGetKey(kv, "mvp_bonus_chat"))
+        svc.BonusMvpMoneyNotify = view_as<bool>(kv.GetNum("mvp_bonus_chat", 0));
 
-    svc.BonusNoscopeMoney = kv.GetNum("noscope_bonus", 0);
-    svc.BonusNoscopeMoneyRound = kv.GetNum("noscope_bonus_round", 1);
-    svc.BonusNoscopeMoneyNotify = view_as<bool>(kv.GetNum("noscope_bonus_chat", 0));
+    if (CanGetKey(kv, "noscope_bonus"))
+        svc.BonusNoscopeMoney = kv.GetNum("noscope_bonus", 0);
+    if (CanGetKey(kv, "noscope_bonus_round"))
+        svc.BonusNoscopeMoneyRound = kv.GetNum("noscope_bonus_round", 1);
+    if (CanGetKey(kv, "noscope_bonus_chat"))
+        svc.BonusNoscopeMoneyNotify = view_as<bool>(kv.GetNum("noscope_bonus_chat", 0));
 
-    svc.BonusHostageMoney = kv.GetNum("hostage_bonus", 0);
-    svc.BonusHostageMoneyRound = kv.GetNum("hostage_bonus_round", 1);
-    svc.BonusHostageMoneyNotify = view_as<bool>(kv.GetNum("hostage_bonus_chat", 0));
+    if (CanGetKey(kv, "hostage_bonus"))
+        svc.BonusHostageMoney = kv.GetNum("hostage_bonus", 0);
+    if (CanGetKey(kv, "hostage_bonus_round"))
+        svc.BonusHostageMoneyRound = kv.GetNum("hostage_bonus_round", 1);
+    if (CanGetKey(kv, "hostage_bonus_chat"))
+        svc.BonusHostageMoneyNotify = view_as<bool>(kv.GetNum("hostage_bonus_chat", 0));
 
-    svc.BonusBombPlantedMoney = kv.GetNum("bomb_planted_bonus", 0);
-    svc.BonusBombPlantedMoneyRound = kv.GetNum("bomb_planted_bonus_round", 1);
-    svc.BonusBombPlantedMoneyNotify = view_as<bool>(kv.GetNum("bomb_planted_bonus_chat", 0));
+    if (CanGetKey(kv, "bomb_planted_bonus"))
+        svc.BonusBombPlantedMoney = kv.GetNum("bomb_planted_bonus", 0);
+    if (CanGetKey(kv, "bomb_planted_bonus_round"))
+        svc.BonusBombPlantedMoneyRound = kv.GetNum("bomb_planted_bonus_round", 1);
+    if (CanGetKey(kv, "bomb_planted_bonus_chat"))
+        svc.BonusBombPlantedMoneyNotify = view_as<bool>(kv.GetNum("bomb_planted_bonus_chat", 0));
 
-    svc.BonusBombDefusedMoney = kv.GetNum("bomb_defused_bonus", 0);
-    svc.BonusBombDefusedMoneyRound = kv.GetNum("bomb_defused_bonus_round", 1);
-    svc.BonusBombDefusedMoneyNotify = view_as<bool>(kv.GetNum("bomb_defused_bonus_chat", 0));
+    if (CanGetKey(kv, "bomb_defused_bonus"))
+        svc.BonusBombDefusedMoney = kv.GetNum("bomb_defused_bonus", 0);
+    if (CanGetKey(kv, "bomb_defused_bonus_round"))
+        svc.BonusBombDefusedMoneyRound = kv.GetNum("bomb_defused_bonus_round", 1);
+    if (CanGetKey(kv, "bomb_defused_bonus_chat"))
+        svc.BonusBombDefusedMoneyNotify = view_as<bool>(kv.GetNum("bomb_defused_bonus_chat", 0));
 
     kv.GoBack(); // Events Bonuses
     kv.GoBack(); // Service Name
@@ -642,38 +806,59 @@ static bool ProcessEventMoneyBonuses(KeyValues kv, Service svc, bool fatalError,
 static bool ProcessEventHPBonuses(KeyValues kv, Service svc, bool fatalError, const char[] serviceName)
 {
     if (!kv.JumpToKey("Events Bonuses"))
-        return HandleError(svc, fatalError, "Service \"%s\" is missing section \"Events Bonuses\".", serviceName);
+        return s_IsInheritOnlyPass ? true : HandleError(svc, fatalError, "Service \"%s\" is missing section \"Events Bonuses\".", serviceName);
 
     if (!kv.JumpToKey("Bonus Health"))
-        return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is missing section \"Bonus Health\".", serviceName);
+        return s_IsInheritOnlyPass ? GoBackReturnTrue(kv) : HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is missing section \"Bonus Health\".", serviceName);
 
-    svc.BonusKillHP = kv.GetNum("kill_hp_bonus", 0);
-    svc.BonusKillHPRound = kv.GetNum("kill_hp_bonus_round", 1);
-    svc.BonusKillHPNotify = view_as<bool>(kv.GetNum("kill_hp_bonus_chat", 0));
+    if (CanGetKey(kv, "kill_hp_bonus"))
+        svc.BonusKillHP = kv.GetNum("kill_hp_bonus", 0);
+    if (CanGetKey(kv, "kill_hp_bonus_round"))
+        svc.BonusKillHPRound = kv.GetNum("kill_hp_bonus_round", 1);
+    if (CanGetKey(kv, "kill_hp_bonus_chat"))
+        svc.BonusKillHPNotify = view_as<bool>(kv.GetNum("kill_hp_bonus_chat", 0));
 
-    svc.BonusAssistHP = kv.GetNum("assist_hp_bonus", 0);
-    svc.BonusAssistHPRound = kv.GetNum("assist_hp_bonus_round", 1);
-    svc.BonusAssistHPNotify = view_as<bool>(kv.GetNum("assist_hp_bonus_chat", 0));
+    if (CanGetKey(kv, "assist_hp_bonus"))
+        svc.BonusAssistHP = kv.GetNum("assist_hp_bonus", 0);
+    if (CanGetKey(kv, "assist_hp_bonus_round"))
+        svc.BonusAssistHPRound = kv.GetNum("assist_hp_bonus_round", 1);
+    if (CanGetKey(kv, "assist_hp_bonus_chat"))
+        svc.BonusAssistHPNotify = view_as<bool>(kv.GetNum("assist_hp_bonus_chat", 0));
 
-    svc.BonusHeadshotHP = kv.GetNum("headshot_hp_bonus", 0);
-    svc.BonusHeadshotHPRound = kv.GetNum("headshot_hp_bonus_round", 1);
-    svc.BonusHeadshotHPNotify = view_as<bool>(kv.GetNum("headshot_hp_bonus_chat", 0));
+    if (CanGetKey(kv, "headshot_hp_bonus"))
+        svc.BonusHeadshotHP = kv.GetNum("headshot_hp_bonus", 0);
+    if (CanGetKey(kv, "headshot_hp_bonus_round"))
+        svc.BonusHeadshotHPRound = kv.GetNum("headshot_hp_bonus_round", 1);
+    if (CanGetKey(kv, "headshot_hp_bonus_chat"))
+        svc.BonusHeadshotHPNotify = view_as<bool>(kv.GetNum("headshot_hp_bonus_chat", 0));
 
-    svc.BonusKnifeHP = kv.GetNum("knife_hp_bonus", 0);
-    svc.BonusKnifeHPRound = kv.GetNum("knife_hp_bonus_round", 1);
-    svc.BonusKnifeHPNotify = view_as<bool>(kv.GetNum("knife_hp_bonus_chat", 0));
+    if (CanGetKey(kv, "knife_hp_bonus"))
+        svc.BonusKnifeHP = kv.GetNum("knife_hp_bonus", 0);
+    if (CanGetKey(kv, "knife_hp_bonus_round"))
+        svc.BonusKnifeHPRound = kv.GetNum("knife_hp_bonus_round", 1);
+    if (CanGetKey(kv, "knife_hp_bonus_chat"))
+        svc.BonusKnifeHPNotify = view_as<bool>(kv.GetNum("knife_hp_bonus_chat", 0));
 
-    svc.BonusZeusHP = kv.GetNum("zeus_hp_bonus", 0);
-    svc.BonusZeusHPRound = kv.GetNum("zeus_hp_bonus_round", 1);
-    svc.BonusZeusHPNotify = view_as<bool>(kv.GetNum("zeus_hp_bonus_chat", 0));
+    if (CanGetKey(kv, "zeus_hp_bonus"))
+        svc.BonusZeusHP = kv.GetNum("zeus_hp_bonus", 0);
+    if (CanGetKey(kv, "zeus_hp_bonus_round"))
+        svc.BonusZeusHPRound = kv.GetNum("zeus_hp_bonus_round", 1);
+    if (CanGetKey(kv, "zeus_hp_bonus_chat"))
+        svc.BonusZeusHPNotify = view_as<bool>(kv.GetNum("zeus_hp_bonus_chat", 0));
 
-    svc.BonusGrenadeHP = kv.GetNum("grenade_hp_bonus", 0);
-    svc.BonusGrenadeHPRound = kv.GetNum("grenade_hp_bonus_round", 1);
-    svc.BonusGrenadeHPNotify = view_as<bool>(kv.GetNum("grenade_hp_bonus_chat", 0));
+    if (CanGetKey(kv, "grenade_hp_bonus"))
+        svc.BonusGrenadeHP = kv.GetNum("grenade_hp_bonus", 0);
+    if (CanGetKey(kv, "grenade_hp_bonus_round"))
+        svc.BonusGrenadeHPRound = kv.GetNum("grenade_hp_bonus_round", 1);
+    if (CanGetKey(kv, "grenade_hp_bonus_chat"))
+        svc.BonusGrenadeHPNotify = view_as<bool>(kv.GetNum("grenade_hp_bonus_chat", 0));
 
-    svc.BonusNoscopeHP = kv.GetNum("noscope_hp_bonus", 0);
-    svc.BonusNoscopeHPRound = kv.GetNum("noscope_hp_bonus_round", 1);
-    svc.BonusNoscopeHPNotify = view_as<bool>(kv.GetNum("noscope_hp_bonus_chat", 0));
+    if (CanGetKey(kv, "noscope_hp_bonus"))
+        svc.BonusNoscopeHP = kv.GetNum("noscope_hp_bonus", 0);
+    if (CanGetKey(kv, "noscope_hp_bonus_round"))
+        svc.BonusNoscopeHPRound = kv.GetNum("noscope_hp_bonus_round", 1);
+    if (CanGetKey(kv, "noscope_hp_bonus_chat"))
+        svc.BonusNoscopeHPNotify = view_as<bool>(kv.GetNum("noscope_hp_bonus_chat", 0));
 
     kv.GoBack(); // Events Bonuses
     kv.GoBack(); // Service name
@@ -683,22 +868,30 @@ static bool ProcessEventHPBonuses(KeyValues kv, Service svc, bool fatalError, co
 static bool ProcessChatWelcomeLeaveMessages(KeyValues kv, Service svc, bool fatalError, const char[] serviceName)
 {
     if (!kv.JumpToKey("Welcome and Leave Messages"))
-        return HandleError(svc, fatalError, "Service \"%s\" is missing section \"Welcome and Leave Messages\".", serviceName);
+        return s_IsInheritOnlyPass ? true : HandleError(svc, fatalError, "Service \"%s\" is missing section \"Welcome and Leave Messages\".", serviceName);
 
     if (!kv.JumpToKey("Chat"))
-        return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is missing section \"Chat\".", serviceName);
+        return s_IsInheritOnlyPass ? GoBackReturnTrue(kv) : HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is missing section \"Chat\".", serviceName);
 
     char buffer[256];
 
-    svc.ChatWelcomeMessage = view_as<bool>(kv.GetNum("chat_join_msg_enable", 1));
+    if (CanGetKey(kv, "chat_join_msg_enable"))
+        svc.ChatWelcomeMessage = view_as<bool>(kv.GetNum("chat_join_msg_enable", 1));
 
-    kv.GetString("chat_join_msg", buffer, sizeof(buffer));
-    svc.SetChatWelcomeMessage(buffer);
+    if (CanGetKey(kv, "chat_join_msg"))
+    {
+        kv.GetString("chat_join_msg", buffer, sizeof(buffer));
+        svc.SetChatWelcomeMessage(buffer);
+    }
 
-    svc.ChatLeaveMessage = view_as<bool>(kv.GetNum("chat_leave_msg_enable", 1));
+    if (CanGetKey(kv, "chat_leave_msg_enable"))
+        svc.ChatLeaveMessage = view_as<bool>(kv.GetNum("chat_leave_msg_enable", 1));
 
-    kv.GetString("chat_leave_msg", buffer, sizeof(buffer));
-    svc.SetChatLeaveMessage(buffer);
+    if (CanGetKey(kv, "chat_leave_msg"))
+    {
+        kv.GetString("chat_leave_msg", buffer, sizeof(buffer));
+        svc.SetChatLeaveMessage(buffer);
+    }
 
     kv.GoBack(); // Welcome and Leave Messages
     kv.GoBack(); // Service Name
@@ -708,28 +901,41 @@ static bool ProcessChatWelcomeLeaveMessages(KeyValues kv, Service svc, bool fata
 static bool ProcessHudWelcomeLeaveMessages(KeyValues kv, Service svc, bool fatalError, const char[] serviceName)
 {
     if (!kv.JumpToKey("Welcome and Leave Messages"))
-        return HandleError(svc, fatalError, "Service \"%s\" is missing section \"Welcome and Leave Messages\".", serviceName);
+        return s_IsInheritOnlyPass ? true : HandleError(svc, fatalError, "Service \"%s\" is missing section \"Welcome and Leave Messages\".", serviceName);
 
     if (!kv.JumpToKey("Hud"))
-        return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is missing section \"Hud\".", serviceName);
+        return s_IsInheritOnlyPass ? GoBackReturnTrue(kv) : HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is missing section \"Hud\".", serviceName);
 
     char buffer[256];
 
-    svc.HudWelcomeMessage = view_as<bool>(kv.GetNum("hud_leave_msg_enable", 0));
+    if (CanGetKey(kv, "hud_leave_msg_enable"))
+        svc.HudWelcomeMessage = view_as<bool>(kv.GetNum("hud_leave_msg_enable", 0));
 
-    kv.GetString("hud_join_msg", buffer, sizeof(buffer));
-    svc.SetHudWelcomeMessage(buffer);
+    if (CanGetKey(kv, "hud_join_msg"))
+    {
+        kv.GetString("hud_join_msg", buffer, sizeof(buffer));
+        svc.SetHudWelcomeMessage(buffer);
+    }
 
-    svc.HudLeaveMessage = view_as<bool>(kv.GetNum("hud_leave_msg_enable", 0));
+    if (CanGetKey(kv, "hud_leave_msg_enable"))
+        svc.HudLeaveMessage = view_as<bool>(kv.GetNum("hud_leave_msg_enable", 0));
 
-    kv.GetString("hud_leave_msg", buffer, sizeof(buffer));
-    svc.SetHudLeaveMessage(buffer);
+    if (CanGetKey(kv, "hud_leave_msg"))
+    {
+        kv.GetString("hud_leave_msg", buffer, sizeof(buffer));
+        svc.SetHudLeaveMessage(buffer);
+    }
 
-    svc.HudPositionX = kv.GetFloat("hud_position_x", -1.0);
-    svc.HudPositionY = kv.GetFloat("hud_position_y", -0.7);
-    svc.HudColorRed = kv.GetNum("hud_color_red", 243);
-    svc.HudColorGreen = kv.GetNum("hud_color_green", 200);
-    svc.HudColorBlue = kv.GetNum("hud_color_blue", 36);
+    if (CanGetKey(kv, "hud_position_x"))
+        svc.HudPositionX = kv.GetFloat("hud_position_x", -1.0);
+    if (CanGetKey(kv, "hud_position_y"))
+        svc.HudPositionY = kv.GetFloat("hud_position_y", -0.7);
+    if (CanGetKey(kv, "hud_color_red"))
+        svc.HudColorRed = kv.GetNum("hud_color_red", 243);
+    if (CanGetKey(kv, "hud_color_green"))
+        svc.HudColorGreen = kv.GetNum("hud_color_green", 200);
+    if (CanGetKey(kv, "hud_color_blue"))
+        svc.HudColorBlue = kv.GetNum("hud_color_blue", 36);
     svc.HudColorAlpha = 255;
 
     kv.GoBack(); // Welcome and Leave Messages
@@ -740,7 +946,42 @@ static bool ProcessHudWelcomeLeaveMessages(KeyValues kv, Service svc, bool fatal
 
 static bool ProcessWeapons(KeyValues kv, Service svc, bool fatalError, const char[] serviceName)
 {
-    if (!kv.JumpToKey("Advanced Weapons Menu"))
+    KeyValues tempKv = kv;
+    bool usingTempKv = false;
+
+    if (s_IsInheritOnlyPass && !CanGetKey(kv, "Advanced Weapons Menu"))
+    {
+        // Build the weapons menu belonging to the inherited service.
+        // To do this sucks ass:
+        //
+        // 1) Make a new KeyValues instance so we dont corrupt the existing
+        //    traversal stack.
+        // 2) Repeatedly climb up the 'inheritance chain' (in case this service
+        //    inherits from another inheriting-service) until we find the
+        //    root inherited service that actuall contains a weapons menu.
+        // 3) Build a copy of that root inherited service's "Advanced Weapons Menu"
+        //    using the rest of the function.
+
+        char path[PLATFORM_MAX_PATH];
+        BuildPath(Path_SM, path, sizeof(path), CONFIG_PATH);
+
+        KeyValues weaponKv = new KeyValues("UltraVIP - Configuration");
+        if (weaponKv == null || !weaponKv.ImportFromFile(path))
+        {
+            delete weaponKv;
+            return HandleError(svc, fatalError, "Could not create KeyValues needed to process inherited weapons menu for service \"%s\".", serviceName);
+        }
+
+        if (!FindInheritedWeaponMenu(weaponKv, serviceName)) // Jumps to "Advanced Weapons Menu"
+        {
+            delete weaponKv;
+            return HandleError(svc, fatalError, "Failed to find the inherited weapon menu for service \"%s\"", serviceName);
+        }
+
+        tempKv = weaponKv;
+        usingTempKv = true;
+    }
+    else if (!tempKv.JumpToKey("Advanced Weapons Menu"))
         return HandleError(svc, fatalError, "Service \"%s\" is missing section \"Advanced Weapons Menu\".", serviceName);
     
     g_WeaponMenuDisplayTime = kv.GetNum("menu_display_time", 0);
@@ -749,36 +990,74 @@ static bool ProcessWeapons(KeyValues kv, Service svc, bool fatalError, const cha
     Menu menu;
     ArrayList weapons;
 
-    WeaponMenu_BuildSelectionsFromConfig(kv, serviceName, menu, weapons);
+    WeaponMenu_BuildSelectionsFromConfig(tempKv, serviceName, menu, weapons);
 
     // Make sure handles get deleted by HandleErrorAndGoBack.
     svc.WeaponMenu = menu;
     svc.Weapons = weapons;
 
     if (menu == null)
-        return HandleErrorAndGoBack(kv, svc, fatalError, "Failed to build menu for service \"%s\"", serviceName);
+        return HandleErrorAndGoBack(tempKv, svc, fatalError, "Failed to build menu for service \"%s\"", serviceName);
     if (weapons == null)
-        return HandleErrorAndGoBack(kv, svc, fatalError, "Failed to build weapons list for service \"%s\"", serviceName);
+        return HandleErrorAndGoBack(tempKv, svc, fatalError, "Failed to build weapons list for service \"%s\"", serviceName);
 
     svc.WeaponMenu = menu;
 
-    if (!kv.JumpToKey("Rifles"))
-        return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is missing section \"Rifles\".", serviceName);
+    if (!tempKv.JumpToKey("Rifles"))
+        return HandleErrorAndGoBack(tempKv, svc, fatalError, "Service \"%s\" is missing section \"Rifles\".", serviceName);
 
-    svc.RifleWeaponsRound = kv.GetNum("rifles_menu_round", 3);
-    svc.RifleWeaponsEnabled = view_as<bool>(kv.GetNum("rifles_menu_enabled", 0));
+    svc.RifleWeaponsRound = tempKv.GetNum("rifles_menu_round", 3);
+    svc.RifleWeaponsEnabled = view_as<bool>(tempKv.GetNum("rifles_menu_enabled", 0));
 
-    kv.GoBack();
+    tempKv.GoBack();
 
-    if (!kv.JumpToKey("Pistols"))
-        return HandleErrorAndGoBack(kv, svc, fatalError, "Service \"%s\" is missing section \"Pistols\".", serviceName);
+    if (!tempKv.JumpToKey("Pistols"))
+        return HandleErrorAndGoBack(tempKv, svc, fatalError, "Service \"%s\" is missing section \"Pistols\".", serviceName);
 
-    svc.PistolWeaponsRound = kv.GetNum("pistols_menu_round", 1);
-    svc.PistolWeaponsEnabled = view_as<bool>(kv.GetNum("pistols_menu_enabled", 0));
+    svc.PistolWeaponsRound = tempKv.GetNum("pistols_menu_round", 1);
+    svc.PistolWeaponsEnabled = view_as<bool>(tempKv.GetNum("pistols_menu_enabled", 0));
 
-    kv.GoBack(); // To "Advanced Weapons Menu"
-    kv.GoBack(); // To service name
+    if (usingTempKv)
+        delete tempKv;  // weaponKv only
+    else
+    {
+        tempKv.GoBack(); // To "Advanced Weapons Menu"
+        tempKv.GoBack(); // To service name
+    }
+
     return true;
+}
+
+static bool FindInheritedWeaponMenu(KeyValues kv, const char[] leafServiceName)
+{
+    char inheritFrom[MAX_SERVICE_NAME_SIZE];
+    strcopy(inheritFrom, sizeof(inheritFrom), leafServiceName);
+
+    kv.Rewind();
+
+    if (!kv.GotoFirstSubKey()) // To "Services"
+        return false;
+
+    int count = 0;
+    while (++count)
+    {
+        if (count >= 99)
+            return false;
+
+        if (!kv.JumpToKey(inheritFrom)) // To service name
+            return false;
+
+        if (!IsInheritingService(kv, inheritFrom, sizeof(inheritFrom)))
+        {
+            // Found root--Service does not inherit from any other.
+            // Go to "Advanced Weapons Menu", which should exist
+            return kv.JumpToKey("Advanced Weapons Menu");
+        }
+
+        kv.GoBack(); // To "Services"
+    }
+
+    return false;
 }
 
 /**
@@ -830,7 +1109,7 @@ static bool BuildSortedLists()
     return true;
 }
 
-int SortHighestPriority(int index1, int index2, ArrayList array, Handle hndl)
+static int SortHighestPriority(int index1, int index2, ArrayList array, Handle hndl)
 {
     ServicePriorityData data1;
     ServicePriorityData data2;
@@ -843,4 +1122,42 @@ int SortHighestPriority(int index1, int index2, ArrayList array, Handle hndl)
     else if (data1.priority == data2.priority)
         return 0;
     return 1;
+}
+
+static bool GoBackReturnTrue(KeyValues kv)
+{
+    kv.GoBack();
+    return true;
+}
+
+static bool HandleError(Handle &hndl, bool isFatal, const char[] fmt, any ...)
+{
+    int len = strlen(fmt) + 512;
+    char[] formatted = new char[len];
+    VFormat(formatted, len, fmt, 4);
+
+    if (isFatal)
+        SetFailState(formatted);
+    else
+        LogError(formatted);
+
+    delete hndl;
+    return false;
+}
+
+static bool HandleErrorAndGoBack(KeyValues kv, Service &hndl, bool isFatal, const char[] fmt, any ...)
+{
+    int len = strlen(fmt) + 512;
+    char[] formatted = new char[len];
+    VFormat(formatted, len, fmt, 5);
+
+    if (isFatal)
+        SetFailState(formatted);
+    else
+        LogError(formatted);
+
+    Service_Delete(hndl);
+
+    kv.GoBack();
+    return false;
 }

@@ -107,6 +107,58 @@ public any Native_IsCoreCompatible(Handle plugin, int numParams)
     return GetNativeCell(1) == UVIP_API_VERSION;
 }
 
+public any Native_HandleLateLoad(Handle plugin, int numParams)
+{
+    // Not a lateload
+    if (!g_HaveAllPluginsLoaded)
+        return 0;
+
+    // If module doesn't have UVIP_OnStart it doesn't need us to handle
+    // lateload (RegisterSetting/OverrideFeature not used).
+    Function onStart = GetFunctionByName(plugin, "UVIP_OnStart");
+    if (onStart == INVALID_FUNCTION)
+        return 0;
+
+    // Set g_HaveAllPluginsLoaded to false temporarily so that
+    // RegisterSetting and Overridefeature can work.
+    bool previousState = g_HaveAllPluginsLoaded;
+    g_HaveAllPluginsLoaded = false;
+
+    // Manually call the module's UVIP_OnStart
+    Call_StartFunction(plugin, onStart);
+    int err = Call_Finish();
+
+    g_HaveAllPluginsLoaded = previousState;
+
+    char pluginName[64];
+    GetPluginFilename(plugin, pluginName, sizeof(pluginName));
+
+    if (err != SP_ERROR_NONE)
+    {
+        LogError("Error %i occurred while calling UVIP_OnStart for plugin '%s'", err, pluginName);
+        return 0;
+    }
+
+    // Reload the config so that the newly-registered settings/feature overrides
+    // are set in the services
+    if (!ReloadConfig(false, false))
+        SetFailState("Late-loading module failed. An error occurred while reloading the config. Ultra-VIP has stopped.");
+
+    // Manually call the module's UVIP_OnReady to tell it the config is done.
+    Function onReady = GetFunctionByName(plugin, "UVIP_OnReady");
+    if (onReady != INVALID_FUNCTION)
+    {
+        Call_StartFunction(plugin, onReady);
+        err = Call_Finish();
+        if (err != SP_ERROR_NONE)
+            LogError("Error %i occurred while calling UVIP_OnReady for plugin '%s'", err, pluginName);
+    }
+
+    PrintToServer("[Ultra VIP] %t", "Module triggered reload", pluginName);
+    CPrintToChatAll("%t", "Ultra VIP reloaded config");
+    return 0;
+}
+
 public any Native_RegisterSetting(Handle plugin, int numParams)
 {
     // The OnStart forward always happens before the config is processed, so we force
@@ -136,10 +188,16 @@ public any Native_RegisterSetting(Handle plugin, int numParams)
     if (!IsSettingNameAllowed(name))
         return ThrowNativeError(SP_ERROR_NATIVE, "Setting names cannot be empty or start with \"%c\"", SERVICE_INTERNAL_PREFIX);
 
+    // Verify setting default value (required by modulecfg.sp)
+    SettingType type = GetNativeCell(3);
+    char error[256];
+    if (!DoesSettingTypeMatch(type, defaultVal, error, sizeof(error)))
+        return ThrowNativeError(SP_ERROR_NATIVE, "Default value does not match type: %s", error);
+
     // Copy data
     strcopy(info.name, sizeof(ModuleSettingInfo::name), name);
     strcopy(info.defaultValue, sizeof(ModuleSettingInfo::defaultValue), defaultVal);
-    info.type = GetNativeCell(3);
+    info.type = type;
     info.mode = GetNativeCell(4);
 
     // Store setting (false = Check for duplicates)
@@ -214,6 +272,9 @@ static_assert(view_as<int>(SettingType_TOTAL) == 9, "SettingType was added witho
 
 public any Native_UVIPService_Get(Handle plugin, int numParams)
 {
+    if (!g_HaveAllPluginsLoaded)
+        return ThrowNativeError(SP_ERROR_NATIVE, "Cannot use UVIPService.Get until after OnAllPluginsLoaded");
+
     Service svc = GetNativeCell(1);
     if (svc == null)
         return ThrowNativeError(SP_ERROR_NATIVE, "Invalid UVIPService handle %x", svc);
@@ -240,6 +301,9 @@ public any Native_UVIPService_Get(Handle plugin, int numParams)
 
 public any Native_UVIPService_GetInt(Handle plugin, int numParams)
 {
+    if (!g_HaveAllPluginsLoaded)
+        return ThrowNativeError(SP_ERROR_NATIVE, "Cannot use UVIPService.GetInt until after OnAllPluginsLoaded");
+
     char settingName[MAX_SETTING_NAME_SIZE];
     GetNativeString(2, settingName, sizeof(settingName));
     NormaliseString(settingName);
@@ -262,6 +326,9 @@ public any Native_UVIPService_GetInt(Handle plugin, int numParams)
 
 public any Native_UVIPService_GetFloat(Handle plugin, int numParams)
 {
+    if (!g_HaveAllPluginsLoaded)
+        return ThrowNativeError(SP_ERROR_NATIVE, "Cannot use UVIPService.GetFloat until after OnAllPluginsLoaded");
+
     char settingName[MAX_SETTING_NAME_SIZE];
     GetNativeString(2, settingName, sizeof(settingName));
     NormaliseString(settingName);
@@ -278,6 +345,9 @@ public any Native_UVIPService_GetFloat(Handle plugin, int numParams)
 
 public any Native_UVIPService_GetCell(Handle plugin, int numParams)
 {
+    if (!g_HaveAllPluginsLoaded)
+        return ThrowNativeError(SP_ERROR_NATIVE, "Cannot use UVIPService.GetCell until after OnAllPluginsLoaded");
+
     char settingName[MAX_SETTING_NAME_SIZE];
     GetNativeString(2, settingName, sizeof(settingName));
     NormaliseString(settingName);
@@ -344,6 +414,95 @@ bool IsSettingNameAllowed(const char[] name)
         if (name[i] < 32)
             return false;
     }
+    return true;
+}
+
+
+#if defined COMPILER_IS_SM1_11
+static_assert(view_as<int>(SettingType_TOTAL) == 9, "SettingType was added without being handled in DoesSettingTypeMatch");
+#endif
+bool DoesSettingTypeMatch(SettingType type, const char[] value, char[] error, int errSize)
+{
+    any result;
+    error[0] = '\0';
+
+    switch (type)
+    {
+        case Type_String:
+        {
+            return true;
+        }
+        case Type_Byte:
+        {
+            if (!SettingType_Byte(value, result))
+            {
+                FormatEx(error, errSize, "Value '%s' is not a valid byte (-128 to 127).", value);
+                return false;
+            }
+        }
+        case Type_UnsignedByte:
+        {
+            if (!SettingType_UnsignedByte(value, result))
+            {
+                FormatEx(error, errSize, "Value '%s' is not a valid unsigned byte (0 to 255).", value);
+                return false;
+            }
+        }
+        case Type_Integer:
+        {
+            if (!SettingType_Integer(value, result))
+            {
+                FormatEx(error, errSize, "Value '%s' is not a valid integer.", value);
+                return false;
+            }
+        }
+        case Type_Bool:
+        {
+            if (!SettingType_Bool(value, result))
+            {
+                FormatEx(error, errSize, "Value '%s' is not a valid boolean (true/false/0/1).", value);
+                return false;
+            }
+        }
+        case Type_Hex:
+        {
+            if (!SettingType_Hex(value, result))
+            {
+                FormatEx(error, errSize, "Value '%s' is not a valid hexadecimal value (Chars must be 0 to 9, A to F).", value);
+                return false;
+            }
+        }
+        case Type_Float:
+        {
+            if (!SettingType_Float(value, result))
+            {
+                FormatEx(error, errSize, "Value '%s' is not a valid float value (e.g. \"3.1415\").", value);
+                return false;
+            }
+        }
+        case Type_RGBHex:
+        {
+            if (!SettingType_RGBHex(value, result))
+            {
+                FormatEx(error, errSize, "Value '%s' is not an RGB hexadecimal color. Must be 6 characters (0 to 9, A to F). e.g. 0099FF or #0099FF)", value);
+                return false;
+            }
+        }
+        case Type_RGBAHex:
+        {
+            if (!SettingType_RGBAHex(value, result))
+            {
+                FormatEx(error, errSize, "Value '%s' is not an RGBA hexadecimal color. Must be 8 characters (0 to 9, A to F). e.g. 0055AAFF or #0055AAFF)", value);
+                return false;
+            }
+        }
+
+        default:
+        {
+            ThrowError("Unknown SettingType %i", type);
+        }
+    }
+
     return true;
 }
 
