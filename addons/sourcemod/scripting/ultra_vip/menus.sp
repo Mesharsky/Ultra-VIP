@@ -473,10 +473,10 @@ public int MenuHandler_Online(Menu menu, MenuAction action, int param1, int para
             char info[16];
             char display[64];
             menu.GetItem(param2, info, sizeof(info), _, display, sizeof(display));
+            
             if (StrEqual(info, "nodata"))
-            {
                 FormatEx(display, sizeof(display), "%T", display, param1);
-            }
+
             return RedrawMenuItem(display);
         }
         case MenuAction_DrawItem:

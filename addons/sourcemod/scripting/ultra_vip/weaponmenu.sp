@@ -157,7 +157,7 @@ void WeaponMenu_Display(int client, Service weaponListService)
 
     s_WeaponListService[client] = weaponListService;
 
-    s_WeaponMenu.Display(client, MENU_TIME_FOREVER);
+    s_WeaponMenu.Display(client, g_WeaponMenuDisplayTime);
 }
 
 static bool CanSelectNewWeapons(Service svc)
@@ -276,7 +276,7 @@ static void DisplayWeaponList(int client)
 {
     Menu listMenu = s_WeaponListService[client].WeaponMenu;
     if (listMenu != null)
-        listMenu.Display(client, MENU_TIME_FOREVER);
+        listMenu.Display(client, g_WeaponMenuDisplayTime);
 }
 
 void WeaponMenu_BuildSelectionsFromConfig(KeyValues kv, const char[] serviceName, Menu &outputMenu, ArrayList &outputWeapons)
@@ -611,6 +611,9 @@ static bool CanPurchaseWeapon(int client, WeaponMenuItem item)
 
     int team = GetClientTeam(client);
     if (item.team != 0 && ((team != CS_TEAM_CT && team != CS_TEAM_T) || team != item.team))
+        return false;
+
+    if (g_ForceWeaponMenuToBuyZones && !IsInBuyZone())
         return false;
 
     return true;
