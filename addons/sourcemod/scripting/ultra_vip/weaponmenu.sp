@@ -50,6 +50,13 @@ enum struct WeaponLoadout
     char primary[MAX_WEAPON_CLASSNAME_SIZE];
     char secondary[MAX_WEAPON_CLASSNAME_SIZE];
 
+    // Dumb hack for issue #5.
+    // TODO: Should really just remake the whole menu and replace
+    // WeaponLoadout with WeaponMenuItem, and make Service::IsWeaponAllowed
+    // store WeaponMenuItem internally too.
+    int primaryPrice;
+    int secondaryPrice;
+
     bool IsSet()
     {
         return this.primary[0] || this.secondary[0];
@@ -70,15 +77,17 @@ enum struct WeaponLoadout
     {
         this.primary[0] = '\0';
         this.secondary[0] = '\0';
+        this.primaryPrice = 0;
+        this.secondaryPrice = 0;
     }
 }
 
 
 /**
  * Size of cookie string storing previous weapons
- * e.g. "weapon_primary;weapon_secondary"
+ * e.g. "weapon_primary;2147483647;weapon_secondary;2147483647"
  */
-#define LOADOUT_COOKIE_SIZE (sizeof(WeaponLoadout::primary) + sizeof(WeaponLoadout::secondary) + 1)
+#define LOADOUT_COOKIE_SIZE (sizeof(WeaponLoadout::primary) + sizeof(WeaponLoadout::secondary) + 20 + 1)
 
 /**
  * Size of string output by EncodeMenuInfo(). Fits:
@@ -112,8 +121,17 @@ void WeaponMenu_GetPreviousWeapons(int client)
         return;
     }
 
+    char buffer[16];
+
     int index = SplitString(value, ";", s_PreviousWeapon[client].primary, sizeof(WeaponLoadout::primary));
-    strcopy(s_PreviousWeapon[client].secondary, sizeof(WeaponLoadout::secondary), value[index]);
+
+    index += SplitString(value[index], ";", buffer, sizeof(buffer));
+    s_PreviousWeapon[client].primaryPrice = StringToInt(buffer);
+
+    index += SplitString(value[index], ";", s_PreviousWeapon[client].secondary, sizeof(WeaponLoadout::secondary));
+
+    strcopy(buffer, sizeof(buffer), value[index]);
+    s_PreviousWeapon[client].secondaryPrice = StringToInt(buffer);
 }
 
 //--------------------------------------------------------------
@@ -122,7 +140,11 @@ void WeaponMenu_GetPreviousWeapons(int client)
 void WeaponMenu_SavePreviousWeapons(int client)
 {
     char value[LOADOUT_COOKIE_SIZE];
-    FormatEx(value, sizeof(value), "%s;%s", s_PreviousWeapon[client].primary, s_PreviousWeapon[client].secondary);
+    FormatEx(value, sizeof(value), "%s;%i;%s;%i",
+        s_PreviousWeapon[client].primary,
+        s_PreviousWeapon[client].primaryPrice,
+        s_PreviousWeapon[client].secondary,
+        s_PreviousWeapon[client].secondaryPrice);
     g_Cookie_PrevWeapons.Set(client, value);
 }
 
@@ -424,7 +446,7 @@ public int WeaponMenu_SelectionHandler(Menu menu, MenuAction action, int param1,
             if (!CanPurchaseWeapon(param1, item))
                 return ITEMDRAW_IGNORE;
 
-            if (!CanAffordWeapon(param1, item))
+            if (!CanAffordWeapon(param1, item.price))
                 return ITEMDRAW_DISABLED;
 
             return ITEMDRAW_DEFAULT;
@@ -471,7 +493,7 @@ public int WeaponMenu_SelectionHandler(Menu menu, MenuAction action, int param1,
                 if (slot != -1)
                     PurchaseWeapon(param1, item, slot);
 
-                AddToNewLoadoutBuffer(param1, s_SelectionList[param1], item.classname);
+                AddToNewLoadoutBuffer(param1, s_SelectionList[param1], item);
 
                 if (GoToNextSelectionList(param1, s_WeaponListService[param1]))
                     DisplayWeaponList(param1);
@@ -570,12 +592,18 @@ void MakePreviousWeaponText(int client, Service svc, char[] output, int size)
 // Add a weapon classname to the temporary buffer used to update
 // previous weapons once the selection list menu is fully done.
 //--------------------------------------------------------------
-static void AddToNewLoadoutBuffer(int client, WeaponMenuType type, const char classname[MAX_WEAPON_CLASSNAME_SIZE])
+static void AddToNewLoadoutBuffer(int client, WeaponMenuType type, WeaponMenuItem item)
 {
     if (type == Weapon_Rifle)
-        s_NewLoadoutBuffer[client].primary = classname;
+    {
+        s_NewLoadoutBuffer[client].primary = item.classname;
+        s_NewLoadoutBuffer[client].primaryPrice = item.price;
+    }
     else if (type == Weapon_Pistol)
-        s_NewLoadoutBuffer[client].secondary = classname;
+    {
+        s_NewLoadoutBuffer[client].secondary = item.classname;
+        s_NewLoadoutBuffer[client].secondaryPrice = item.price;
+    }
 }
 
 //--------------------------------------------------------------
@@ -591,9 +619,9 @@ static void UpdatePreviousWeapons(int client)
 //--------------------------------------------------------------
 // Can a client afford an item on the menu.
 //--------------------------------------------------------------
-static bool CanAffordWeapon(int client, WeaponMenuItem item)
+static bool CanAffordWeapon(int client, int price)
 {
-    return GetClientMoney(client) > item.price;
+    return GetClientMoney(client) > price;
 }
 
 //--------------------------------------------------------------
@@ -613,7 +641,7 @@ static bool CanPurchaseWeapon(int client, WeaponMenuItem item)
     if (item.team != 0 && ((team != CS_TEAM_CT && team != CS_TEAM_T) || team != item.team))
         return false;
 
-    if (g_ForceWeaponMenuToBuyZones && !IsInBuyZone())
+    if (g_ForceWeaponMenuToBuyZones && !IsInBuyZone(client))
         return false;
 
     return true;
@@ -625,11 +653,25 @@ static bool CanPurchaseWeapon(int client, WeaponMenuItem item)
 //--------------------------------------------------------------
 static void GiveLoadoutIfAllowed(int client, WeaponLoadout weapons, Service svc)
 {
-    if (svc.RifleWeaponsEnabled && CanGiveWeapon(svc, weapons.primary, svc.RifleWeaponsRound))
-        GivePlayerWeapon(client, weapons.primary, CS_SLOT_PRIMARY);
+    if (svc.RifleWeaponsEnabled)
+    {
+        if (CanAffordWeapon(client, weapons.primaryPrice)
+            && CanGiveWeapon(svc, weapons.primary, svc.RifleWeaponsRound))
+        {
+            GivePlayerWeapon(client, weapons.primary, CS_SLOT_PRIMARY);
+            RemovePlayerMoney(client, weapons.primaryPrice);
+        }
+    }
 
-    if (svc.PistolWeaponsEnabled && CanGiveWeapon(svc, weapons.secondary, svc.PistolWeaponsRound))
-        GivePlayerWeapon(client, weapons.secondary, CS_SLOT_SECONDARY);
+    if (svc.PistolWeaponsEnabled)
+    {
+        if (CanAffordWeapon(client, weapons.secondaryPrice)
+            && CanGiveWeapon(svc, weapons.secondary, svc.PistolWeaponsRound))
+        {
+            GivePlayerWeapon(client, weapons.secondary, CS_SLOT_SECONDARY);
+            RemovePlayerMoney(client, weapons.secondaryPrice);
+        }
+    }
 }
 
 static bool CanGiveWeapon(Service svc, const char[] classname, int round)

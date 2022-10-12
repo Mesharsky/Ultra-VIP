@@ -429,9 +429,9 @@ bool IsOnPlayingTeam(int client)
     return team == CS_TEAM_CT || team == CS_TEAM_T;
 }
 
-bool IsInBuyZone()
+bool IsInBuyZone(int client)
 {
-    return GameRules_GetProp("m_bInBuyZone") != 0;
+    return GetEntProp(client, Prop_Send, "m_bInBuyZone") != 0;
 }
 
 bool IsWarmup()
