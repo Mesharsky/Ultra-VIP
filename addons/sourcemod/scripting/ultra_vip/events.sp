@@ -245,7 +245,7 @@ public void Event_WeaponFire(Event event, const char[] name, bool bDontBroadcast
     if (svc == null)
         return;
 
-    if(!svc.BonusUnlimitedAmmo || !IsRoundAllowed(svc.BonusUnlimitedAmmoRound))
+    if(!svc.BonusUnlimitedAmmo || !IsRoundAllowed(svc, svc.BonusUnlimitedAmmoRound))
         return;
 
     GivePlayerUnlimitedAmmo(client, weapon);
@@ -262,7 +262,7 @@ public Action Hook_OnTakeDamage(int client, int &attacker, int &inflictor, float
     Action state = Plugin_Continue;
 
     // Increase damage first before implementing resistance
-    if (attackerSvc != null && IsRoundAllowed(attackerSvc.BonusPlayerAttackDamageRound))
+    if (attackerSvc != null && IsRoundAllowed(attackerSvc, attackerSvc.BonusPlayerAttackDamageRound))
     {
         if (IsFeatureAvailable(Feature_AttackDamage))
         {
@@ -284,7 +284,7 @@ public Action Hook_OnTakeDamage(int client, int &attacker, int &inflictor, float
 
         // TODO: I think technically if multiple damage types exist the scaling
         // should be different, but eh.
-        else if (IsFeatureAvailable(Feature_FallDamage) && IsRoundAllowed(clientSvc.BonusPlayerFallDamagePercentRound))
+        else if (IsFeatureAvailable(Feature_FallDamage) && IsRoundAllowed(clientSvc, clientSvc.BonusPlayerFallDamagePercentRound))
         {
             damage *= clientSvc.BonusPlayerFallDamagePercent * 0.01;
             state = Plugin_Changed;
@@ -292,7 +292,7 @@ public Action Hook_OnTakeDamage(int client, int &attacker, int &inflictor, float
     }
     else
     {
-        if (IsFeatureAvailable(Feature_DamageResist) && IsRoundAllowed(clientSvc.BonusPlayerDamageResistRound))
+        if (IsFeatureAvailable(Feature_DamageResist) && IsRoundAllowed(clientSvc, clientSvc.BonusPlayerDamageResistRound))
         {
             damage -= damage * clientSvc.BonusPlayerDamageResist * 0.01;
             if (damage < 0.0)
@@ -315,7 +315,7 @@ public void Hook_OnClientThink(int client)
     if (svc == null)
         return;
 
-    if (!svc.BonusNoRecoil && !IsRoundAllowed(svc.BonusNoRecoilRound))
+    if (!svc.BonusNoRecoil && !IsRoundAllowed(svc, svc.BonusNoRecoilRound))
         return;
 
     int activeWeapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");

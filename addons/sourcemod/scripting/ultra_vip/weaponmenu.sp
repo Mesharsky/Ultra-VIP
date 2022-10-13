@@ -187,9 +187,9 @@ static bool CanSelectNewWeapons(Service svc)
     if (svc == null)
         return false;
 
-    if (svc.RifleWeaponsEnabled && IsRoundAllowed(svc.RifleWeaponsRound))
+    if (svc.RifleWeaponsEnabled && IsRoundAllowed(svc, svc.RifleWeaponsRound))
         return true;
-    if (svc.PistolWeaponsEnabled && IsRoundAllowed(svc.PistolWeaponsRound))
+    if (svc.PistolWeaponsEnabled && IsRoundAllowed(svc, svc.PistolWeaponsRound))
         return true;
     return false;
 }
@@ -526,13 +526,13 @@ static bool GoToNextSelectionList(int client, Service svc)
     // Go to the next selection list that is allowed, checking in the order
     // we want each list/menu to appear in the cycle (assuming each is allowed)
 
-    if (s_SelectionList[client] < Weapon_Rifle && svc.RifleWeaponsEnabled && IsRoundAllowed(svc.RifleWeaponsRound))
+    if (s_SelectionList[client] < Weapon_Rifle && svc.RifleWeaponsEnabled && IsRoundAllowed(svc, svc.RifleWeaponsRound))
     {
         s_SelectionList[client] = Weapon_Rifle;
         return true;
     }
 
-    if (s_SelectionList[client] < Weapon_Pistol && svc.PistolWeaponsEnabled && IsRoundAllowed(svc.PistolWeaponsRound))
+    if (s_SelectionList[client] < Weapon_Pistol && svc.PistolWeaponsEnabled && IsRoundAllowed(svc, svc.PistolWeaponsRound))
     {
         s_SelectionList[client] = Weapon_Pistol;
         return true;
@@ -676,7 +676,7 @@ static void GiveLoadoutIfAllowed(int client, WeaponLoadout weapons, Service svc)
 
 static bool CanGiveWeapon(Service svc, const char[] classname, int round)
 {
-    return classname[0] && svc.IsWeaponAllowed(classname) && IsRoundAllowed(round);
+    return classname[0] && svc.IsWeaponAllowed(classname) && IsRoundAllowed(svc, round);
 }
 
 //--------------------------------------------------------------

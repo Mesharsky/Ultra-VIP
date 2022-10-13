@@ -133,7 +133,7 @@ void ExtraJump_OnPlayerSpawn(int client, Service svc)
     if (!IsPlayerAlive(client))
         return;
 
-    if (!IsRoundAllowed(svc.BonusExtraJumpsRound))
+    if (!IsRoundAllowed(svc, svc.BonusExtraJumpsRound))
         return;
 
     s_AllowedToMultiJump[client] = true;

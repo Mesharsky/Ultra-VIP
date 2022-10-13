@@ -471,6 +471,9 @@ static bool ProcessMainConfiguration(KeyValues kv, Service svc, bool fatalError,
         svc.SetScoreboardTag(buffer);
     }
 
+    if (CanGetKey(kv, "allow_during_warmup"))
+        svc.AllowDuringWarmup = view_as<bool>(kv.GetNum("allow_during_warmup", 0));
+
     if (!Config_ProcessSteamIDAccess(kv, svc, fatalError, serviceName))
     {
         Config_RemoveSteamIDsForService(svc);
@@ -549,7 +552,7 @@ static bool ProcessPlayerSpawnBonuses(KeyValues kv, Service svc, bool fatalError
     if (CanGetKey(kv, "player_hp"))
         svc.BonusPlayerHealth = kv.GetNum("player_hp", 105);
     if (CanGetKey(kv, "player_hp_round"))
-        svc.BonusPlayerHealthRound = kv.GetNum("player_hp_round", 1);
+        svc.BonusPlayerHealthRound = GetConfigRound(kv, "player_hp_round", 1);
     if (CanGetKey(kv, "player_max_hp"))
         svc.BonusMaxPlayerHealth = kv.GetNum("player_max_hp", 110);
 
@@ -558,17 +561,17 @@ static bool ProcessPlayerSpawnBonuses(KeyValues kv, Service svc, bool fatalError
     if (CanGetKey(kv, "player_vest_value"))
         svc.BonusArmor = kv.GetNum("player_vest_value", 100);
     if (CanGetKey(kv, "player_vest_round"))
-        svc.BonusArmorRound = kv.GetNum("player_vest_round", 2);
+        svc.BonusArmorRound = GetConfigRound(kv, "player_vest_round", 2);
 
     if (CanGetKey(kv, "player_helmet"))
         svc.BonusHelmetEnabled = view_as<bool>(kv.GetNum("player_helmet", 1));
     if (CanGetKey(kv, "player_helmet_round"))
-        svc.BonusHelmetRound = kv.GetNum("player_helmet_round", 2);
+        svc.BonusHelmetRound = GetConfigRound(kv, "player_helmet_round", 2);
 
     if (CanGetKey(kv, "player_defuser"))
         svc.BonusDefuserEnabled = view_as<bool>(kv.GetNum("player_defuser", 1));
     if (CanGetKey(kv, "player_defuser_round"))
-        svc.BonusDefuserRound = kv.GetNum("player_defuser_round", 2);
+        svc.BonusDefuserRound = GetConfigRound(kv, "player_defuser_round", 2);
 
     kv.GoBack(); // To service name
     return true;
@@ -585,52 +588,52 @@ static bool ProcessPlayerGrenadesOnSpawn(KeyValues kv, Service svc, bool fatalEr
     if (CanGetKey(kv, "he_amount"))
         svc.BonusHEGrenades = kv.GetNum("he_amount", 1);
     if (CanGetKey(kv, "he_round"))
-        svc.BonusHEGrenadesRound = kv.GetNum("he_round", 1);
+        svc.BonusHEGrenadesRound = GetConfigRound(kv, "he_round", 1);
 
     if (CanGetKey(kv, "flash_amount"))
         svc.BonusFlashGrenades = kv.GetNum("flash_amount", 1);
     if (CanGetKey(kv, "flash_round"))
-        svc.BonusFlashGrenadesRound = kv.GetNum("flash_round", 1);
+        svc.BonusFlashGrenadesRound = GetConfigRound(kv, "flash_round", 1);
 
     if (CanGetKey(kv, "smoke_amount"))
         svc.BonusSmokeGrenades = kv.GetNum("smoke_amount", 1);
     if (CanGetKey(kv, "smoke_round"))
-        svc.BonusSmokeGrenadesRound = kv.GetNum("smoke_round", 1);
+        svc.BonusSmokeGrenadesRound = GetConfigRound(kv, "smoke_round", 1);
 
     if (CanGetKey(kv, "decoy_amount"))
         svc.BonusDecoyGrenades = kv.GetNum("decoy_amount", 0);
     if (CanGetKey(kv, "decoy_round"))
-        svc.BonusDecoyGrenadesRound = kv.GetNum("decoy_round", 1);
+        svc.BonusDecoyGrenadesRound = GetConfigRound(kv, "decoy_round", 1);
 
     if (CanGetKey(kv, "molotov_amount"))
         svc.BonusMolotovGrenades = kv.GetNum("molotov_amount", 0);
     if (CanGetKey(kv, "molotov_round"))
-        svc.BonusMolotovGrenadesRound = kv.GetNum("molotov_round", 1);
+        svc.BonusMolotovGrenadesRound = GetConfigRound(kv, "molotov_round", 1);
 
     if (CanGetKey(kv, "healthshot_amount"))
         svc.BonusHealthshotGrenades = kv.GetNum("healthshot_amount", 0);
     if (CanGetKey(kv, "healthshot_round"))
-        svc.BonusHealthshotGrenadesRound = kv.GetNum("healthshot_round", 3);
+        svc.BonusHealthshotGrenadesRound = GetConfigRound(kv, "healthshot_round", 3);
 
     if (CanGetKey(kv, "tag_amount"))
         svc.BonusTacticalGrenades = kv.GetNum("tag_amount", 0);
     if (CanGetKey(kv, "tag_round"))
-        svc.BonusTacticalGrenadesRound = kv.GetNum("tag_round", 1);
+        svc.BonusTacticalGrenadesRound = GetConfigRound(kv, "tag_round", 1);
 
     if (CanGetKey(kv, "snowball_amount"))
         svc.BonusSnowballGrenades = kv.GetNum("snowball_amount", 0);
     if (CanGetKey(kv, "snowball_round"))
-        svc.BonusSnowballGrenadesRound = kv.GetNum("snowball_round", 1);
+        svc.BonusSnowballGrenadesRound = GetConfigRound(kv, "snowball_round", 1);
 
     if (CanGetKey(kv, "breachcharge_amount"))
         svc.BonusBreachchargeGrenades = kv.GetNum("breachcharge_amount", 0);
     if (CanGetKey(kv, "breachcharge_round"))
-        svc.BonusBreachchargeGrenadesRound = kv.GetNum("breachcharge_round", 1);
+        svc.BonusBreachchargeGrenadesRound = GetConfigRound(kv, "breachcharge_round", 1);
 
     if (CanGetKey(kv, "bumpmine_amount"))
         svc.BonusBumpmineGrenades = kv.GetNum("bumpmine_amount", 0);
     if (CanGetKey(kv, "bumpmine_round"))
-        svc.BonusBumpmineGrenadesRound = kv.GetNum("bumpmine_round", 1);
+        svc.BonusBumpmineGrenadesRound = GetConfigRound(kv, "bumpmine_round", 1);
 
     kv.GoBack(); // To service name
     return true;
@@ -646,61 +649,61 @@ static bool ProcessSpecialBonuses(KeyValues kv, Service svc, bool fatalError, co
     if (CanGetKey(kv, "player_extra_jump_height"))
         svc.BonusJumpHeight = kv.GetFloat("player_extra_jump_height", EXTRAJUMP_DEFAULT_HEIGHT);
     if (CanGetKey(kv, "player_extra_jumps_round"))
-        svc.BonusExtraJumpsRound = kv.GetNum("player_extra_jumps_round", 1);
+        svc.BonusExtraJumpsRound = GetConfigRound(kv, "player_extra_jumps_round", 1);
     if (CanGetKey(kv, "player_extra_jumps_falldamage"))
         svc.BonusExtraJumpsTakeFallDamage = view_as<bool>(kv.GetNum("player_extra_jumps_falldamage", 1));
 
     if (CanGetKey(kv, "player_shield"))
         svc.BonusPlayerShield = view_as<bool>(kv.GetNum("player_shield", 0));
     if (CanGetKey(kv, "player_shield_round"))
-        svc.BonusPlayerShieldRound = kv.GetNum("player_shield_round", 1);
+        svc.BonusPlayerShieldRound = GetConfigRound(kv, "player_shield_round", 1);
 
     if (CanGetKey(kv, "player_gravity"))
         svc.BonusPlayerGravity = kv.GetFloat("player_gravity", 1.0);
     if (CanGetKey(kv, "player_gravity_round"))
-        svc.BonusPlayerGravityRound = kv.GetNum("player_gravity_round", 1);
+        svc.BonusPlayerGravityRound = GetConfigRound(kv, "player_gravity_round", 1);
 
     if (CanGetKey(kv, "player_speed"))
         svc.BonusPlayerSpeed = kv.GetFloat("player_speed", 1.0);
     if (CanGetKey(kv, "player_speed_round"))
-        svc.BonusPlayerSpeedRound = kv.GetNum("player_speed_round", 1);
+        svc.BonusPlayerSpeedRound = GetConfigRound(kv, "player_speed_round", 1);
 
     if (CanGetKey(kv, "player_visibility"))
         svc.BonusPlayerVisibility = kv.GetNum("player_visibility", 255);
     if (CanGetKey(kv, "player_visibility_round"))
-        svc.BonusPlayerVisibilityRound = kv.GetNum("player_visibility_round", 1);
+        svc.BonusPlayerVisibilityRound = GetConfigRound(kv, "player_visibility_round", 1);
 
     if (CanGetKey(kv, "player_respawn_percent"))
         svc.BonusPlayerRespawnPercent = kv.GetNum("player_respawn_percent", 0);
     if (CanGetKey(kv, "player_respawn_round"))
-        svc.BonusPlayerRespawnPercentRound = kv.GetNum("player_respawn_round", 3);
+        svc.BonusPlayerRespawnPercentRound = GetConfigRound(kv, "player_respawn_round", 3);
     if (CanGetKey(kv, "player_respawn_notify"))
         svc.BonusPlayerRespawnPercentNotify = view_as<bool>(kv.GetNum("player_respawn_notify", 0));
 
     if (CanGetKey(kv, "player_fall_damage_percent"))
         svc.BonusPlayerFallDamagePercent = kv.GetNum("player_fall_damage_percent", 100);
     if (CanGetKey(kv, "player_fall_damage_round"))
-        svc.BonusPlayerFallDamagePercentRound = kv.GetNum("player_fall_damage_round", 1);
+        svc.BonusPlayerFallDamagePercentRound = GetConfigRound(kv, "player_fall_damage_round", 1);
 
     if (CanGetKey(kv, "player_attack_damage"))
         svc.BonusPlayerAttackDamage = kv.GetNum("player_attack_damage", 100);
     if (CanGetKey(kv, "player_attack_damage_round"))
-        svc.BonusPlayerAttackDamageRound = kv.GetNum("player_attack_damage_round", 3);
+        svc.BonusPlayerAttackDamageRound = GetConfigRound(kv, "player_attack_damage_round", 3);
 
     if (CanGetKey(kv, "player_damage_resist"))
         svc.BonusPlayerDamageResist = kv.GetNum("player_damage_resist", 0);
     if (CanGetKey(kv, "player_damage_resist_round"))
-        svc.BonusPlayerDamageResistRound = kv.GetNum("player_damage_resist_round", 3);
+        svc.BonusPlayerDamageResistRound = GetConfigRound(kv, "player_damage_resist_round", 3);
 
     if (CanGetKey(kv, "player_unlimited_ammo"))
         svc.BonusUnlimitedAmmo = view_as<bool>(kv.GetNum("player_unlimited_ammo", 0));
     if (CanGetKey(kv, "player_unlimited_ammo_round"))
-        svc.BonusUnlimitedAmmoRound = kv.GetNum("player_unlimited_ammo_round", 1);
+        svc.BonusUnlimitedAmmoRound = GetConfigRound(kv, "player_unlimited_ammo_round", 1);
 
     if (CanGetKey(kv, "player_no_recoil"))
         svc.BonusNoRecoil = view_as<bool>(kv.GetNum("player_no_recoil", 0));
     if (CanGetKey(kv, "player_no_recoil_round"))
-        svc.BonusNoRecoilRound = kv.GetNum("player_no_recoil_round", 1);
+        svc.BonusNoRecoilRound = GetConfigRound(kv, "player_no_recoil_round", 1);
 
     kv.GoBack(); // Service name
     return true;
@@ -717,84 +720,84 @@ static bool ProcessEventMoneyBonuses(KeyValues kv, Service svc, bool fatalError,
     if (CanGetKey(kv, "spawn_bonus"))
         svc.BonusSpawnMoney = kv.GetNum("spawn_bonus", 0);
     if (CanGetKey(kv, "spawn_bonus_round"))
-        svc.BonusSpawnMoneyRound = kv.GetNum("spawn_bonus_round", 1);
+        svc.BonusSpawnMoneyRound = GetConfigRound(kv, "spawn_bonus_round", 1);
     if (CanGetKey(kv, "spawn_bonus_chat"))
         svc.BonusSpawnMoneyNotify = view_as<bool>(kv.GetNum("spawn_bonus_chat", 0));
 
     if (CanGetKey(kv, "kill_bonus"))
         svc.BonusKillMoney = kv.GetNum("kill_bonus", 0);
     if (CanGetKey(kv, "kill_bonus_round"))
-        svc.BonusKillMoneyRound = kv.GetNum("kill_bonus_round", 1);
+        svc.BonusKillMoneyRound = GetConfigRound(kv, "kill_bonus_round", 1);
     if (CanGetKey(kv, "kill_bonus_chat"))
         svc.BonusKillMoneyNotify = view_as<bool>(kv.GetNum("kill_bonus_chat", 0));
 
     if (CanGetKey(kv, "assist_bonus"))
         svc.BonusAssistMoney = kv.GetNum("assist_bonus", 0);
     if (CanGetKey(kv, "assist_bonus_round"))
-        svc.BonusAssistMoneyRound = kv.GetNum("assist_bonus_round", 1);
+        svc.BonusAssistMoneyRound = GetConfigRound(kv, "assist_bonus_round", 1);
     if (CanGetKey(kv, "assist_bonus_chat"))
         svc.BonusAssistMoneyNotify = view_as<bool>(kv.GetNum("assist_bonus_chat", 0));
 
     if (CanGetKey(kv, "headshot_bonus"))
         svc.BonusHeadshotMoney = kv.GetNum("headshot_bonus", 0);
     if (CanGetKey(kv, "headshot_bonus_round"))
-        svc.BonusHeadshotMoneyRound = kv.GetNum("headshot_bonus_round", 1);
+        svc.BonusHeadshotMoneyRound = GetConfigRound(kv, "headshot_bonus_round", 1);
     if (CanGetKey(kv, "headshot_bonus_chat"))
         svc.BonusHeadshotMoneyNotify = view_as<bool>(kv.GetNum("headshot_bonus_chat", 0));
 
     if (CanGetKey(kv, "knife_bonus"))
         svc.BonusKnifeMoney = kv.GetNum("knife_bonus", 0);
     if (CanGetKey(kv, "knife_bonus_round"))
-        svc.BonusKnifeMoneyRound = kv.GetNum("knife_bonus_round", 1);
+        svc.BonusKnifeMoneyRound = GetConfigRound(kv, "knife_bonus_round", 1);
     if (CanGetKey(kv, "knife_bonus_chat"))
         svc.BonusKnifeMoneyNotify = view_as<bool>(kv.GetNum("knife_bonus_chat", 0));
 
     if (CanGetKey(kv, "zeus_bonus"))
         svc.BonusZeusMoney = kv.GetNum("zeus_bonus", 0);
     if (CanGetKey(kv, "zeus_bonus_round"))
-        svc.BonusZeusMoneyRound = kv.GetNum("zeus_bonus_round", 1);
+        svc.BonusZeusMoneyRound = GetConfigRound(kv, "zeus_bonus_round", 1);
     if (CanGetKey(kv, "zeus_bonus_chat"))
         svc.BonusZeusMoneyNotify = view_as<bool>(kv.GetNum("zeus_bonus_chat", 0));
 
     if (CanGetKey(kv, "grenade_bonus"))
         svc.BonusGrenadeMoney = kv.GetNum("grenade_bonus", 0);
     if (CanGetKey(kv, "grenade_bonus_round"))
-        svc.BonusGrenadeMoneyRound = kv.GetNum("grenade_bonus_round", 1);
+        svc.BonusGrenadeMoneyRound = GetConfigRound(kv, "grenade_bonus_round", 1);
     if (CanGetKey(kv, "grenade_bonus_chat"))
         svc.BonusGrenadeMoneyNotify = view_as<bool>(kv.GetNum("grenade_bonus_chat", 0));
 
     if (CanGetKey(kv, "mvp_bonus"))
         svc.BonusMvpMoney = kv.GetNum("mvp_bonus", 0);
     if (CanGetKey(kv, "mvp_bonus_round"))
-        svc.BonusMvpMoneyRound = kv.GetNum("mvp_bonus_round", 1);
+        svc.BonusMvpMoneyRound = GetConfigRound(kv, "mvp_bonus_round", 1);
     if (CanGetKey(kv, "mvp_bonus_chat"))
         svc.BonusMvpMoneyNotify = view_as<bool>(kv.GetNum("mvp_bonus_chat", 0));
 
     if (CanGetKey(kv, "noscope_bonus"))
         svc.BonusNoscopeMoney = kv.GetNum("noscope_bonus", 0);
     if (CanGetKey(kv, "noscope_bonus_round"))
-        svc.BonusNoscopeMoneyRound = kv.GetNum("noscope_bonus_round", 1);
+        svc.BonusNoscopeMoneyRound = GetConfigRound(kv, "noscope_bonus_round", 1);
     if (CanGetKey(kv, "noscope_bonus_chat"))
         svc.BonusNoscopeMoneyNotify = view_as<bool>(kv.GetNum("noscope_bonus_chat", 0));
 
     if (CanGetKey(kv, "hostage_bonus"))
         svc.BonusHostageMoney = kv.GetNum("hostage_bonus", 0);
     if (CanGetKey(kv, "hostage_bonus_round"))
-        svc.BonusHostageMoneyRound = kv.GetNum("hostage_bonus_round", 1);
+        svc.BonusHostageMoneyRound = GetConfigRound(kv, "hostage_bonus_round", 1);
     if (CanGetKey(kv, "hostage_bonus_chat"))
         svc.BonusHostageMoneyNotify = view_as<bool>(kv.GetNum("hostage_bonus_chat", 0));
 
     if (CanGetKey(kv, "bomb_planted_bonus"))
         svc.BonusBombPlantedMoney = kv.GetNum("bomb_planted_bonus", 0);
     if (CanGetKey(kv, "bomb_planted_bonus_round"))
-        svc.BonusBombPlantedMoneyRound = kv.GetNum("bomb_planted_bonus_round", 1);
+        svc.BonusBombPlantedMoneyRound = GetConfigRound(kv, "bomb_planted_bonus_round", 1);
     if (CanGetKey(kv, "bomb_planted_bonus_chat"))
         svc.BonusBombPlantedMoneyNotify = view_as<bool>(kv.GetNum("bomb_planted_bonus_chat", 0));
 
     if (CanGetKey(kv, "bomb_defused_bonus"))
         svc.BonusBombDefusedMoney = kv.GetNum("bomb_defused_bonus", 0);
     if (CanGetKey(kv, "bomb_defused_bonus_round"))
-        svc.BonusBombDefusedMoneyRound = kv.GetNum("bomb_defused_bonus_round", 1);
+        svc.BonusBombDefusedMoneyRound = GetConfigRound(kv, "bomb_defused_bonus_round", 1);
     if (CanGetKey(kv, "bomb_defused_bonus_chat"))
         svc.BonusBombDefusedMoneyNotify = view_as<bool>(kv.GetNum("bomb_defused_bonus_chat", 0));
 
@@ -814,49 +817,49 @@ static bool ProcessEventHPBonuses(KeyValues kv, Service svc, bool fatalError, co
     if (CanGetKey(kv, "kill_hp_bonus"))
         svc.BonusKillHP = kv.GetNum("kill_hp_bonus", 0);
     if (CanGetKey(kv, "kill_hp_bonus_round"))
-        svc.BonusKillHPRound = kv.GetNum("kill_hp_bonus_round", 1);
+        svc.BonusKillHPRound = GetConfigRound(kv, "kill_hp_bonus_round", 1);
     if (CanGetKey(kv, "kill_hp_bonus_chat"))
         svc.BonusKillHPNotify = view_as<bool>(kv.GetNum("kill_hp_bonus_chat", 0));
 
     if (CanGetKey(kv, "assist_hp_bonus"))
         svc.BonusAssistHP = kv.GetNum("assist_hp_bonus", 0);
     if (CanGetKey(kv, "assist_hp_bonus_round"))
-        svc.BonusAssistHPRound = kv.GetNum("assist_hp_bonus_round", 1);
+        svc.BonusAssistHPRound = GetConfigRound(kv, "assist_hp_bonus_round", 1);
     if (CanGetKey(kv, "assist_hp_bonus_chat"))
         svc.BonusAssistHPNotify = view_as<bool>(kv.GetNum("assist_hp_bonus_chat", 0));
 
     if (CanGetKey(kv, "headshot_hp_bonus"))
         svc.BonusHeadshotHP = kv.GetNum("headshot_hp_bonus", 0);
     if (CanGetKey(kv, "headshot_hp_bonus_round"))
-        svc.BonusHeadshotHPRound = kv.GetNum("headshot_hp_bonus_round", 1);
+        svc.BonusHeadshotHPRound = GetConfigRound(kv, "headshot_hp_bonus_round", 1);
     if (CanGetKey(kv, "headshot_hp_bonus_chat"))
         svc.BonusHeadshotHPNotify = view_as<bool>(kv.GetNum("headshot_hp_bonus_chat", 0));
 
     if (CanGetKey(kv, "knife_hp_bonus"))
         svc.BonusKnifeHP = kv.GetNum("knife_hp_bonus", 0);
     if (CanGetKey(kv, "knife_hp_bonus_round"))
-        svc.BonusKnifeHPRound = kv.GetNum("knife_hp_bonus_round", 1);
+        svc.BonusKnifeHPRound = GetConfigRound(kv, "knife_hp_bonus_round", 1);
     if (CanGetKey(kv, "knife_hp_bonus_chat"))
         svc.BonusKnifeHPNotify = view_as<bool>(kv.GetNum("knife_hp_bonus_chat", 0));
 
     if (CanGetKey(kv, "zeus_hp_bonus"))
         svc.BonusZeusHP = kv.GetNum("zeus_hp_bonus", 0);
     if (CanGetKey(kv, "zeus_hp_bonus_round"))
-        svc.BonusZeusHPRound = kv.GetNum("zeus_hp_bonus_round", 1);
+        svc.BonusZeusHPRound = GetConfigRound(kv, "zeus_hp_bonus_round", 1);
     if (CanGetKey(kv, "zeus_hp_bonus_chat"))
         svc.BonusZeusHPNotify = view_as<bool>(kv.GetNum("zeus_hp_bonus_chat", 0));
 
     if (CanGetKey(kv, "grenade_hp_bonus"))
         svc.BonusGrenadeHP = kv.GetNum("grenade_hp_bonus", 0);
     if (CanGetKey(kv, "grenade_hp_bonus_round"))
-        svc.BonusGrenadeHPRound = kv.GetNum("grenade_hp_bonus_round", 1);
+        svc.BonusGrenadeHPRound = GetConfigRound(kv, "grenade_hp_bonus_round", 1);
     if (CanGetKey(kv, "grenade_hp_bonus_chat"))
         svc.BonusGrenadeHPNotify = view_as<bool>(kv.GetNum("grenade_hp_bonus_chat", 0));
 
     if (CanGetKey(kv, "noscope_hp_bonus"))
         svc.BonusNoscopeHP = kv.GetNum("noscope_hp_bonus", 0);
     if (CanGetKey(kv, "noscope_hp_bonus_round"))
-        svc.BonusNoscopeHPRound = kv.GetNum("noscope_hp_bonus_round", 1);
+        svc.BonusNoscopeHPRound = GetConfigRound(kv, "noscope_hp_bonus_round", 1);
     if (CanGetKey(kv, "noscope_hp_bonus_chat"))
         svc.BonusNoscopeHPNotify = view_as<bool>(kv.GetNum("noscope_hp_bonus_chat", 0));
 
@@ -1006,7 +1009,7 @@ static bool ProcessWeapons(KeyValues kv, Service svc, bool fatalError, const cha
     if (!tempKv.JumpToKey("Rifles"))
         return HandleErrorAndGoBack(tempKv, svc, fatalError, "Service \"%s\" is missing section \"Rifles\".", serviceName);
 
-    svc.RifleWeaponsRound = tempKv.GetNum("rifles_menu_round", 3);
+    svc.RifleWeaponsRound = GetConfigRound(tempKv, "rifles_menu_round", 3);
     svc.RifleWeaponsEnabled = view_as<bool>(tempKv.GetNum("rifles_menu_enabled", 0));
 
     tempKv.GoBack();
@@ -1014,7 +1017,7 @@ static bool ProcessWeapons(KeyValues kv, Service svc, bool fatalError, const cha
     if (!tempKv.JumpToKey("Pistols"))
         return HandleErrorAndGoBack(tempKv, svc, fatalError, "Service \"%s\" is missing section \"Pistols\".", serviceName);
 
-    svc.PistolWeaponsRound = tempKv.GetNum("pistols_menu_round", 1);
+    svc.PistolWeaponsRound = GetConfigRound(tempKv, "pistols_menu_round", 1);
     svc.PistolWeaponsEnabled = view_as<bool>(tempKv.GetNum("pistols_menu_enabled", 0));
 
     if (usingTempKv)
@@ -1160,4 +1163,45 @@ static bool HandleErrorAndGoBack(KeyValues kv, Service &hndl, bool isFatal, cons
 
     kv.GoBack();
     return false;
+}
+
+static int GetConfigRound(KeyValues kv, const char[] key, int defaultValue)
+{
+    char round[16];
+    kv.GetString(key, round, sizeof(round));
+
+    if (StrEqual(round, "WARMUP", false)
+        || StrEqual(round, "WARM UP", false)
+        || StrEqual(round, "WARMUP ONLY", false)
+        || StrEqual(round, "WARM UP ONLY", false)
+        || StrEqual(round, "WARMUP ROUND", false)
+        || StrEqual(round, "WARM UP ROUND", false))
+    {
+        return ROUND_WARMUP_ONLY;
+    }
+
+    if (StrEqual(round, "MATCH POINT", false)
+        || StrEqual(round, "MATCHPOINT", false))
+    {
+        return ROUND_MATCH_POINT;
+    }
+
+    if (StrEqual(round, "PISTOL", false)
+        || StrEqual(round, "PISTOLS", false)
+        || StrEqual(round, "PISTOL ONLY", false)
+        || StrEqual(round, "PISTOLS ONLY", false)
+        || StrEqual(round, "PISTOL ROUND", false)
+        || StrEqual(round, "PISTOLS ROUND", false))
+    {
+        return ROUND_PISTOL;
+    }
+
+    if (StrEqual(round, "LAST OF HALF", false))
+        return ROUND_LAST_OF_HALF;
+
+    int value = kv.GetNum(key, defaultValue);
+    if (value < 0)
+        value = INVALID_ROUND;
+
+    return value;
 }
