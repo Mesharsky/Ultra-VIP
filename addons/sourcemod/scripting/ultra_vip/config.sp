@@ -38,8 +38,6 @@ StringMap g_OnlineListCommands;
 StringMap g_BonusesListCommands;
 bool g_IsDeathmatchMode;
 bool g_BotsGrantBonuses;
-int g_WeaponMenuDisplayTime;
-bool g_ForceWeaponMenuToBuyZones;
 
 Service g_RootService;
 RootServiceMode g_RootServiceMode;
@@ -986,9 +984,9 @@ static bool ProcessWeapons(KeyValues kv, Service svc, bool fatalError, const cha
     }
     else if (!tempKv.JumpToKey("Advanced Weapons Menu"))
         return HandleError(svc, fatalError, "Service \"%s\" is missing section \"Advanced Weapons Menu\".", serviceName);
-    
-    g_WeaponMenuDisplayTime = kv.GetNum("menu_display_time", 0);
-    g_ForceWeaponMenuToBuyZones = view_as<bool>(kv.GetNum("menu_block_outside_buyzone", 1));
+
+    svc.WeaponMenuDisplayTime = kv.GetNum("menu_display_time", 0);
+    svc.ForceWeaponMenuToBuyZones = view_as<bool>(kv.GetNum("menu_block_outside_buyzone", 1));
 
     Menu menu;
     ArrayList weapons;

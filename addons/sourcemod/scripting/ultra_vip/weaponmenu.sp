@@ -179,7 +179,7 @@ void WeaponMenu_Display(int client, Service weaponListService)
 
     s_WeaponListService[client] = weaponListService;
 
-    s_WeaponMenu.Display(client, g_WeaponMenuDisplayTime);
+    s_WeaponMenu.Display(client, weaponListService.WeaponMenuDisplayTime);
 }
 
 static bool CanSelectNewWeapons(Service svc)
@@ -298,7 +298,7 @@ static void DisplayWeaponList(int client)
 {
     Menu listMenu = s_WeaponListService[client].WeaponMenu;
     if (listMenu != null)
-        listMenu.Display(client, g_WeaponMenuDisplayTime);
+        listMenu.Display(client, s_WeaponListService[client].WeaponMenuDisplayTime);
 }
 
 void WeaponMenu_BuildSelectionsFromConfig(KeyValues kv, const char[] serviceName, Menu &outputMenu, ArrayList &outputWeapons)
@@ -481,7 +481,7 @@ public int WeaponMenu_SelectionHandler(Menu menu, MenuAction action, int param1,
             if(!DecodeMenuInfo(info, item))
                 SetFailState("Decoding weapon menu item failed");
 
-            if(CanPurchaseWeapon(param1, item))
+            if (CanPurchaseWeapon(param1, item))
             {
                 int slot = -1;
 
@@ -503,8 +503,8 @@ public int WeaponMenu_SelectionHandler(Menu menu, MenuAction action, int param1,
                     WeaponMenu_SavePreviousWeapons(param1);
                 }
             }
-            else
-                LogError("Selected weapon {%s} when CanPurchaseWeapon is false", item.classname);
+
+            // CanPurchaseWeapon can become false if client is moving, so we can't error or anything
         }
     }
 
@@ -625,8 +625,7 @@ static bool CanAffordWeapon(int client, int price)
 }
 
 //--------------------------------------------------------------
-// Add a weapon classname to the temporary buffer used
-// to update previous weapons.
+// Is a weapon allowed to be purchased.
 //--------------------------------------------------------------
 static bool CanPurchaseWeapon(int client, WeaponMenuItem item)
 {
@@ -641,7 +640,7 @@ static bool CanPurchaseWeapon(int client, WeaponMenuItem item)
     if (item.team != 0 && ((team != CS_TEAM_CT && team != CS_TEAM_T) || team != item.team))
         return false;
 
-    if (g_ForceWeaponMenuToBuyZones && !IsInBuyZone(client))
+    if (svc.ForceWeaponMenuToBuyZones && !IsInBuyZone(client))
         return false;
 
     return true;

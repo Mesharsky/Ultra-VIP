@@ -809,6 +809,18 @@ methodmap Service < StringMap
         public set(ArrayList value) { this.SetValue("_weapons_list", value); }
     }
 
+    property int WeaponMenuDisplayTime
+    {
+        public get() { return Service_GetCell(this, "_menu_display_time"); }
+        public set(int value) { this.SetValue("_menu_display_time", value); }
+    }
+
+    property bool ForceWeaponMenuToBuyZones
+    {
+        public get() { return Service_GetCell(this, "_menu_block_outside_buyzone"); }
+        public set(bool value) { this.SetValue("_menu_block_outside_buyzone", value); }
+    }
+
     public bool IsWeaponAllowed(const char[] className)
     {
         return this.Weapons.FindString(className) != -1;
