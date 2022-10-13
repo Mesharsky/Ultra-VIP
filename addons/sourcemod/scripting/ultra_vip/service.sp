@@ -93,6 +93,12 @@ methodmap Service < StringMap
     public void GetScoreboardTag(char[] output, int size) { this.GetString("_scoreboard_tag", output, size); }
     public void SetScoreboardTag(const char[] tag) { this.SetString("_scoreboard_tag", tag); }
 
+    property bool AllowDuringWarmup
+    {
+        public get() { return Service_GetCell(this, "_allow_during_warmup"); }
+        public set(bool value) { this.SetValue("_allow_during_warmup", value); }
+    }
+
     property int BonusPlayerHealth
     {
         public get() { return Service_GetCell(this, "_player_hp"); }

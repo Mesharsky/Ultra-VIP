@@ -159,15 +159,15 @@ enum struct ConsumableItems
         if (svc == null)
             return;
 
-        if (IsRoundAllowed(svc.BonusHEGrenadesRound))
+        if (IsRoundAllowed(svc, svc.BonusHEGrenadesRound))
             this.heAmmo = svc.BonusHEGrenades;
-        if (IsRoundAllowed(svc.BonusSmokeGrenadesRound))
+        if (IsRoundAllowed(svc, svc.BonusSmokeGrenadesRound))
             this.smokeAmmo = svc.BonusSmokeGrenades;
-        if (IsRoundAllowed(svc.BonusFlashGrenadesRound))
+        if (IsRoundAllowed(svc, svc.BonusFlashGrenadesRound))
             this.flashbangAmmo = svc.BonusFlashGrenades;
 
         CSItemType type = GetFireNadeType(client);
-        if (IsRoundAllowed(svc.BonusMolotovGrenadesRound))
+        if (IsRoundAllowed(svc, svc.BonusMolotovGrenadesRound))
         {
             if (type == Item_Molotov)
                 this.molotovAmmo = svc.BonusMolotovGrenades;
@@ -175,19 +175,19 @@ enum struct ConsumableItems
                 this.incendiaryAmmo = svc.BonusMolotovGrenades;
         }
 
-        if (IsRoundAllowed(svc.BonusDecoyGrenadesRound))
+        if (IsRoundAllowed(svc, svc.BonusDecoyGrenadesRound))
             this.decoyAmmo = svc.BonusDecoyGrenades;
 
-        if (IsRoundAllowed(svc.BonusBreachchargeGrenadesRound))
+        if (IsRoundAllowed(svc, svc.BonusBreachchargeGrenadesRound))
             this.breachChargeAmmo = svc.BonusBreachchargeGrenades;
-        if (IsRoundAllowed(svc.BonusBumpmineGrenadesRound))
+        if (IsRoundAllowed(svc, svc.BonusBumpmineGrenadesRound))
             this.bumpMineAmmo = svc.BonusBumpmineGrenades;
-        if (IsRoundAllowed(svc.BonusTacticalGrenadesRound))
+        if (IsRoundAllowed(svc, svc.BonusTacticalGrenadesRound))
             this.tagAmmo = svc.BonusTacticalGrenades;
 
-        if (IsRoundAllowed(svc.BonusSnowballGrenadesRound))
+        if (IsRoundAllowed(svc, svc.BonusSnowballGrenadesRound))
             this.snowballAmmo = svc.BonusSnowballGrenades;
-        if (IsRoundAllowed(svc.BonusHealthshotGrenadesRound))
+        if (IsRoundAllowed(svc, svc.BonusHealthshotGrenadesRound))
             this.healthshotAmmo = svc.BonusHealthshotGrenades;
     }
 }
