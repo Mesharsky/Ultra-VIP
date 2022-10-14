@@ -28,7 +28,7 @@ Download the [latest release.](https://github.com/Mesharsky/Ultra-VIP/releases "
     - Read the documentation inside the file!
 3. Make sure to set a player\'s admin permissions! Ultra-VIP does not grant players admin flags/overrides/groups.
 
-For further details read [the set up guide on the github wiki]().
+For further details read [the set up guide on the github wiki](https://github.com/Mesharsky/Ultra-VIP/wiki/Setup "Setup Guide").
 
 ------------
 
