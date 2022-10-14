@@ -24,10 +24,8 @@ It is a complete remake and rewrite of [this older, more limited plugin](https:/
 Download the [latest release.](https://github.com/Mesharsky/Ultra-VIP/releases "Latest Release")  
 
 1. Upload all files to root directory of your server ([How to install plugins](https://wiki.alliedmods.net/Managing_your_sourcemod_installation#Installing_Plugins "Installing Plugins"))
-
 2. Configure plugin settings and services in the configuration file: `addons/sourcemod/configs/ultra_vip_main.cfg`.
-  - Read the documentation inside the file!
-
+    - Read the documentation inside the file!
 3. Make sure to set a player\'s admin permissions! Ultra-VIP does not grant players admin flags/overrides/groups.
 
 For further details read [the set up guide on the github wiki]().
