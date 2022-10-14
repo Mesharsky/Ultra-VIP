@@ -46,7 +46,7 @@ The round that they start becomnig active on can be changed.
 | Free Defuser | Give the player a defuser on spawn. |
 | Free Grenades/Equipment | Give the player any grenades/equipment on spawn. All utility is supported and can be specified individually (HEs, Flashbangs, Smokes, Decoys, Molotovs, Healthshots, Tactical Awareness Grenades, Snowballs, Breach Charges, Bump Mines). |
 | Multi-Jump | Extra mid-air jumps (as many as you want!). |
-| Riot Shield | Give the player a riot shield on spawn. |
+| Riot Shield | Give the player a riot shield on spawn. (Only works on Casual Gamemode) |
 | Gravity Scaling | Decrease or increase the players gravity. |
 | Speed Modifier | Increase or decrease the player\'s movement speed. |
 | Player Invisibility | Change how visible the player is (alpha/opacity). |
