@@ -1,76 +1,94 @@
-# ULTRA VIP PLUGIN
+# Ultra-VIP
 
-**Ultra VIP** is advanced system that allows you to create multiple VIP Services.
+**Ultra-VIP** is a fully featured and extensible VIP bonus system for SourceMod 1.11+.
 
-It is a complete remake and rewrite of [this](https://forums.alliedmods.net/showthread.php?t=320113 "this") plugin) 
+It is a complete remake and rewrite of [this older, more limited plugin](https://forums.alliedmods.net/showthread.php?t=320113 "older more disgusting plugin").  
 
-It has tons of more features and its **free of limitations** previous release had.
+###### Important Note: Ultra-VIP does not give out admin permissions. It applies bonuses to players that already have admin permission access. This means you need another plugin to actually grant a player access to admin flags/overrides.*
 
-| Supported Game | Minimum SourceMod Version |
-| ------------ | ------------ |
-|  CS:GO | SM 1.11+ |
 
-*Unfortunately it is hard to support other games with that amount of features.
-If there will be posibility it will be added*
-
-------------
-
-### FEATURES
-- You can create unlimited amount of VIP Services (ex: VIP, SuperVIP, Premium).
-- Everything is managed through very extensive and eye-catching configuration file.
-- Supports Modules.
-- SourceMod translations support (currently only English and Polish have translations).
-- Tons of bonuses arleady built-in you can use (**Click Here** - List of all bonuses provided)
+### Features
+- More than just \"VIP\".
+  - This plugin supports creating any amount of custom \"VIP\" services that can all be configured separately (e.g. \"VIP\", \"Super-VIP\", or whatever you want!)
+- Tons of highly and easily configurable player bonuses (see the list below).
+- Supports Admin Flags *(Legacy permissions)* or Overrides/Groups *(Modern permissions)*. Whichever you prefer.
+- Module API for extending functionality.
+  - Does Ultra-VIP not have a feature you want? You can add your own! See the github wiki for a [tutorial on how to make modules]().
+- Full translation support (currently only English and Polish, but pull requests are welcome).
+- It\'s **FREE**. Now you don\'t need to *pay* for some sketchy programmer\'s bad code!
 
 ------------
-### COMMANDS
-| Command | Description |
-| ------------ | ------------ |
-| **!jumps** | Toggle MultiJump On / OFF *(requires access to MultiJump)* |
-| **!vips** | List Of online players that have service |
-| **!vipbonus** | List of **ACTIVE** bonuses that services have |
-| **!reloadservices** | Reload Configuration File *(requires root flag)*. |
 
-------------
-### HOW TO CONFIGURE
+### Installation
 
-Read the documentation inside [the config file.](https://github.com/Mesharsky/Ultra-VIP/blob/main/addons/sourcemod/configs/ultra_vip_main.cfg "Config File")
-
-Also visit this Wiki: reeeeeeeeee
-
-------------
-### INSTALLATION
-Download the latest release [from here.](https://github.com/Mesharsky/Ultra-VIP/releases "Latest Release")  
+Download the [latest release.](https://github.com/Mesharsky/Ultra-VIP/releases "Latest Release")  
 
 1. Upload all files to root directory of your server ([How to install plugins](https://wiki.alliedmods.net/Managing_your_sourcemod_installation#Installing_Plugins "Installing Plugins"))
 
-2. Configure plugin settings and services in the configuration file: `addons/sourcemod/configs/ultra_vip_main.cfg`
+2. Configure plugin settings and services in the configuration file: `addons/sourcemod/configs/ultra_vip_main.cfg`.
+  - Read the documentation inside the file!
+
+3. Make sure to set a player\'s admin permissions! Ultra-VIP does not grant players admin flags/overrides/groups.
+
+For further details read [the set up guide on the github wiki]().
 
 ------------
-### MODULES
 
-Pog
-Moeny
-Moeny
-Moeny
-Moeny
-Moeny
-Money
-Meony
+### List of Player Bonuses
+All of these bonuses can be enabled/disabled, and the round that they apply to a player can be configured.  
+
+All of these bonuses can be configured as well as disabled.  
+The round that they start becomnig active on can be changed.
+
+| Spawn Bonus | Description |
+| --- | --- |
+| Bonus HP | Set the player\'s HP on spawn. |
+| Bonus Armor | Set the player\'s armor on spawn. |
+| Free Helmet | Give the player a helmet on spawn. |
+| Free Defuser | Give the player a defuser on spawn. |
+| Free Grenades/Equipment | Give the player any grenades/equipment on spawn. All utility is supported and can be specified individually (HEs, Flashbangs, Smokes, Decoys, Molotovs, Healthshots, Tactical Awareness Grenades, Snowballs, Breach Charges, Bump Mines). |
+| Multi-Jump | Extra mid-air jumps (as many as you want!). |
+| Riot Shield | Give the player a riot shield on spawn. |
+| Gravity Scaling | Decrease or increase the players gravity. |
+| Speed Modifier | Increase or decrease the player\'s movement speed. |
+| Player Invisibility | Change how visible the player is (alpha/opacity). |
+| Fall Damage Reduction | Reduce player fall damage. |
+| Attack Damage Boost | Increase or decrease the player\'s attack damage. |
+| Damage Resistance | Reduce damage taken by the player. |
+| Unlimited Ammo | Infinite ammo (endless magazine). |
+| No-Recoil | Disable weapon recoil. *Movement inaccuracy and spread still function.* |  
+
+| Money Bonus |
+| --- |
+| Extra money on Spawn |
+| Extra money on Kill |
+| Extra money on Assist |
+| Extra money on Headshot Kill |
+| Extra money on Knife Kill |
+| Extra money on Zeus/Taser Kill |
+| Extra money on Grenade Kill |
+| Extra money for MVP |
+| Extra money for No-scope Kill |
+| Extra money for Hostage Rescue |
+| Extra money for Bomb Planted |
+| Extra money for Bomb Defused |  
+
+| HP Bonus |
+| --- |
+| Extra HP on Kill |
+| Extra HP on Assist |
+| Extra HP on Headshot Kill |
+| Extra HP on Knife Kill |
+| Extra HP on Zeus/Taser Kill |
+| Extra HP on Grenade Kill |
+| Extra HP for No-scope Kill |  
 
 ------------
-### LIBRARIES USED
 
-[MultiColors](https://forums.alliedmods.net/showthread.php?t=247770 "MultiColors")  *(included in the repository)*
-
-------------
-### LANGUAGE SUPPORT
-Currently only English and Polish have translations, if you make one for another language let me know so I can add it to the plugin.
-
-------------
-### CREDITS
-
-[Bara](https://forums.alliedmods.net/member.php?u=178115 "Bara") - Multicolors Include.
-[Digby](https://github.com/sirdigbot/) - Huge help, it would not be released for another 2 years without him.
-
-#### **Somehow this plugin was made in 3 hours ☕️**
+### Commands
+| Command | Description |
+| ------------ | ------------ |
+| **!jumps** | Toggle Multi-Jump On / OFF *(requires access to Multi-Jump)* |
+| **!vips** | List Of online players that have a service. |
+| **!vipbonus** | List of  bonuses that services have. |
+| **!reloadservices** | Reload configuration file *(requires root flag)*. |
