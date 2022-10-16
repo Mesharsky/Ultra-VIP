@@ -55,7 +55,14 @@
 #endif
 
 
+// Special round values (used by IsRoundAllowed)
+// All special values must be negative, and INVALID_ROUND must be 0
 #define INVALID_ROUND 0
+#define ROUND_WARMUP_ONLY -1
+#define ROUND_MATCH_POINT -2
+#define ROUND_PISTOL -3
+#define ROUND_LAST_OF_HALF -4
+
 #define MAX_WEAPON_CLASSNAME_SIZE 24 // https://wiki.alliedmods.net/Counter-Strike:_Global_Offensive_Weapons
 #define MAX_SERVICE_NAME_SIZE 64
 #define MAX_SERVICE_OVERRIDE_SIZE 64
@@ -71,13 +78,13 @@ int g_AdminCacheGroupCount[MAXPLAYERS + 1];
 
 enum
 {
-	GamePhase_Warmup,
-	GamePhase_Standard,
-	GamePhase_PlayingFirstHalf,
-	GamePhase_PlayingSecondHalf,
-	GamePhase_Halftime,
-	GamePhase_MatchEnded,
-	GamePhase_TOTAL
+    GamePhase_Warmup,
+    GamePhase_Standard,
+    GamePhase_PlayingFirstHalf,
+    GamePhase_PlayingSecondHalf,
+    GamePhase_Halftime,
+    GamePhase_MatchEnded,
+    GamePhase_TOTAL
 };
 
 static ConVar s_Cvar_MaxRounds;
@@ -419,9 +426,51 @@ int GetRoundOfCurrentHalf()
     return roundNum;
 }
 
-int IsRoundAllowed(int round)
+static bool IsMatchPoint(int maxRounds)
 {
-    return g_RoundCount >= round && round > 0;
+    int ct = CS_GetTeamScore(CS_TEAM_CT);
+    int t = CS_GetTeamScore(CS_TEAM_T);
+
+    int max = ct > t ? ct : t;
+
+    // Rounds needed to win is (maxRounds / 2) + 1
+    return max == (maxRounds / 2);
+}
+
+static bool IsPistolRound(int currentRoundOfHalf)
+{
+    return currentRoundOfHalf == 1;
+}
+
+static bool IsRoundLastOfHalf(int currentRoundOfHalf, int maxRounds)
+{
+    // For even values of mp_maxrounds, or for the second half of games
+    // with odd mp_maxrounds, the formula (current * 2) >= maxRounds works.
+    //
+    // For the first half of games with odd mp_maxrounds,
+    // (current * 2) + 1 >= maxRounds works
+
+    if (maxRounds % 2 == 0 || GameRules_GetProp("m_gamePhase") == GamePhase_PlayingSecondHalf)
+        return (currentRoundOfHalf * 2) >= maxRounds;
+    return (currentRoundOfHalf * 2) + 1 >= maxRounds;
+}
+
+bool IsRoundAllowed(Service svc, int round)
+{
+    if (IsWarmup() && (round == ROUND_WARMUP_ONLY || svc.AllowDuringWarmup))
+        return true;
+
+    int current = GetRoundOfCurrentHalf();
+    int maxRounds = s_Cvar_MaxRounds.IntValue;
+
+    if (round == ROUND_MATCH_POINT && IsMatchPoint(maxRounds))
+        return true;
+    if (round == ROUND_PISTOL && IsPistolRound(current))
+        return true;
+    if (round == ROUND_LAST_OF_HALF && IsRoundLastOfHalf(current, maxRounds))
+        return true;
+
+    return g_RoundCount >= round && round > INVALID_ROUND;
 }
 
 bool UpdateClientAdminCache(int client)
