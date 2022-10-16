@@ -127,7 +127,7 @@ public Action Timer_SpawnBonuses(Handle tmr, DataPack pack)
     Bonus_SetPlayerVisibility(client, svc);
 
     Bonus_GivePlayerSpawnMoney(client, svc);
-    Bonus_GivePlayerShield(client, svc);
+    //Bonus_GivePlayerShield(client, svc);
 
     WeaponMenu_Display(client, svc);
     Bonus_GiveGrenades(client, svc);
@@ -304,6 +304,7 @@ public Action Hook_OnTakeDamage(int client, int &attacker, int &inflictor, float
     return state;
 }
 
+/* This function sucks ass. We won't use it.
 public void Hook_OnClientThink(int client)
 {
     // TODO: OPTIMISE / REWRITE
@@ -328,4 +329,4 @@ public void Hook_OnClientThink(int client)
         SetEntPropVector(client, Prop_Send, "m_aimPunchAngle", view_as<float>({0.0, 0.0, 0.0}));
         SetEntPropVector(client, Prop_Send, "m_aimPunchAngleVel", view_as<float>({0.0, 0.0, 0.0}));
     }
-}
+}*/

@@ -28,9 +28,12 @@
  * Currently, as of 2022/10/4, shields can only be given on hostage mode.
  *
  * We can fake it with this garbage.
+ * // EDIT: This function breaks the server and also is not flexible with gamemodes.
+ *          Untill solution will be available, we won't support player_shield
  */
 void Bonus_OnMapStart()
 {
+    /*
     int entity = -1;
     if ((entity = FindEntityByClassname(entity, "func_hostage_rescue")) == -1)
     {
@@ -39,6 +42,7 @@ void Bonus_OnMapStart()
         DispatchKeyValue(entity, "origin", "-3141 -5926 -5358");
         DispatchSpawn(entity);
     }
+    */
 }
 
 //////////////////////////////////
@@ -152,6 +156,7 @@ void Bonus_GivePlayerSpawnMoney(int client, Service svc)
         CPrintToChat(client, "%s %t", g_ChatTag, "Bonus Spawn Money", value);
 }
 
+/* Won't be supported as it's limited in CSGO (sorry)
 void Bonus_GivePlayerShield(int client, Service svc)
 {
     if (!IsFeatureAvailable(Feature_Shield))
@@ -163,6 +168,7 @@ void Bonus_GivePlayerShield(int client, Service svc)
     if (GetPlayerWeapon(client, CSWeapon_SHIELD) == -1)
         GivePlayerItem(client, "weapon_shield");
 }
+*/
 
 void Bonus_GiveGrenades(int client, Service svc)
 {

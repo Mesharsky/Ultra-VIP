@@ -483,8 +483,6 @@ static bool ProcessMainConfiguration(KeyValues kv, Service svc, bool fatalError,
 
 static bool Config_ProcessSteamIDAccess(KeyValues kv, Service svc, bool fatalError, const char[] serviceName)
 {
-#warning This was HandleErrorAndGoBack before but i think thats wrong, so test it
-
     if (!kv.JumpToKey("SteamID Access"))
         return s_IsInheritOnlyPass ? true : HandleError(svc, fatalError, "Service \"%s\" is missing secttion \"SteamID Access\".", serviceName);
 

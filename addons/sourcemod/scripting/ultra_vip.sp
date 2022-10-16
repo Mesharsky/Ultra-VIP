@@ -309,9 +309,6 @@ public void OnClientPostAdminCheck(int client)
     g_ClientService[client] = FindClientService(client);
     UpdateClientAdminCache(client);
 
-    SDKHook(client, SDKHook_OnTakeDamage, Hook_OnTakeDamage);
-    SDKHook(client, SDKHook_PreThink, Hook_OnClientThink);
-
     ExtraJump_OnClientPostAdminCheck(client, g_ClientService[client]);
 
     CallServiceForward(g_Fwd_OnPostAdminCheck, client, g_ClientService[client]);
