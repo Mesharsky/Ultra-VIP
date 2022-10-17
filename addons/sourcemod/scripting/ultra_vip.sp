@@ -123,8 +123,6 @@ enum struct Detect_ChatTag
 
 Detect_ChatTag g_ChatTagPlugin;
 
-//ConVar g_Cvar_ArenaMode;
-
 int g_RoundCount;
 
 #include "ultra_vip/config.sp"
@@ -194,8 +192,6 @@ public void OnPluginStart()
     s_Cvar_MaxRounds = FindConVar("mp_maxrounds");
     if (s_Cvar_MaxRounds == null)
         SetFailState("Game is somehow missing the required \"mp_maxrounds\" ConVar.");
-
-    //g_Cvar_ArenaMode = CreateConVar("arena_mode", "0", "Should arena mode (splewis) be enabled?\nRemeber that plugin will use arena configuration file instead if enabled");
 
     LoadTranslations("ultra_vip.phrases.txt");
 
