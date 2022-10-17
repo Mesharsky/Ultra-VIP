@@ -272,18 +272,23 @@ stock void UVIP_SetupModule()
  * @param defaultValue  Value to use if setting is not set for a service.
  * @param type          Data type of the setting.
  * @param mode          Does the setting need to be set for every service.
+ * @param error         Output buffer for error message (if any).
+ * @param errorSize     Size of error output buffer.
  *
- *
- * @error               Not called inside UVIP_OnStart(),
- *                      Setting name or value too long or not allowed,
- *                      Default value doesn't match type,
- *                      or Setting already registered to another plugin.
+ * @return  True if setting was registered, false otherwise.
+ *          Registering a setting can fail if:
+ *          this wasn't called inside UVIP_OnStart(),
+ *          the setting name/value is too long or not allowed,
+ *          the default value doesn't match the type,
+ *          or the setting already registered to another plugin.
  */
-native void UVIP_RegisterSetting(
+native bool UVIP_RegisterSetting(
     const char[] name,
     const char[] defaultValue,
     SettingType type,
-    SettingRequiredMode mode=Setting_Optional);
+    SettingRequiredMode mode=Setting_Optional,
+    char[] error=NULL_STRING,
+    int errorSize=-1);
 
 
 /**
@@ -302,6 +307,8 @@ native void UVIP_RegisterSetting(
  * @return              True if feature was successfully overridden.
  *                      False if the feature is already overridden by another
  *                      plugin.
+ *
+ * @error               Not called inside UVIP_OnStart().
  */
 native bool UVIP_OverrideFeature(
     UVIPFeature feature,

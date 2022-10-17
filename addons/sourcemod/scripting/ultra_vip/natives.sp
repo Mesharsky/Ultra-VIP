@@ -26,6 +26,14 @@ enum struct ModuleSettingInfo
     SettingRequiredMode mode;
     char name[MAX_SETTING_NAME_SIZE];
     char defaultValue[MAX_SETTING_VALUE_SIZE];
+
+    void Set(SettingType type, SettingRequiredMode mode, const char[] name, const char[] defaultValue)
+    {
+        this.type = type;
+        this.mode = mode;
+        strcopy(this.name, sizeof(ModuleSettingInfo::name), name);
+        strcopy(this.defaultValue, sizeof(ModuleSettingInfo::defaultValue), defaultValue);
+    }
 }
 
 enum struct FeatureOverrideInfo
@@ -164,7 +172,7 @@ public any Native_RegisterSetting(Handle plugin, int numParams)
     // The OnStart forward always happens before the config is processed, so we force
     // settings to be registered there for ease-of-use.
     if (!g_IsInOnStartForward)
-        return ThrowNativeError(SP_ERROR_NATIVE, "You must register a setting inside of the UVIP_OnStart forward.");
+        return OutputOptionalError(5, 6, "You must register a setting inside of the UVIP_OnStart forward.");
 
     ModuleSettingInfo info;
     int written;
@@ -176,35 +184,32 @@ public any Native_RegisterSetting(Handle plugin, int numParams)
     // Get params
     GetNativeString(1, name, sizeof(name), written);
     if (written >= MAX_SETTING_NAME_SIZE)
-        return ThrowNativeError(SP_ERROR_NATIVE, "Setting name must be less than %i characters", MAX_SETTING_NAME_SIZE);
+        return OutputOptionalError(5, 6, "Setting name must be less than %i characters", MAX_SETTING_NAME_SIZE);
 
     GetNativeString(2, defaultVal, sizeof(defaultVal), written);
     if (written >= MAX_SETTING_VALUE_SIZE)
-        return ThrowNativeError(SP_ERROR_NATIVE, "Setting values must be less than %i characters", MAX_SETTING_VALUE_SIZE);
+        return OutputOptionalError(5, 6, "Setting values must be less than %i characters", MAX_SETTING_VALUE_SIZE);
 
     // Verify setting name
     NormaliseString(name);
 
     if (!IsSettingNameAllowed(name))
-        return ThrowNativeError(SP_ERROR_NATIVE, "Setting names cannot be empty or start with \"%c\"", SERVICE_INTERNAL_PREFIX);
+        return OutputOptionalError(5, 6, "Setting names cannot be empty or start with \"%c\"", SERVICE_INTERNAL_PREFIX);
 
     // Verify setting default value (required by modulecfg.sp)
     SettingType type = GetNativeCell(3);
     char error[256];
     if (!DoesSettingTypeMatch(type, defaultVal, error, sizeof(error)))
-        return ThrowNativeError(SP_ERROR_NATIVE, "Default value does not match type: %s", error);
+        return OutputOptionalError(5, 6, "Default value does not match type: %s", error);
 
     // Copy data
-    strcopy(info.name, sizeof(ModuleSettingInfo::name), name);
-    strcopy(info.defaultValue, sizeof(ModuleSettingInfo::defaultValue), defaultVal);
-    info.type = type;
-    info.mode = GetNativeCell(4);
+    info.Set(type, GetNativeCell(4), name, defaultVal);
 
     // Store setting (false = Check for duplicates)
     if (!g_ModuleSettings.SetArray(info.name, info, sizeof(info), false))
-        return ThrowNativeError(SP_ERROR_NATIVE, "Another plugin is already using the setting name \"%s\"", info.name);
+        return OutputOptionalError(5, 6, "Another plugin is already using the setting name \"%s\"", info.name);
 
-    return 0;
+    return true;
 }
 
 public any Native_OverrideFeature(Handle plugin, int numParams)
@@ -415,6 +420,26 @@ bool IsSettingNameAllowed(const char[] name)
             return false;
     }
     return true;
+}
+
+/**
+ * SetNativeString a formatted error only if the optional parameters are set.
+ * Always return false.
+ */
+static bool OutputOptionalError(int outParam, int sizeParam, const char[] err, any ...)
+{
+    int size = GetNativeCell(sizeParam);
+
+    if (!IsNativeParamNullString(outParam) && size > -1)
+    {
+        int len = strlen(err) + 256;
+        char[] fmt = new char[len];
+        VFormat(fmt, len, err, 4);
+
+        SetNativeString(outParam, fmt, size);
+    }
+
+    return false;
 }
 
 
