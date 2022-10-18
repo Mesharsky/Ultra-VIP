@@ -55,10 +55,12 @@ enum struct FeatureOverrideInfo
 }
 
 
+// NOTE: This check on Feature_LAST_ITEM doesnt even work properly
+// if the item was added before Special Bonuses -_-
 #if defined COMPILER_IS_SM1_11
 static_assert(view_as<int>(Feature_LAST_ITEM) == 311, "Feature was added to UVIPFeature without s_FeatureOverrides array being resized");
 #endif
-static FeatureOverrideInfo s_FeatureOverrides[21];
+static FeatureOverrideInfo s_FeatureOverrides[20];
 
 
 void Natives_OnPluginStart()
@@ -401,9 +403,9 @@ static int GetFeatureIndex(UVIPFeature feature)
     if (feature < Feature_Grenades)
         return view_as<int>(feature) - (view_as<int>(Feature_PlayerHP) - 4); // Remove first 4 indexes
     if (feature < Feature_ExtraJumps)
-        return view_as<int>(feature) - (view_as<int>(Feature_Grenades) - 9); // Remove first 9 indexes
+        return view_as<int>(feature) - (view_as<int>(Feature_Grenades) - 8); // Remove first 8 indexes
     if (feature < Feature_LAST_ITEM)
-        return view_as<int>(feature) - (view_as<int>(Feature_ExtraJumps) - 10); // Remove first 10 indexes
+        return view_as<int>(feature) - (view_as<int>(Feature_ExtraJumps) - 9); // Remove first 9 indexes
 
     return -1;
 }

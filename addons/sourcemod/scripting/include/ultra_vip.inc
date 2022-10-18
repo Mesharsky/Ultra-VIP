@@ -66,7 +66,6 @@ enum UVIPFeature
 
     // Player Spawn Bonuses
     Feature_PlayerHP = 100,
-    Feature_PlayerMaxHP,
     Feature_Armor,
     Feature_Helmet,
     Feature_Defuser,
@@ -87,7 +86,7 @@ enum UVIPFeature
     Feature_UnlimitedAmmo,
     Feature_NoRecoil,
 
-    Feature_LAST_ITEM       // Internal use only. Similar to a TOTAL, but value wrong/offset.
+    Feature_LAST_ITEM       // Internal use only.
 }
 
 
