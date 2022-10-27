@@ -119,15 +119,58 @@ public any Native_IsCoreCompatible(Handle plugin, int numParams)
 
 public any Native_HandleLateLoad(Handle plugin, int numParams)
 {
+    if (!g_HaveAllPluginsLoaded)
+        return true;
+    else
+        return false;
+
+    /**
+     * TODO / BUG / PAIN
+     * Late-loading cannot be supported with the current API design.
+     * So for now we must block late-loads.
+     *
+     * --------
+     *
+     * UVIP_SetupModule calls HandleLateLoad which manually calls UVIP_OnStart.
+     * The intention was to have this happen during OnPluginStart so that it would ALWAYS RUN when the module starts.
+     * Which means only OnPluginStart or OnAllPluginsLoaded are possible to use.
+     *
+     * So it is not possible to put this `UVIP_SetupModule` in `UVIP_OnStart` because during a late-load,
+     * the `UVIP_OnStart` forward wont be called.
+     *
+     * But OnPluginStart is not allowed because the core library may not even be loaded yet.
+     * Which is way before UVIP_OnStart is called by the core--which means the config hasn't loaded yet and
+     * registering settings/overriding features isn't allowed.
+     *
+     * And we can't use OnAllPluginsLoaded because again, there's no order guarantee. It can happen before or after UVIP_OnStart.
+     *
+     * To put it simply: There is no possible way (that I can think of) to have a module fix its own lateloading.
+     *
+     * Here's some hypothetical ways it could (possibly) be fixed:
+     *   - Some sourcemod forward that is called when a plugin loads, that also has a param
+     *     for if the plugin uses the current one as a library/dependency (so we can do HandleLateLoad from the core entirely)
+     *     Hacking one in by using OnGameFrame or something extremely slow could also work.
+     *
+     *   - Rework the entire core plugin so that it doesn't provide any functionality except the settings system (and every feature is a module)
+     *
+     *   - Some sort of hot-loading system for the registered settings that allows them to not exist without spamming errors
+     *
+     * Other than that, the entire lateloading system is fundamentally broken.
+     */
+
+
+
+    /*
+
     // Not a lateload
     if (!g_HaveAllPluginsLoaded)
-        return 0;
+        return true;
 
     // If module doesn't have UVIP_OnStart it doesn't need us to handle
     // lateload (RegisterSetting/OverrideFeature not used).
     Function onStart = GetFunctionByName(plugin, "UVIP_OnStart");
     if (onStart == INVALID_FUNCTION)
-        return 0;
+        return true;
 
     // Set g_HaveAllPluginsLoaded to false temporarily so that
     // RegisterSetting and Overridefeature can work.
@@ -146,7 +189,7 @@ public any Native_HandleLateLoad(Handle plugin, int numParams)
     if (err != SP_ERROR_NONE)
     {
         LogError("Error %i occurred while calling UVIP_OnStart for plugin '%s'", err, pluginName);
-        return 0;
+        return false;
     }
 
     // Reload the config so that the newly-registered settings/feature overrides
@@ -166,7 +209,9 @@ public any Native_HandleLateLoad(Handle plugin, int numParams)
 
     PrintToServer("[Ultra VIP] %t", "Module triggered reload", pluginName);
     CPrintToChatAll("%t", "Ultra VIP reloaded config");
-    return 0;
+    return true;
+
+    */
 }
 
 public any Native_RegisterSetting(Handle plugin, int numParams)

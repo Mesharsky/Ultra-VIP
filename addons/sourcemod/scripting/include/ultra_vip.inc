@@ -184,9 +184,6 @@ methodmap UVIPService < Handle
  *
  * This is the only place you can call UVIP_RegisterSetting or
  * UVIP_OverrideFeature.
- *
- * If the plugin is late-loaded this will be called automatically
- * as long as UVIP_SetupModule is used in OnPluginStart().
  */
 forward void UVIP_OnStart();
 
@@ -195,9 +192,6 @@ forward void UVIP_OnStart();
  *
  * It is not safe to use any settings created by UVIP_RegisterSetting until
  * after this forward is called.
- *
- * If the plugin is late-loaded this will be called automatically
- * as long as UVIP_SetupModule is used in OnPluginStart().
  */
 forward void UVIP_OnReady();
 
@@ -245,7 +239,7 @@ forward void UVIP_OnSpawnWithService(int client, UVIPService service);
 /**
  * Prepare an Ultra-VIP module.
  *
- * This should be called in OnPluginStart() before any other Ultra-VIP code
+ * This should be called in UVIP_OnStart() before any other Ultra-VIP code
  * is used.
  */
 stock void UVIP_SetupModule()
@@ -253,7 +247,8 @@ stock void UVIP_SetupModule()
     if (!_UVIP_IsCoreCompatible())
         SetFailState("This plugin is not compatible with the installed version of Ultra-VIP (Compiled for version: '%s', Required API version: %i).", UVIP_VERSION, UVIP_API_VERSION);
 
-    _UVIP_HandleLateLoad();
+    if (!_UVIP_HandleLateLoad())
+        SetFailState("Ultra-VIP modules cannot be late-loaded (due to internal logic making it unstable).");
 }
 
 
