@@ -27,6 +27,7 @@ static bool s_IsEnabled[MAXPLAYERS + 1] = { EXTRAJUMP_DEFAULT_STATE, ... };
 static bool s_IsDoingExtraJump[MAXPLAYERS + 1] = { false, ... };
 
 static bool s_AllowedToMultiJump[MAXPLAYERS + 1];
+static bool s_AllowedToBH[MAXPLAYERS + 1];
 static int s_MaxMultiJumps[MAXPLAYERS + 1];
 static float s_JumpHeight[MAXPLAYERS + 1];
 
@@ -117,6 +118,15 @@ void ExtraJump_OnClientPostAdminCheck(int client, Service svc)
     s_JumpHeight[client] = svc.BonusJumpHeight;
 }
 
+void BunnyHop_OnClientPostAdminCheck(int client, Service svc)
+{
+    if (svc == null)
+    {
+        s_AllowedToBH[client] = false;
+        return;
+    }
+}
+
 void ExtraJump_OnPlayerSpawn(int client, Service svc)
 {
     s_AllowedToMultiJump[client] = false;
@@ -139,6 +149,25 @@ void ExtraJump_OnPlayerSpawn(int client, Service svc)
     s_AllowedToMultiJump[client] = true;
 }
 
+void BunnyHop_OnPlayerSpawn(int client, Service svc)
+{
+    s_AllowedToBH[client] = false;
+
+    if (svc == null)
+        return;
+
+    if (!svc.BonusBunnyHop)
+        return;    
+
+    if (!IsPlayerAlive(client))
+        return;    
+
+    if (!IsRoundAllowed(svc, svc.BonusBunnyHopRound))
+        return;
+
+    s_AllowedToBH[client] = true;
+}
+
 void ExtraJump_OnPlayerDeath(int client)
 {
     s_AllowedToMultiJump[client] = false;
@@ -151,6 +180,11 @@ void ExtraJump_OnClientDisconect(int client)
     s_JumpHeight[client] = EXTRAJUMP_DEFAULT_HEIGHT;
     s_AllowedToMultiJump[client] = false;
     s_IsDoingExtraJump[client] = false;
+}
+
+void BunnyHop_OnClientDisconnect(int client)
+{
+    s_AllowedToBH[client] = false;
 }
 
 static void FakeJump(int client, float jumpHeight = EXTRAJUMP_DEFAULT_HEIGHT)
@@ -196,4 +230,19 @@ static bool CanJumpAgain(int client, int &jumpCount)
     // 0 is the first jump from the ground, so it shouldn't be counted.
     // That makes s_MaxMultiJumps 1-indexed (so use <=)
     return jumpCount > 0 && jumpCount <= s_MaxMultiJumps[client];
+}
+
+void BunnyHop_OnPlayerRunCmd(int client, int &buttons)
+{
+    if (!s_AllowedToBH[client])
+        return;
+
+    if (IsPlayerAlive(client))
+    {
+        if((buttons & IN_JUMP) > 0 && GetEntityMoveType(client) == MOVETYPE_WALK && GetEntProp(client, Prop_Send, "m_nWaterLevel") <= 1)
+	    {
+		    int iOldButtons = GetEntProp(client, Prop_Data, "m_nOldButtons");
+		    SetEntProp(client, Prop_Data, "m_nOldButtons", iOldButtons & ~IN_JUMP);
+	    }
+    }
 }

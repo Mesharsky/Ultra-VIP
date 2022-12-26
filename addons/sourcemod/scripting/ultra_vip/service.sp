@@ -270,6 +270,17 @@ methodmap Service < StringMap
         public set(int value) { this.SetValue("_bumpmine_round", value); }
     }
 
+    property bool BonusBunnyHop
+    {
+        public get() { return Service_GetCell(this, "_player_bunnyhop"); }
+        public set(bool value) { this.SetValue("_player_bunnyhop", value); }
+    }
+    property int BonusBunnyHopRound
+    {
+        public get() { return Service_GetCell(this, "_player_bunnyhop_round"); }
+        public set(int value) { this.SetValue("_player_bunnyhop_round", value); }
+    }
+
     property int BonusExtraJumps
     {
         public get() { return Service_GetCell(this, "_player_extra_jumps"); }

@@ -313,6 +313,7 @@ public void OnClientPostAdminCheck(int client)
     UpdateClientAdminCache(client);
 
     ExtraJump_OnClientPostAdminCheck(client, g_ClientService[client]);
+    BunnyHop_OnClientPostAdminCheck(client, g_ClientService[client]);
 
     CallServiceForward(g_Fwd_OnPostAdminCheck, client, g_ClientService[client]);
 }
@@ -323,6 +324,7 @@ public void OnClientDisconnect(int client)
 
     Bonus_LeaveMessage(client);
     ExtraJump_OnClientDisconect(client);
+    BunnyHop_OnClientDisconnect(client);
     WeaponMenu_ResetPreviousWeapons(client);
 
     g_ClientService[client] = null;
@@ -406,6 +408,7 @@ public Action Command_ReloadServices(int client, int args)
 public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon)
 {
     ExtraJump_OnPlayerRunCmd(client);
+    BunnyHop_OnPlayerRunCmd(client, buttons);
     return Plugin_Continue;
 }
 

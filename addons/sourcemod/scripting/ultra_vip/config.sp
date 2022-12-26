@@ -649,6 +649,11 @@ static bool ProcessSpecialBonuses(KeyValues kv, Service svc, bool fatalError, co
     if (CanGetKey(kv, "player_extra_jumps_falldamage"))
         svc.BonusExtraJumpsTakeFallDamage = view_as<bool>(kv.GetNum("player_extra_jumps_falldamage", 1));
 
+    if (CanGetKey(kv, "player_bunnyhop"))
+        svc.BonusBunnyHop = view_as<bool>(kv.GetNum("player_bunnyhop", 0));
+    if (CanGetKey(kv, "player_bunnyhop_round"))
+        svc.BonusBunnyHopRound = GetConfigRound(kv, "player_bunnyhop_round", 1);
+
     if (CanGetKey(kv, "player_shield"))
         svc.BonusPlayerShield = view_as<bool>(kv.GetNum("player_shield", 0));
     if (CanGetKey(kv, "player_shield_round"))

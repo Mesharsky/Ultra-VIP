@@ -105,6 +105,7 @@ public Action Timer_SpawnBonuses(Handle tmr, DataPack pack)
 
     // This must run for every spawn, even without a service
     ExtraJump_OnPlayerSpawn(client, svc);
+    BunnyHop_OnPlayerSpawn(client, svc);
     CallServiceForward(g_Fwd_OnSpawn, client, svc);
 
     if (svc == null)
