@@ -34,8 +34,10 @@ bool g_FixGrenadeLimits;
 char g_ChatTag[64];
 bool g_UseOnlineList;
 bool g_UseBonusesList;
+bool g_UseVipSettings;
 StringMap g_OnlineListCommands;
 StringMap g_BonusesListCommands;
+StringMap g_VipSettingsCommands;
 bool g_IsDeathmatchMode;
 bool g_BotsGrantBonuses;
 
@@ -46,6 +48,8 @@ StringMap g_SteamIDServices;    // Maps SteamID2 to Service handle (g_Services)
 static int s_UsedServiceFlags;
 static StringMap s_UsedServiceOverrides;
 static bool s_IsInheritOnlyPass;
+
+static bool s_PlayersAirccelerate;
 
 #define CONFIG_PATH "configs/ultra_vip_main.cfg"
 #define ONLINE_CMD_SEPARATOR ";"
@@ -213,13 +217,16 @@ static bool GetGlobalConfiguration(KeyValues kv, bool fatalError)
 
     g_UseOnlineList = view_as<bool>(kv.GetNum("online_list", 1));
     g_UseBonusesList = view_as<bool>(kv.GetNum("bonuses_list", 1));
+    g_UseVipSettings = view_as<bool>(kv.GetNum("vip_settings", 1));
     g_IsDeathmatchMode = view_as<bool>(kv.GetNum("deathmatch_mode", 0));
     g_BotsGrantBonuses = view_as<bool>(kv.GetNum("bots_grant_bonuses", 0));
 
     delete g_OnlineListCommands;
     delete g_BonusesListCommands;
+    delete g_VipSettingsCommands;
     g_OnlineListCommands = new StringMap();
     g_BonusesListCommands = new StringMap();
+    g_VipSettingsCommands = new StringMap();
 
     // Allow an extra char to catch misuse
     char buffer[ONLINE_CMD_STRING_MAXLENGTH + 2];
@@ -234,6 +241,12 @@ static bool GetGlobalConfiguration(KeyValues kv, bool fatalError)
         return HandleError(kv, fatalError, "\"bonuses_list_commands\" is too long (Max %i characters).", ONLINE_CMD_STRING_MAXLENGTH);
 
     SplitIntoStringMap(g_BonusesListCommands, buffer, ONLINE_CMD_SEPARATOR);
+
+    kv.GetString("vip_settings_commands", buffer, sizeof(buffer));
+    if (strlen(buffer) >= ONLINE_CMD_STRING_MAXLENGTH)
+        return HandleError(kv, fatalError, "\"vip_settings_commands\" is too long (Max %i characters).", ONLINE_CMD_STRING_MAXLENGTH);
+
+    SplitIntoStringMap(g_VipSettingsCommands, buffer, ONLINE_CMD_SEPARATOR);
 
     if (!GetRootService(kv))
         return HandleError(kv, fatalError, "An error occurred while processing the \"root_service\".");
@@ -335,6 +348,11 @@ bool Config_FixCvars()
     for (int i = 0; i < len; ++i)
     {
         svc = g_Services.Get(i);
+
+        if (svc.BonusBunnyHop || s_PlayersAirccelerate)
+        {
+            ServerCommand("sv_airaccelerate 20");
+        }
 
         // Only modify cvars if actually required
         if (svc.BonusPlayerVisibility < 255)
@@ -653,6 +671,9 @@ static bool ProcessSpecialBonuses(KeyValues kv, Service svc, bool fatalError, co
         svc.BonusBunnyHop = view_as<bool>(kv.GetNum("player_bunnyhop", 0));
     if (CanGetKey(kv, "player_bunnyhop_round"))
         svc.BonusBunnyHopRound = GetConfigRound(kv, "player_bunnyhop_round", 1);
+    if (CanGetKey(kv, "player_airaccelerate"))
+        s_PlayersAirccelerate = view_as<bool>(kv.GetNum("player_airccelerate_fix", 0));
+        
 
     if (CanGetKey(kv, "player_shield"))
         svc.BonusPlayerShield = view_as<bool>(kv.GetNum("player_shield", 0));

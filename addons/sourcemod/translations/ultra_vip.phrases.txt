@@ -185,6 +185,15 @@
         "en"    "{green}Congratulations! {default}You Respawned!"
     }
 
+    "You Have No Service"
+    {
+        "en"    "You don't own any service."
+    }
+    "Vip Settings Select"
+    {
+        "en"    "Select your VIP Service to disable bonuses you don't wish to have"
+    }
+
     "Service Category List"
     {
         "en"    "Select VIP Service below to display online users:"

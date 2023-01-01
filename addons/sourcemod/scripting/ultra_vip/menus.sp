@@ -32,6 +32,60 @@
 
 static Service g_SelectedService[MAXPLAYERS +1];
 
+void ShowVipSettings(int client)
+{
+    Menu menu = new Menu(MenuHandler_Settings, MENU_ACTIONS_ALL);
+    menu.Pagination = true;
+
+    Service svc = GetClientService(client);
+    
+    if (svc == null)
+        CPrintToChat(client, "%s %t", g_ChatTag, "You Have No Service");
+
+    char display[MAX_SERVICE_NAME_SIZE];
+    svc.GetName(display, sizeof(display));
+
+    menu.AddItem("vip-disable-bonuses", display);
+    menu.AddItem("vip-enable-bonuses", display);
+
+    menu.Display(client, MENU_TIME_FOREVER);
+}
+
+public int MenuHandler_Settings(Menu menu, MenuAction action, int param1, int param2)
+{
+    switch(action)
+    {
+        case MenuAction_End:
+        {
+            delete menu;
+        }
+        case MenuAction_Display:
+        {
+            char title[255];
+            FormatEx(title, sizeof(title), "%T", "Vip Settings Select", param1);
+            Panel panel = view_as<Panel>(param2);
+            panel.SetTitle(title);
+        }
+        case MenuAction_DisplayItem:
+        {
+            char info[16];
+            menu.GetItem(param2, info, sizeof(info));
+        }
+        case MenuAction_Select:
+        {
+            char info[16];
+            char display[32];
+            menu.GetItem(param2, info, sizeof(info), _, display, sizeof(display));
+
+            Service svc = view_as<Service>(StringToInt(info));
+
+            ServiceBonusesList(param1, svc, display);
+        }
+    }
+
+    return 0;
+}
+
 void ShowServiceBonuses(int client)
 {
     Menu menu = new Menu(MenuHandler_Bonuses, MENU_ACTIONS_ALL);
