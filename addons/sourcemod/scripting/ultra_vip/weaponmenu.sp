@@ -202,6 +202,8 @@ static bool CanDisplayWeaponMenu(int client, Service svc)
         return false;
     if (!IsOnPlayingTeam(client) || !IsPlayerAlive(client))
         return false;
+    if (GetEntProp(client, Prop_Send, "m_bIsControllingBot"))
+        return false;    
 
     return CanSelectNewWeapons(svc) || s_PreviousWeapon[client].IsAnyAllowedThisRound(svc);
 }

@@ -21,6 +21,24 @@
 #pragma semicolon 1
 
 /**
+ * %1 -- Menu Handle to add to
+ * %2 -- Name of g_ToggledSettings member variable (without quotes).
+ *       Also used for info string.
+ * %3 -- Disable translation phrase
+ * %4 -- Enable translation phrase
+ */
+/*
+#define ADDTOGGLEITEM(%1,%2,%3,%4)  \
+    AddFormattedItem(               \
+        %1,                         \
+        #%2,                        \
+        ITEMDRAW_DEFAULT,           \
+        "%T",                       \
+        (g_ToggledSettings[client].%2) ? %3 : %4, client);
+
+*/
+
+/**
  * Add a Service property to the service details menu.
  *
  * %1 = Translation phrase (must take 1 formatting arg)
@@ -32,6 +50,7 @@
 
 static Service g_SelectedService[MAXPLAYERS +1];
 
+/*
 void ShowVipSettings(int client)
 {
     Menu menu = new Menu(MenuHandler_Settings, MENU_ACTIONS_ALL);
@@ -40,16 +59,23 @@ void ShowVipSettings(int client)
     Service svc = GetClientService(client);
     
     if (svc == null)
+    {
         CPrintToChat(client, "%s %t", g_ChatTag, "You Have No Service");
+        return;
+    }
 
-    char display[MAX_SERVICE_NAME_SIZE];
-    svc.GetName(display, sizeof(display));
-
-    menu.AddItem("vip-disable-bonuses", display);
-    menu.AddItem("vip-enable-bonuses", display);
+    ADDTOGGLEITEM(menu, extraHP, "Disable ExtraHP", "Enable ExtraHP")
+    ADDTOGGLEITEM(menu, vest, "Disable Vest", "Enable Vest")
+    ADDTOGGLEITEM(menu, helmet, "Disable Helmet", "Enable Helmet")
+    ADDTOGGLEITEM(menu, defuser, "Disable Defuser", "Enable Defuser")
+    ADDTOGGLEITEM(menu, grenades, "Disable Grenades", "Enable Grenades")
+    ADDTOGGLEITEM(menu, weaponmenu, "Disable WeaponMenu", "Enable WeaponMenu")
+    ADDTOGGLEITEM(menu, jumps, "Disable Jumps", "Enable Jumps")
+    ADDTOGGLEITEM(menu, bunnyhop, "Disable Bunnyhop", "Enable Bunnyhop")
 
     menu.Display(client, MENU_TIME_FOREVER);
 }
+*/
 
 public int MenuHandler_Settings(Menu menu, MenuAction action, int param1, int param2)
 {
@@ -68,18 +94,11 @@ public int MenuHandler_Settings(Menu menu, MenuAction action, int param1, int pa
         }
         case MenuAction_DisplayItem:
         {
-            char info[16];
-            menu.GetItem(param2, info, sizeof(info));
+           
         }
         case MenuAction_Select:
         {
-            char info[16];
-            char display[32];
-            menu.GetItem(param2, info, sizeof(info), _, display, sizeof(display));
-
-            Service svc = view_as<Service>(StringToInt(info));
-
-            ServiceBonusesList(param1, svc, display);
+           
         }
     }
 

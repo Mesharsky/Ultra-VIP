@@ -20,10 +20,6 @@
 #pragma newdecls required
 #pragma semicolon 1
 
-#define EXTRAJUMP_DEFAULT_STATE (true)
-
-static bool s_IsEnabled[MAXPLAYERS + 1] = { EXTRAJUMP_DEFAULT_STATE, ... };
-
 static bool s_IsDoingExtraJump[MAXPLAYERS + 1] = { false, ... };
 
 static bool s_AllowedToMultiJump[MAXPLAYERS + 1];
@@ -44,14 +40,14 @@ public Action Command_ToggleJumps(int client, int args)
         return Plugin_Continue;
     }
 
-    if (s_IsEnabled[client])
+    if (s_AllowedToMultiJump[client])
     {
-        s_IsEnabled[client] = false;
+        s_AllowedToMultiJump[client] = false;
         CPrintToChat(client, "%t", "Multi Jump Off");
     }
     else
     {
-        s_IsEnabled[client] = true;
+        s_AllowedToMultiJump[client] = true;
         CPrintToChat(client, "%t", "Multi Jump On");
     }
 
@@ -137,9 +133,6 @@ void ExtraJump_OnPlayerSpawn(int client, Service svc)
     if (svc == null)
         return;
 
-    if (!s_IsEnabled[client])
-        return;
-
     if (!IsPlayerAlive(client))
         return;
 
@@ -175,7 +168,6 @@ void ExtraJump_OnPlayerDeath(int client)
 
 void ExtraJump_OnClientDisconect(int client)
 {
-    s_IsEnabled[client] = EXTRAJUMP_DEFAULT_STATE;
     s_MaxMultiJumps[client] = 0;
     s_JumpHeight[client] = EXTRAJUMP_DEFAULT_HEIGHT;
     s_AllowedToMultiJump[client] = false;

@@ -417,6 +417,12 @@ methodmap Service < StringMap
         public set(int value) { this.SetValue("_player_no_recoil_round", value); }
     }
 
+    property bool BonusAWPAmmo
+    {
+        public get() { return Service_GetCell(this, "_player_awp_10ammo"); }
+        public set(bool value) { this.SetValue("_player_awp_10ammo", value); }
+    }
+
     property int BonusSpawnMoney
     {
         public get() { return Service_GetCell(this, "_spawn_bonus"); }

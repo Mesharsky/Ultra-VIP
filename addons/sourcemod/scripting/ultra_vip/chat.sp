@@ -55,11 +55,13 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
         return Plugin_Handled;
     }
 
+    /*
     if (g_UseVipSettings && g_VipSettingsCommands != null && g_VipSettingsCommands.ContainsKey(filtered))
     {
         ShowVipSettings(client);
         return Plugin_Handled;
     }
+    */
 
     return Plugin_Continue;
 }
@@ -104,6 +106,9 @@ void ApplyColors(char[] name, char[] namecolor, char[] message, Service svc)
     svc.GetChatTag(tag, sizeof(tag));
     char msgcolor[32];
     svc.GetChatMsgColor(msgcolor, sizeof(msgcolor));
+
+    if (!tag[0])
+        return;
 
     Format(name, MAXLENGTH_NAME, " %s %s%s", tag, namecolor, name);
     CFormatColor(name, MAXLENGTH_NAME);

@@ -598,4 +598,14 @@
     {
         "en"    "SCAR-20"
     }
+
+    // Menu "settings" per player Translations
+    "Disable Bunnyhop"
+    {
+        "en"    "BunnyHop [Select to turn OFF]"
+    }
+    "Enable Bunnyhop"
+    {
+        "en"    "BunnyHop [Select to turn ON]"
+    }
 }

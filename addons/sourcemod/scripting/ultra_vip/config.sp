@@ -34,7 +34,7 @@ bool g_FixGrenadeLimits;
 char g_ChatTag[64];
 bool g_UseOnlineList;
 bool g_UseBonusesList;
-bool g_UseVipSettings;
+//bool g_UseVipSettings;
 StringMap g_OnlineListCommands;
 StringMap g_BonusesListCommands;
 StringMap g_VipSettingsCommands;
@@ -217,7 +217,7 @@ static bool GetGlobalConfiguration(KeyValues kv, bool fatalError)
 
     g_UseOnlineList = view_as<bool>(kv.GetNum("online_list", 1));
     g_UseBonusesList = view_as<bool>(kv.GetNum("bonuses_list", 1));
-    g_UseVipSettings = view_as<bool>(kv.GetNum("vip_settings", 1));
+    //g_UseVipSettings = view_as<bool>(kv.GetNum("vip_settings", 1));
     g_IsDeathmatchMode = view_as<bool>(kv.GetNum("deathmatch_mode", 0));
     g_BotsGrantBonuses = view_as<bool>(kv.GetNum("bots_grant_bonuses", 0));
 
@@ -726,6 +726,9 @@ static bool ProcessSpecialBonuses(KeyValues kv, Service svc, bool fatalError, co
         svc.BonusNoRecoil = view_as<bool>(kv.GetNum("player_no_recoil", 0));
     if (CanGetKey(kv, "player_no_recoil_round"))
         svc.BonusNoRecoilRound = GetConfigRound(kv, "player_no_recoil_round", 1);
+
+    if (CanGetKey(kv, "player_awp_10ammo"))
+        svc.BonusAWPAmmo = view_as<bool>(kv.GetNum("player_awp_10ammo", 1));
 
     kv.GoBack(); // Service name
     return true;

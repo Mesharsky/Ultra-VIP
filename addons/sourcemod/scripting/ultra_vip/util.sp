@@ -374,9 +374,6 @@ void PurchaseWeapon(int client, WeaponMenuItem item, int slot, bool strip=true)
  */
 int GetAccountFromSteamID(const char[] steamId)
 {
-    // TODO: Make this less janky with regex?
-    // Is the performance cost worth it?
-
     int len = strlen(steamId);
 
     // SteamID2
@@ -528,4 +525,97 @@ bool KvContainsSubKey(KeyValues kv, const char[] key)
     }
 
     return false;
+}
+
+/*
+bool AddFormattedItem(Menu menu, const char[] info, int style, const char[] displayFmt, any ...)
+{
+    int len = strlen(displayFmt) + 256;
+    char[] formatted = new char[len];
+    VFormat(formatted, len, displayFmt, 4);
+
+    return menu.AddItem(info, formatted, style);
+}
+*/
+
+void LoadGameDataGameFile()
+{
+    int offset;
+    Handle config = LoadGameConfigFile("ultra_vip.gamedata");
+
+    if((offset = GameConfGetOffset(config, "Clip")) != -1) 
+        AWP_GetClipAmmoMax = DHookCreate(offset, HookType_Entity, ReturnType_Int, ThisPointer_CBaseEntity, HookCallBack_GetClipAmmoMax);
+
+    if((offset = GameConfGetOffset(config, "Reserve")) != -1) 
+    {
+        AWP_GetReserveAmmoMax = DHookCreate(offset, HookType_Entity, ReturnType_Int, ThisPointer_CBaseEntity, HookCallBack_GetReserveAmmoMax);
+        DHookAddParam(AWP_GetReserveAmmoMax, HookParamType_Unknown);
+    }
+
+    if(!AWP_GetClipAmmoMax && !AWP_GetReserveAmmoMax) 
+    {
+        CloseHandle(config);
+        SetFailState("[ULTRA-VIP] NO OFFSET FOUND IN GAME DATA FILE. CONTACT: Mesharsky");
+        return;
+    }
+
+    int bits = GameConfGetOffset(config, "CSendProp::m_nBits");
+
+    if(bits != -1) 
+    {
+        Address addr = GameConfGetAddress(config, "g_SendTableCRC");
+        
+        if(addr) 
+        {
+            StoreToAddress(addr, 1337, NumberType_Int32);
+            
+            addr = GameConfGetAddress(config, "m_iClip1");
+            if(addr) 
+                StoreToAddress(addr + view_as<Address>(bits), 32, NumberType_Int32);
+            
+            ConVar cvar = FindConVar("sv_sendtables");
+            cvar.BoolValue = true;
+        }
+    }
+    CloseHandle(config);
+}
+
+public MRESReturn HookCallBack_GetClipAmmoMax(int entity, Handle hReturn) 
+{
+    int client = GetEntPropEnt(entity, Prop_Data, "m_hOwner");
+    Service svc = GetClientService(client);
+
+    if (svc == null)
+        return MRES_Ignored;
+
+    if (!svc.BonusAWPAmmo)
+        return MRES_Ignored;
+
+    if(client != -1) 
+    {
+        DHookSetReturn(hReturn, 10);
+        return MRES_Supercede;
+    }
+
+    return MRES_Ignored;
+}
+
+public MRESReturn HookCallBack_GetReserveAmmoMax(int entity, Handle hReturn, Handle hParams) 
+{
+    int client = GetEntPropEnt(entity, Prop_Data, "m_hOwner");
+    Service svc = GetClientService(client);
+
+    if (svc == null)
+        return MRES_Ignored;
+
+    if (!svc.BonusAWPAmmo)
+        return MRES_Ignored;
+
+    if(client != -1) 
+    {
+        DHookSetReturn(hReturn, 30);
+        return MRES_Supercede;
+    }
+
+    return MRES_Ignored;
 }

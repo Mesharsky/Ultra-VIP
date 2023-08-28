@@ -23,6 +23,7 @@
 #include <sdkhooks>
 #include <cstrike>
 #include <clientprefs>
+#include <dhooks>
 
 #undef REQUIRE_PLUGIN
 #tryinclude <chat-processor>    // Prefer chat-processor over scp
@@ -76,6 +77,9 @@
 int g_AdminCacheFlags[MAXPLAYERS + 1];
 int g_AdminCacheGroupCount[MAXPLAYERS + 1];
 
+// To Handle 10 AWP Ammo
+Handle AWP_GetClipAmmoMax;
+Handle AWP_GetReserveAmmoMax;
 enum
 {
     GamePhase_Warmup,
@@ -121,6 +125,22 @@ enum struct Detect_ChatTag
     char name[64];
 }
 
+/*
+enum struct ToggledSettings
+{
+    bool bunnyhop;
+    bool infiniteAmmo;
+    bool extraHP;
+    bool vest;
+    bool helmet;
+    bool defuser;
+    bool grenades;
+    bool jumps;
+    bool weaponmenu;
+}
+
+ToggledSettings g_ToggledSettings[MAXPLAYERS + 1];
+*/
 Detect_ChatTag g_ChatTagPlugin;
 
 int g_RoundCount;
@@ -212,6 +232,11 @@ public void OnPluginStart()
     HookEvent("round_end", Event_RoundEnd);
     HookEvent("weapon_fire", Event_WeaponFire);
     HookEvent("player_connect_full", Event_PlayerConnectFull);
+
+    HookEvent("announce_phase_end", Event_TeamChange);
+    HookEvent("cs_intermission", Event_TeamChange);
+
+    LoadGameDataGameFile();
 }
 
 public void OnAllPluginsLoaded()

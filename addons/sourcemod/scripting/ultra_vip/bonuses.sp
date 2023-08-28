@@ -20,6 +20,8 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+int gEntityHookID[2049][2];
+
 #define MAX_SERVICE_MESSAGE_LENGTH 128
 #define HUD_MESSAGE_TIME 5.0
 
@@ -491,4 +493,29 @@ static void ReplaceConfigString(
 {
     ReplaceString(buffer, sizeof(buffer), "{NAME}", name);
     ReplaceString(buffer, sizeof(buffer), "{SERVICE}", serviceName);
+}
+
+public void OnEntityCreated(int entity, const char[] classname)
+{
+    if (!StrEqual(classname, "weapon_awp"))
+        return;
+
+    if(0 < entity < 2049 && !strncmp(classname, "weapon_", 7)) 
+	{
+		SDKHook(entity, SDKHook_SpawnPost, WeaponCreatedPost);
+		gEntityHookID[entity][0] = gEntityHookID[entity][1] = -1;
+	}
+}
+
+public void WeaponCreatedPost(int entity) 
+{
+    SDKUnhook(entity, SDKHook_SpawnPost, WeaponCreatedPost);
+    char weapon[64] = "weapon_";
+
+    CS_WeaponIDToAlias(CS_ItemDefIndexToID(GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex")), weapon[7], sizeof(weapon) - 7);
+
+    if(AWP_GetClipAmmoMax && StrEqual(weapon, "weapon_awp", true)) 
+        gEntityHookID[entity][0] = DHookEntity(AWP_GetClipAmmoMax, false, entity);
+    if(AWP_GetReserveAmmoMax && StrEqual(weapon, "weapon_awp", true)) 
+        gEntityHookID[entity][1] = DHookEntity(AWP_GetReserveAmmoMax, false, entity);
 }

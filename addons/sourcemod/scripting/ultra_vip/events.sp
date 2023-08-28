@@ -69,6 +69,11 @@ public void Event_RoundEnd(Event event, const char[] name, bool bDontBroadcast)
     g_HasRoundEnded = true;
 }
 
+public void Event_TeamChange(Event event, const char[] name, bool bDontBroadcast)
+{
+    g_RoundCount = ROUND_PISTOL;
+}
+
 public void Event_PlayerSpawn(Event event, const char[] name, bool bDontBroadcast)
 {
     int client = GetClientOfUserId(event.GetInt("userid"));
